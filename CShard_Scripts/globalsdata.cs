@@ -1,0 +1,41 @@
+using Godot;
+using Godot.Collections;
+
+[GlobalClass]
+public partial class DataResource : Resource
+{
+	public static string Path = "user://GlobalsData.tres";
+
+
+	//Globals Settings
+	[Export] public bool Vsync = false;
+	[Export] public bool FPS = false;
+	[Export] public int Antialiasing = 0;
+	[Export] public int Antitropic = 0;
+	[Export] public int Volumen = 1;
+	[Export] public int VolumenMusic = 1;
+	[Export] public int TimerDisasters = 60;
+	[Export] public bool Fullscreen = false;
+	[Export] public int Resolution = 0;
+	[Export] public int Quality = 0;
+
+	public void SaveFile()
+	{
+		resourceSaver.Save(Path, this);
+
+	}
+
+	public static void LoadFile()
+	{
+		// TODO: Implement load logic
+	}
+
+	public DataResource Data;
+
+	public DataResource()
+	{
+		Data = DataResource.New();
+	}
+
+
+}

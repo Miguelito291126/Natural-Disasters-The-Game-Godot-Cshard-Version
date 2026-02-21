@@ -70,7 +70,7 @@ def main():
 	if not args.no_type_resolving:
 		for i, filename in enumerate(input_files):
 			try:
-				with open(filename,'r', encoding="utf-8", errors="ignore") as f: text = f.read()
+				with open(filename,'r+') as f: text = f.read()
 				parser = Parser.Parser(to_script_name(filename), text, TypeResolver(), lambda a,*b:None )
 				parser.transpile()
 				script_classes[parser.getClassName()] = parser.getClass()
@@ -96,7 +96,7 @@ def main():
 			outname = (filename.replace(filedir, args.output) if filedir else os.path.join(args.output, filename) ).replace('.gd', '')
 			os.makedirs(os.path.dirname(outname), exist_ok=True)
 			
-			with open(filename,'r', encoding="utf-8", errors="ignore") as f: text = f.read()
+			with open(filename,'r+') as f: text = f.read()
 			
 			script_name = to_script_name(filename)
 			transpiler = Transpiler.Transpiler(script_name, outname, getPrinter(args.verbose or args.transpiler_verbose) )
@@ -171,7 +171,7 @@ def generate_project(base_path, project_name : str, classes : list) -> None:
 	os.chdir('../..')
 
 def file_replace(file_name, changes_dict : dict):
-    with open(file_name, "r+", encoding="utf-8", errors="ignore") as file:
+    with open(file_name, "r+") as file:
         contents = file.read()
         for old, new in changes_dict.items():
         	contents = contents.replace(old, new)

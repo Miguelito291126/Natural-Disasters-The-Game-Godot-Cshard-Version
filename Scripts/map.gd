@@ -382,7 +382,7 @@ func _spawn_decals(scene: PackedScene, amount: int):
 		if result.has("position"):
 			var decal = scene.instantiate()
 
-			# 🔥 Tamaño aleatorio entre 3 y 500
+			# Tamaño aleatorio entre 3 y 500
 			var random_size = randf_range(3.0, 500.0)
 			decal.size = Vector3(random_size, random_size, random_size)
 

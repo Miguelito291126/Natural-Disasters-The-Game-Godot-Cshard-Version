@@ -1,6 +1,6 @@
 [gd_scene format=3 uid="uid://bp412twicns7t"]
 
-[ext_resource type="Script" uid="uid://cijnuqyfrm6ys" path="res://Scripts/globals.gd" id="1_uq25s"]
+[ext_resource type="Script" uid="uid://c8yoocclry601" path="res://CShard_Scripts/globals.cs" id="1_uq25s"]
 
 [sub_resource type="SceneReplicationConfig" id="SceneReplicationConfig_i2lb3"]
 properties/0/path = NodePath(".:Humidity")

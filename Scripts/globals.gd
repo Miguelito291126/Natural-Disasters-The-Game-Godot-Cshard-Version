@@ -278,7 +278,7 @@ func search_in_node(node, origin: Vector3, radius: float, result: Array):
 
 	return result
 
-func find_in_sphere(origin: Vector3, radius: float) -> Array:
+func find_in_sphere(origin: Vector3, radius: float):
 	var result = []
 	var scene_root = get_tree().get_root()
 	
@@ -334,18 +334,18 @@ func Area(entity):
 	else:
 		return entity.bounding_radius_area
 
-func get_frame_multiplier() -> float:
+func get_frame_multiplier():
 	var frame_time: float = Engine.get_frames_per_second()
 	if frame_time == 0:
 		return 0
 	else:
 		return 60 / frame_time
 
-func get_physics_multiplier() -> float:
+func get_physics_multiplier():
 	var physics_interval: float = get_physics_process_delta_time()
 	return (200.0 / 3.0) / physics_interval
 
-func hit_chance(chance: int) -> bool:
+func hit_chance(chance: int):
 	if multiplayer.is_server():
 		# En el servidor
 		return randf() < (clamp(chance * get_physics_multiplier(), 0, 100) / 100)
@@ -363,7 +363,7 @@ func sync_player_list():
 			players_conected.append(p)
 
 # Función para verificar si hay jugadores con el mismo nombre
-func hay_jugadores_con_mismo_nombre(nombre_a_verificar: String, excluir_jugador: Node = null) -> bool:
+func hay_jugadores_con_mismo_nombre(nombre_a_verificar: String, excluir_jugador: Node = null):
 	var contador = 0
 	for player in get_tree().get_nodes_in_group("player"):
 		# Si se debe excluir un jugador específico, saltarlo
@@ -380,7 +380,7 @@ func hay_jugadores_con_mismo_nombre(nombre_a_verificar: String, excluir_jugador:
 	return false
 
 # Función para obtener todos los jugadores que tienen el mismo nombre
-func obtener_jugadores_con_mismo_nombre(nombre_a_verificar: String, excluir_jugador: Node = null) -> Array:
+func obtener_jugadores_con_mismo_nombre(nombre_a_verificar: String, excluir_jugador: Node = null):
 	var jugadores_duplicados = []
 	
 	for player in get_tree().get_nodes_in_group("player"):
@@ -395,7 +395,7 @@ func obtener_jugadores_con_mismo_nombre(nombre_a_verificar: String, excluir_juga
 	return jugadores_duplicados
 
 # Función para contar cuántos jugadores tienen el mismo nombre
-func contar_jugadores_con_mismo_nombre(nombre_a_verificar: String, excluir_jugador: Node = null) -> int:
+func contar_jugadores_con_mismo_nombre(nombre_a_verificar: String, excluir_jugador: Node = null):
 	var contador = 0
 	for player in get_tree().get_nodes_in_group("player"):
 		# Si se debe excluir un jugador específico, saltarlo
@@ -451,7 +451,7 @@ func Play_MultiplayerServer():
 		print_role("Fatal Error in server")
 
 @rpc("any_peer")
-func request_pick_object(player_path: NodePath, target_path: NodePath) -> void:
+func request_pick_object(player_path: NodePath, target_path: NodePath):
 	# Solo el servidor debe ejecutar esta lógica
 	if not multiplayer.is_server():
 		return
@@ -568,7 +568,7 @@ func MultiplayerConnectionServerSucess():
 	print_role("connected to server")
 	UnloadScene.unload_scene(main_menu)
 
-func _exit_tree() -> void:
+func _exit_tree():
 	multiplayer.peer_connected.disconnect(MultiplayerPlayerSpawner)
 	multiplayer.peer_disconnected.disconnect(MultiplayerPlayerRemover)
 	multiplayer.server_disconnected.disconnect(MultiplayerServerDisconnected)
@@ -687,7 +687,7 @@ func MultiplayerPlayerRemover(peer_id: int = 1):
 
 func sync_weather_and_disaster():
 	if multiplayer.is_server():
-		var random_weather_and_disaster = randi_range(0,12)
+		var random_weather_and_disaster = randi_range(0,13)
 		set_weather_and_disaster.rpc(random_weather_and_disaster)
 
 @rpc("authority", "call_local")
@@ -777,7 +777,7 @@ func set_weather_and_disaster(weather_and_disaster_index):
 			current_weather_and_disaster_int = 12
 		"Dust Storm":
 			current_weather_and_disaster = weather_and_disaster_index
-			current_weather_and_disaster_int = 12
+			current_weather_and_disaster_int = 13
 		_:
 			current_weather_and_disaster = "Original"
 			current_weather_and_disaster_int = -1
@@ -799,14 +799,14 @@ func remove_points():
 func close_conection():
 	var peer = multiplayer.multiplayer_peer
 
-	# Si no hay peer o está desconectado o es offline → volver al menú
+	# Si no hay peer o está desconectado o es offline volver al menú
 	if peer == null \
 	or peer is OfflineMultiplayerPeer \
 	or peer.get_connection_status() != MultiplayerPeer.CONNECTION_CONNECTED:
 		MultiplayerServerDisconnected()
 		return
 
-	# Si está conectado → cerrar conexión
+	# Si está conectado cerrar conexión
 	peer.close()
 	multiplayerpeer.close()
 
@@ -889,7 +889,7 @@ func SetUpBroadcast(Name):
 	if broadcast_Timer != null:
 		broadcast_Timer.start()
 
-func _on_broadcast_timer_timeout() -> void:
+func _on_broadcast_timer_timeout():
 	room_list.players = players_conected.size()
 	var data = JSON.stringify(room_list)
 	var packet = data.to_ascii_buffer()

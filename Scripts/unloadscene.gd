@@ -40,7 +40,7 @@ func clear_nodegame_except_spawner():
 		return
 	
 	for child in Globals.main.get_children():
-		if child.name != "MapSpawner": # ⚡ aquí pon el nombre exacto de tu spawner en la escena
+		if child.name != "MapSpawner": # aquí pon el nombre exacto de tu spawner en la escena
 			child.queue_free()
 
 func _process(_delta):
