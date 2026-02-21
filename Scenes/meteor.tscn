@@ -1,0 +1,136 @@
+[gd_scene format=3 uid="uid://c6xgmy3mkckea"]
+
+[ext_resource type="Script" uid="uid://by5atj83em8rl" path="res://Scripts/meteors.gd" id="1_bgiwl"]
+[ext_resource type="PackedScene" uid="uid://ditwsydq4i21k" path="res://Models/Blend Format/meteorite.blend" id="2_aq33g"]
+[ext_resource type="Material" uid="uid://dgt85ocipcy31" path="res://Materials/Models/Meteorite/Meteor.tres" id="3_mekeu"]
+
+[sub_resource type="SphereShape3D" id="SphereShape3D_nfk2t"]
+radius = 1.17684
+
+[sub_resource type="ParticleProcessMaterial" id="ParticleProcessMaterial_yqud3"]
+emission_shape = 1
+emission_sphere_radius = 3.0
+angle_min = 1.0728835e-05
+angle_max = 360.00003
+direction = Vector3(0, 1, 0)
+spread = 0.0
+gravity = Vector3(0, 9.8, 0)
+scale_min = 0.099999994
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_nkvcn"]
+transparency = 1
+vertex_color_use_as_albedo = true
+vertex_color_is_srgb = true
+albedo_color = Color(0, 0, 0, 0.52156866)
+billboard_keep_scale = true
+
+[sub_resource type="SphereMesh" id="SphereMesh_hqrhf"]
+material = SubResource("StandardMaterial3D_nkvcn")
+
+[sub_resource type="Gradient" id="Gradient_87f6d"]
+colors = PackedColorArray(1, 0, 0, 1, 1, 0.8, 0, 1)
+
+[sub_resource type="GradientTexture1D" id="GradientTexture1D_1cdtt"]
+gradient = SubResource("Gradient_87f6d")
+
+[sub_resource type="Curve" id="Curve_baojq"]
+_data = [Vector2(0.144898, 1), 0.0, 0.0, 0, 0, Vector2(1, 0), 0.0, 0.0, 0, 0]
+point_count = 2
+
+[sub_resource type="CurveTexture" id="CurveTexture_rfffs"]
+curve = SubResource("Curve_baojq")
+
+[sub_resource type="ParticleProcessMaterial" id="ParticleProcessMaterial_72bi4"]
+emission_shape = 1
+emission_sphere_radius = 3.0
+angle_max = 360.0
+direction = Vector3(0, 1, 0)
+spread = 0.0
+gravity = Vector3(0, 9.8, 0)
+scale_min = 0.5
+scale_curve = SubResource("CurveTexture_rfffs")
+color_ramp = SubResource("GradientTexture1D_1cdtt")
+sub_emitter_mode = 1
+sub_emitter_frequency = 4.0
+sub_emitter_keep_velocity = true
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_wipg6"]
+transparency = 1
+blend_mode = 1
+shading_mode = 0
+vertex_color_use_as_albedo = true
+vertex_color_is_srgb = true
+billboard_mode = 3
+billboard_keep_scale = true
+particles_anim_h_frames = 1
+particles_anim_v_frames = 1
+particles_anim_loop = false
+
+[sub_resource type="QuadMesh" id="QuadMesh_8abkf"]
+material = SubResource("StandardMaterial3D_wipg6")
+
+[sub_resource type="SceneReplicationConfig" id="SceneReplicationConfig_2w7a8"]
+properties/0/path = NodePath(".:mass")
+properties/0/spawn = true
+properties/0/replication_mode = 1
+properties/1/path = NodePath(".:scale")
+properties/1/spawn = true
+properties/1/replication_mode = 1
+properties/2/path = NodePath(".:position")
+properties/2/spawn = true
+properties/2/replication_mode = 1
+properties/3/path = NodePath(".:rotation")
+properties/3/spawn = true
+properties/3/replication_mode = 1
+properties/4/path = NodePath(".:rand_num")
+properties/4/spawn = true
+properties/4/replication_mode = 1
+properties/5/path = NodePath(".:is_volcano_rock")
+properties/5/spawn = true
+properties/5/replication_mode = 1
+
+[node name="meteor" type="RigidBody3D" unique_id=988161167 groups=["Meteor"]]
+collision_layer = 32
+collision_mask = 385
+can_sleep = false
+continuous_cd = true
+contact_monitor = true
+max_contacts_reported = 50
+script = ExtResource("1_bgiwl")
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="." unique_id=1511882317]
+shape = SubResource("SphereShape3D_nfk2t")
+
+[node name="Meteorite" parent="." unique_id=442151971 instance=ExtResource("2_aq33g")]
+transform = Transform3D(0.1, 0, 0, 0, 0.1, 0, 0, 0, 0.1, 0, 0, 0)
+
+[node name="meteor" parent="Meteorite" index="0" unique_id=461746619]
+surface_material_override/0 = ExtResource("3_mekeu")
+
+[node name="Smoke" type="GPUParticles3D" parent="." unique_id=1597378505]
+amount = 500
+lifetime = 3.0
+randomness = 1.0
+visibility_aabb = AABB(-3.7683752, -3.8854194, -3.9482198, 7.593956, 51.94885, 7.7871113)
+process_material = SubResource("ParticleProcessMaterial_yqud3")
+draw_pass_1 = SubResource("SphereMesh_hqrhf")
+
+[node name="Fire" type="GPUParticles3D" parent="." unique_id=322415375]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.0336982, 2.38419e-07, -0.00724411)
+amount = 500
+randomness = 1.0
+visibility_aabb = AABB(-3.8072925, -3.7815475, -3.932142, 7.5510683, 12.348292, 7.7622595)
+process_material = SubResource("ParticleProcessMaterial_72bi4")
+draw_pass_1 = SubResource("QuadMesh_8abkf")
+
+[node name="MultiplayerSynchronizer" type="MultiplayerSynchronizer" parent="." unique_id=1556579431]
+replication_config = SubResource("SceneReplicationConfig_2w7a8")
+
+[node name="OmniLight3D" type="OmniLight3D" parent="." unique_id=1465076809]
+light_color = Color(1, 0.458824, 0, 1)
+light_energy = 1000.0
+shadow_enabled = true
+
+[connection signal="body_entered" from="." to="." method="_on_body_entered"]
+
+[editable path="Meteorite"]

@@ -1,0 +1,19 @@
+﻿Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio 2012
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Natural Disasters Survival The Game CShard Version", "Natural Disasters Survival The Game CShard Version.csproj", "{3B46E896-F5DC-4C87-98A3-79FBD3904E2A}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+	Debug|Any CPU = Debug|Any CPU
+	ExportDebug|Any CPU = ExportDebug|Any CPU
+	ExportRelease|Any CPU = ExportRelease|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{3B46E896-F5DC-4C87-98A3-79FBD3904E2A}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{3B46E896-F5DC-4C87-98A3-79FBD3904E2A}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{3B46E896-F5DC-4C87-98A3-79FBD3904E2A}.ExportDebug|Any CPU.ActiveCfg = ExportDebug|Any CPU
+		{3B46E896-F5DC-4C87-98A3-79FBD3904E2A}.ExportDebug|Any CPU.Build.0 = ExportDebug|Any CPU
+		{3B46E896-F5DC-4C87-98A3-79FBD3904E2A}.ExportRelease|Any CPU.ActiveCfg = ExportRelease|Any CPU
+		{3B46E896-F5DC-4C87-98A3-79FBD3904E2A}.ExportRelease|Any CPU.Build.0 = ExportRelease|Any CPU
+	EndGlobalSection
+EndGlobal

@@ -1,0 +1,123 @@
+[gd_scene format=3 uid="uid://dni5hbhwlxmdi"]
+
+[ext_resource type="Script" uid="uid://cce78i5qlkruq" path="res://Scripts/thunder.gd" id="1_ig5to"]
+[ext_resource type="Texture2D" uid="uid://dhwpuiof0nxhn" path="res://Sprites/kenney_particle_pack/spark_05.png" id="3_avm0v"]
+[ext_resource type="Texture2D" uid="uid://kq40l8aspg2k" path="res://Sprites/kenney_particle_pack/light_03.png" id="4_r770o"]
+[ext_resource type="Texture2D" uid="uid://bmpv20xa7w4u5" path="res://Sprites/kenney_particle_pack/flare_01.png" id="5_w6hi2"]
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_e6wr2"]
+transparency = 1
+shading_mode = 0
+vertex_color_use_as_albedo = true
+vertex_color_is_srgb = true
+albedo_texture = ExtResource("5_w6hi2")
+billboard_mode = 3
+billboard_keep_scale = true
+particles_anim_h_frames = 1
+particles_anim_v_frames = 1
+particles_anim_loop = false
+grow_amount = 16.0
+
+[sub_resource type="ParticleProcessMaterial" id="ParticleProcessMaterial_xpfg1"]
+spread = 0.0
+gravity = Vector3(0, 0, 0)
+color = Color(0, 1, 1, 1)
+
+[sub_resource type="QuadMesh" id="QuadMesh_q3mvv"]
+size = Vector2(10000, 10000)
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_ghvqt"]
+transparency = 1
+blend_mode = 1
+shading_mode = 0
+vertex_color_use_as_albedo = true
+vertex_color_is_srgb = true
+albedo_texture = ExtResource("4_r770o")
+billboard_mode = 3
+billboard_keep_scale = true
+particles_anim_h_frames = 1
+particles_anim_v_frames = 1
+particles_anim_loop = false
+
+[sub_resource type="ParticleProcessMaterial" id="ParticleProcessMaterial_1lfm6"]
+direction = Vector3(0, 0, 0)
+spread = 0.0
+gravity = Vector3(0, 0, 0)
+color = Color(0, 1, 1, 1)
+sub_emitter_mode = 1
+sub_emitter_frequency = 100.0
+sub_emitter_keep_velocity = true
+
+[sub_resource type="QuadMesh" id="QuadMesh_tdmw4"]
+size = Vector2(10000, 10000)
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_jem84"]
+blend_mode = 1
+shading_mode = 0
+vertex_color_use_as_albedo = true
+vertex_color_is_srgb = true
+albedo_texture = ExtResource("3_avm0v")
+billboard_mode = 2
+billboard_keep_scale = true
+
+[sub_resource type="ParticleProcessMaterial" id="ParticleProcessMaterial_fjbmq"]
+particle_flag_align_y = true
+direction = Vector3(0, -1, 0)
+spread = 0.0
+gravity = Vector3(0, 0, 0)
+color = Color(0, 1, 1, 1)
+sub_emitter_mode = 1
+sub_emitter_frequency = 100.0
+sub_emitter_keep_velocity = true
+
+[sub_resource type="QuadMesh" id="QuadMesh_8jrdf"]
+size = Vector2(10000, 10000)
+
+[sub_resource type="SceneReplicationConfig" id="SceneReplicationConfig_go6sb"]
+properties/0/path = NodePath("..:position")
+properties/0/spawn = true
+properties/0/replication_mode = 1
+properties/1/path = NodePath("..:rotation")
+properties/1/spawn = true
+properties/1/replication_mode = 1
+properties/2/path = NodePath("..:scale")
+properties/2/spawn = true
+properties/2/replication_mode = 1
+
+[node name="thunder" type="Node3D" unique_id=7050203 groups=["Thunder"]]
+script = ExtResource("1_ig5to")
+
+[node name="star" type="GPUParticles3D" parent="." unique_id=1001796651]
+material_override = SubResource("StandardMaterial3D_e6wr2")
+emitting = false
+amount = 1
+lifetime = 1.5
+one_shot = true
+visibility_aabb = AABB(-500, -499.988, -500, 1000, 1000, 1000)
+process_material = SubResource("ParticleProcessMaterial_xpfg1")
+draw_pass_1 = SubResource("QuadMesh_q3mvv")
+
+[node name="light" type="GPUParticles3D" parent="." unique_id=343570480]
+material_override = SubResource("StandardMaterial3D_ghvqt")
+emitting = false
+amount = 1
+lifetime = 1.5
+one_shot = true
+visibility_aabb = AABB(-10000, -10000, -10000, 20000, 20000, 20000)
+process_material = SubResource("ParticleProcessMaterial_1lfm6")
+draw_pass_1 = SubResource("QuadMesh_tdmw4")
+
+[node name="spark" type="GPUParticles3D" parent="." unique_id=92820679]
+material_override = SubResource("StandardMaterial3D_jem84")
+emitting = false
+amount = 1
+one_shot = true
+explosiveness = 0.78
+visibility_aabb = AABB(-1000, -1000, -757.075, 2000, 2000, 1514.15)
+local_coords = true
+process_material = SubResource("ParticleProcessMaterial_fjbmq")
+draw_pass_1 = SubResource("QuadMesh_8jrdf")
+
+[node name="MultiplayerSynchronizer" type="MultiplayerSynchronizer" parent="." unique_id=906978340]
+root_path = NodePath("../spark")
+replication_config = SubResource("SceneReplicationConfig_go6sb")

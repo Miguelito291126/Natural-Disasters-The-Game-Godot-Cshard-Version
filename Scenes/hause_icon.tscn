@@ -1,0 +1,12 @@
+[gd_scene load_steps=2 format=3 uid="uid://d3nqv2bmoyl5d"]
+
+[ext_resource type="PackedScene" uid="uid://hiq4h8n7r78k" path="res://Scenes/hause.tscn" id="1_0ct46"]
+
+[node name="hause_icon" type="SubViewport"]
+size = Vector2i(128, 128)
+render_target_update_mode = 4
+
+[node name="Hause" parent="." instance=ExtResource("1_0ct46")]
+
+[node name="Camera3D" type="Camera3D" parent="."]
+transform = Transform3D(-0.964174, 0, 0.26527, 0, 1, 0, -0.26527, 0, -0.964174, 5.8674, 9.75251, -22.7652)

@@ -1,0 +1,43 @@
+[gd_scene format=3 uid="uid://cb10f2tpfo0qj"]
+
+[ext_resource type="Script" uid="uid://5ehetmrvktdi" path="res://Scripts/warning_hud.gd" id="1_m0gel"]
+[ext_resource type="Theme" uid="uid://ygba4u5d2q6c" path="res://Resources/Hud_Theme.tres" id="2_rer08"]
+
+[node name="Warning Hud" type="CanvasLayer"]
+process_mode = 3
+layer = 3
+script = ExtResource("1_m0gel")
+
+[node name="Panel" type="Panel" parent="."]
+process_mode = 3
+auto_translate_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_left = 715.0
+offset_top = 1.0
+offset_right = -637.0
+offset_bottom = -848.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+theme = ExtResource("2_rer08")
+metadata/_edit_use_anchors_ = true
+
+[node name="Label" type="Label" parent="Panel"]
+process_mode = 3
+auto_translate_mode = 1
+layout_mode = 1
+anchors_preset = 5
+anchor_left = 0.5
+anchor_right = 0.5
+offset_left = -111.5
+offset_right = 111.5
+offset_bottom = 201.48889
+grow_horizontal = 2
+theme = ExtResource("2_rer08")
+theme_override_font_sizes/font_size = 20
+text = "3rr2fcd22d
+ewqwed"
+horizontal_alignment = 1
+vertical_alignment = 1

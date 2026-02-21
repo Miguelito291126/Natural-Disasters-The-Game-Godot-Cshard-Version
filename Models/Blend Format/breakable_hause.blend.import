@@ -1,0 +1,323 @@
+[remap]
+
+importer="scene"
+importer_version=1
+type="PackedScene"
+uid="uid://b410wmhh5ywm6"
+path="res://.godot/imported/breakable_hause.blend-016453364b02f9d4a6e59ea4e7f97149.scn"
+
+[deps]
+
+source_file="res://Models/Blend Format/breakable_hause.blend"
+dest_files=["res://.godot/imported/breakable_hause.blend-016453364b02f9d4a6e59ea4e7f97149.scn"]
+
+[params]
+
+nodes/root_type="Node3D"
+nodes/root_name=""
+nodes/root_script=null
+nodes/apply_root_scale=true
+nodes/root_scale=8.0
+nodes/import_as_skeleton_bones=false
+nodes/use_name_suffixes=true
+nodes/use_node_type_suffixes=true
+meshes/ensure_tangents=true
+meshes/generate_lods=true
+meshes/create_shadow_meshes=true
+meshes/light_baking=1
+meshes/lightmap_texel_size=0.2
+meshes/force_disable_compression=false
+skins/use_named_skins=true
+animation/import=true
+animation/fps=30
+animation/trimming=false
+animation/remove_immutable_tracks=true
+animation/import_rest_as_RESET=false
+import_script/path=""
+materials/extract=0
+materials/extract_format=0
+materials/extract_path=""
+_subresources={
+"nodes": {
+"PATH:Roof_cell": {
+"generate/physics": true,
+"physics/body_type": 1
+},
+"PATH:Roof_cell_001": {
+"generate/physics": true,
+"physics/body_type": 1
+},
+"PATH:Roof_cell_002": {
+"generate/physics": true,
+"physics/body_type": 1
+},
+"PATH:Roof_cell_003": {
+"generate/physics": true,
+"physics/body_type": 1
+},
+"PATH:Roof_cell_004": {
+"generate/physics": true,
+"physics/body_type": 1
+},
+"PATH:Roof_cell_005": {
+"generate/physics": true,
+"physics/body_type": 1
+},
+"PATH:door_cell": {
+"generate/physics": true,
+"physics/body_type": 1
+},
+"PATH:door_cell_001": {
+"generate/physics": true,
+"physics/body_type": 1
+},
+"PATH:door_cell_002": {
+"generate/physics": true,
+"physics/body_type": 1
+},
+"PATH:door_cell_003": {
+"generate/physics": true,
+"physics/body_type": 1
+},
+"PATH:door_cell_004": {
+"generate/physics": true,
+"physics/body_type": 1
+},
+"PATH:door_cell_005": {
+"generate/physics": true,
+"physics/body_type": 1
+},
+"PATH:door_cell_006": {
+"generate/physics": true,
+"physics/body_type": 1
+},
+"PATH:door_cell_007": {
+"generate/physics": true,
+"physics/body_type": 1
+},
+"PATH:floor_cell": {
+"generate/physics": true,
+"physics/body_type": 1
+},
+"PATH:floor_cell_001": {
+"generate/physics": true,
+"physics/body_type": 1
+},
+"PATH:floor_cell_002": {
+"generate/physics": true,
+"physics/body_type": 1
+},
+"PATH:floor_cell_003": {
+"generate/physics": true,
+"physics/body_type": 1
+},
+"PATH:wall_001_cell": {
+"generate/physics": true,
+"physics/body_type": 1
+},
+"PATH:wall_001_cell_001": {
+"generate/physics": true,
+"physics/body_type": 1
+},
+"PATH:wall_001_cell_002": {
+"generate/physics": true,
+"physics/body_type": 1
+},
+"PATH:wall_001_cell_003": {
+"generate/physics": true,
+"physics/body_type": 1
+},
+"PATH:wall_002_cell": {
+"generate/physics": true,
+"physics/body_type": 1
+},
+"PATH:wall_002_cell_001": {
+"generate/physics": true,
+"physics/body_type": 1
+},
+"PATH:wall_002_cell_002": {
+"generate/physics": true,
+"physics/body_type": 1
+},
+"PATH:wall_002_cell_003": {
+"generate/physics": true,
+"physics/body_type": 1
+},
+"PATH:wall_003_cell": {
+"generate/physics": true,
+"physics/body_type": 1
+},
+"PATH:wall_003_cell_001": {
+"generate/physics": true,
+"physics/body_type": 1
+},
+"PATH:wall_003_cell_002": {
+"generate/physics": true,
+"physics/body_type": 1
+},
+"PATH:wall_003_cell_003": {
+"generate/physics": true,
+"physics/body_type": 1
+},
+"PATH:wall_003_cell_004": {
+"generate/physics": true,
+"physics/body_type": 1
+},
+"PATH:wall_003_cell_005": {
+"generate/physics": true,
+"physics/body_type": 1
+},
+"PATH:wall_003_cell_006": {
+"generate/physics": true,
+"physics/body_type": 1
+},
+"PATH:wall_003_cell_007": {
+"generate/physics": true,
+"physics/body_type": 1
+},
+"PATH:wall_004_cell": {
+"generate/physics": true,
+"physics/body_type": 1
+},
+"PATH:wall_004_cell_001": {
+"generate/physics": true,
+"physics/body_type": 1
+},
+"PATH:wall_004_cell_002": {
+"generate/physics": true,
+"physics/body_type": 1
+},
+"PATH:wall_004_cell_003": {
+"generate/physics": true,
+"physics/body_type": 1
+},
+"PATH:wall_004_cell_004": {
+"generate/physics": true,
+"physics/body_type": 1
+},
+"PATH:wall_004_cell_005": {
+"generate/physics": true,
+"physics/body_type": 1
+},
+"PATH:wall_004_cell_006": {
+"generate/physics": true,
+"physics/body_type": 1
+},
+"PATH:wall_004_cell_007": {
+"generate/physics": true,
+"physics/body_type": 1
+},
+"PATH:wall_005_cell": {
+"generate/physics": true,
+"physics/body_type": 1
+},
+"PATH:wall_005_cell_001": {
+"generate/physics": true,
+"physics/body_type": 1
+},
+"PATH:wall_005_cell_002": {
+"generate/physics": true,
+"physics/body_type": 1
+},
+"PATH:wall_005_cell_003": {
+"generate/physics": true,
+"physics/body_type": 1
+},
+"PATH:wall_005_cell_004": {
+"generate/physics": true,
+"physics/body_type": 1
+},
+"PATH:wall_005_cell_005": {
+"generate/physics": true,
+"physics/body_type": 1
+},
+"PATH:wall_005_cell_006": {
+"generate/physics": true,
+"physics/body_type": 1
+},
+"PATH:wall_005_cell_007": {
+"generate/physics": true,
+"physics/body_type": 1
+},
+"PATH:windows_001_cell": {
+"generate/physics": true,
+"physics/body_type": 1
+},
+"PATH:windows_001_cell_001": {
+"generate/physics": true,
+"physics/body_type": 1
+},
+"PATH:windows_001_cell_002": {
+"generate/physics": true,
+"physics/body_type": 1
+},
+"PATH:windows_001_cell_003": {
+"generate/physics": true,
+"physics/body_type": 1
+},
+"PATH:windows_001_cell_004": {
+"generate/physics": true,
+"physics/body_type": 1
+},
+"PATH:windows_001_cell_005": {
+"generate/physics": true,
+"physics/body_type": 1
+},
+"PATH:windows_001_cell_006": {
+"generate/physics": true,
+"physics/body_type": 1
+},
+"PATH:windows_001_cell_007": {
+"generate/physics": true,
+"physics/body_type": 1
+},
+"PATH:windows_cell_001": {
+"generate/physics": true,
+"physics/body_type": 1
+},
+"PATH:windows_cell_002": {
+"generate/physics": true,
+"physics/body_type": 1
+},
+"PATH:windows_cell_003": {
+"generate/physics": true,
+"physics/body_type": 1
+},
+"PATH:windows_cell_004": {
+"generate/physics": true,
+"physics/body_type": 1
+},
+"PATH:windows_cell_005": {
+"generate/physics": true,
+"physics/body_type": 1
+},
+"PATH:windows_cell_006": {
+"generate/physics": true,
+"physics/body_type": 1
+},
+"PATH:windows_cell_007": {
+"generate/physics": true,
+"physics/body_type": 1
+}
+}
+}
+blender/nodes/visible=0
+blender/nodes/active_collection_only=false
+blender/nodes/punctual_lights=true
+blender/nodes/cameras=true
+blender/nodes/custom_properties=true
+blender/nodes/modifiers=1
+blender/meshes/colors=false
+blender/meshes/uvs=true
+blender/meshes/normals=true
+blender/meshes/export_geometry_nodes_instances=false
+blender/meshes/gpu_instances=false
+blender/meshes/tangents=true
+blender/meshes/skins=2
+blender/meshes/export_bones_deforming_mesh_only=false
+blender/materials/unpack_enabled=true
+blender/materials/export_materials=1
+blender/animation/limit_playback=true
+blender/animation/always_sample=true
+blender/animation/group_tracks=true
+gltf/naming_version=0

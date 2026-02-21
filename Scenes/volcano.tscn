@@ -1,0 +1,337 @@
+[gd_scene format=3 uid="uid://qf81iinh5hke"]
+
+[ext_resource type="Script" uid="uid://v1omqd38x1jy" path="res://Scripts/volcano.gd" id="1_3fq1s"]
+[ext_resource type="Material" uid="uid://jeft7exqnaro" path="res://Materials/Models/Volcano/lava.tres" id="3_m887n"]
+[ext_resource type="PackedScene" uid="uid://q6hkv3yre3tn" path="res://Models/Blend Format/volcano.blend" id="3_t7vbc"]
+[ext_resource type="Material" uid="uid://diohginyx0ebc" path="res://Materials/Models/Volcano/volcano_model.tres" id="4_3fq1s"]
+[ext_resource type="AudioStream" uid="uid://c6lbbct1aom2r" path="res://Sounds/disasters/nature/minivolcano_explosion.mp3" id="6_wqc32"]
+[ext_resource type="AudioStream" uid="uid://cm7i1jqvye8j2" path="res://Sounds/disasters/nature/volcano_idle.wav" id="7_exwvd"]
+
+[sub_resource type="ConcavePolygonShape3D" id="ConcavePolygonShape3D_m887n"]
+data = PackedVector3Array(-50, 316.2514, 41.652, 50, 310.4961, -58.182297, 50, 316.2514, 41.652, -50, 316.2514, 41.652, -50, 310.4961, -58.182297, 50, 310.4961, -58.182297, -123.836296, 4.4769, 133.584, -88.4545, 214.6202, 86.0291, -88.4545, 4.4769, 133.584, -123.836296, 4.4769, 133.584, -123.836296, 2.4406, 98.260796, -88.4545, 214.6202, 86.0291, -123.836296, 2.4406, 98.260796, -88.4545, 261.3783, 47.893097, -88.4545, 214.6202, 86.0291, -123.836296, 2.4406, 98.260796, -123.836296, 2.3200998, 62.827198, -88.4545, 261.3783, 47.893097, -123.836296, 2.3200998, 62.827198, -88.4545, 284.4613, 11.1219, -88.4545, 261.3783, 47.893097, -123.836296, 2.3200998, 62.827198, -123.836296, 5.4460998, 27.2064, -88.4545, 284.4613, 11.1219, -123.836296, 5.4460998, 27.2064, -88.4545, 282.4963, -24.205399, -88.4545, 284.4613, 11.1219, -123.836296, 5.4460998, 27.2064, -123.836296, 3.4099, -8.1167, -88.4545, 282.4963, -24.205399, -123.836296, 3.4099, -8.1167, -88.4545, 255.3888, -58.083298, -88.4545, 282.4963, -24.205399, -123.836296, 3.4099, -8.1167, -123.836296, -3.7888, -43.1423, -88.4545, 255.3888, -58.083298, -123.836296, -3.7888, -43.1423, -88.4545, 204.4406, -90.5868, -88.4545, 255.3888, -58.083298, -123.836296, -3.7888, -43.1423, -123.836296, -7.7408, -78.354996, -88.4545, 204.4406, -90.5868, -123.836296, -7.7408, -78.354996, -88.4545, -9.7771, -113.6782, -88.4545, 204.4406, -90.5868, -123.836296, -7.7408, -78.354996, -123.836296, -9.7771, -113.6782, -88.4545, -9.7771, -113.6782, -88.4545, 4.4769, 133.584, -53.0727, 263.39978, 83.217094, -53.0727, 6.3926997, 133.4735, -88.4545, 4.4769, 133.584, -88.4545, 214.6202, 86.0291, -53.0727, 263.39978, 83.217094, -88.4545, 214.6202, 86.0291, -53.0727, 343.85968, 43.1382, -53.0727, 263.39978, 83.217094, -88.4545, 214.6202, 86.0291, -88.4545, 261.3783, 47.893097, -53.0727, 343.85968, 43.1382, -88.4545, 261.3783, 47.893097, -53.0727, 377.0015, 5.7871, -53.0727, 343.85968, 43.1382, -88.4545, 261.3783, 47.893097, -88.4545, 284.4613, 11.1219, -53.0727, 377.0015, 5.7871, -88.4545, 284.4613, 11.1219, -53.0727, 375.07828, -29.5425, -53.0727, 377.0015, 5.7871, -88.4545, 284.4613, 11.1219, -88.4545, 282.4963, -24.205399, -53.0727, 375.07828, -29.5425, -88.4545, 282.4963, -24.205399, -53.0727, 338.1091, -62.8519, -53.0727, 375.07828, -29.5425, -88.4545, 282.4963, -24.205399, -88.4545, 255.3888, -58.083298, -53.0727, 338.1091, -62.8519, -88.4545, 255.3888, -58.083298, -53.0727, 253.3974, -93.409, -53.0727, 338.1091, -62.8519, -88.4545, 255.3888, -58.083298, -88.4545, 204.4406, -90.5868, -53.0727, 253.3974, -93.409, -88.4545, 204.4406, -90.5868, -53.0727, -7.8613997, -113.7886, -53.0727, 253.3974, -93.409, -88.4545, 204.4406, -90.5868, -88.4545, -9.7771, -113.6782, -53.0727, -7.8613997, -113.7886, -53.0727, 6.3926997, 133.4735, -17.690899, 288.4191, 81.774796, -17.690899, 11.554999, 133.176, -53.0727, 6.3926997, 133.4735, -53.0727, 263.39978, 83.217094, -17.690899, 288.4191, 81.774796, -53.0727, 263.39978, 83.217094, -17.690899, 378.9527, 41.1152, -17.690899, 288.4191, 81.774796, -53.0727, 263.39978, 83.217094, -53.0727, 343.85968, 43.1382, -17.690899, 378.9527, 41.1152, -53.0727, 343.85968, 43.1382, -53.0727, 377.0015, 5.7871, -17.690899, 378.9527, 41.1152, -17.690899, 378.9527, 41.1152, -53.0727, 377.0015, 5.7871, -17.690899, 191.8174, 16.462599, -53.0727, 377.0015, 5.7871, -17.690899, 189.84619, -18.8643, -17.690899, 191.8174, 16.462599, -53.0727, 377.0015, 5.7871, -53.0727, 375.07828, -29.5425, -17.690899, 189.84619, -18.8643, -53.0727, 375.07828, -29.5425, -53.0727, 338.1091, -62.8519, -17.690899, 189.84619, -18.8643, -17.690899, 189.84619, -18.8643, -53.0727, 338.1091, -62.8519, -17.690899, 373.16428, -64.872795, -53.0727, 338.1091, -62.8519, -17.690899, 278.5476, -94.858894, -17.690899, 373.16428, -64.872795, -53.0727, 338.1091, -62.8519, -53.0727, 253.3974, -93.409, -17.690899, 278.5476, -94.858894, -53.0727, 253.3974, -93.409, -17.690899, -2.699, -114.0862, -17.690899, 278.5476, -94.858894, -53.0727, 253.3974, -93.409, -53.0727, -7.8613997, -113.7886, -17.690899, -2.699, -114.0862, -17.690899, 11.554999, 133.176, 17.690899, 288.4191, 81.774796, 17.690899, 11.554999, 133.176, -17.690899, 11.554999, 133.176, -17.690899, 288.4191, 81.774796, 17.690899, 288.4191, 81.774796, -17.690899, 288.4191, 81.774796, 17.690899, 378.9527, 41.1152, 17.690899, 288.4191, 81.774796, -17.690899, 288.4191, 81.774796, -17.690899, 378.9527, 41.1152, 17.690899, 378.9527, 41.1152, -17.690899, 378.9527, 41.1152, 17.690899, 191.8174, 16.462599, 17.690899, 378.9527, 41.1152, -17.690899, 378.9527, 41.1152, -17.690899, 191.8174, 16.462599, 17.690899, 191.8174, 16.462599, -17.690899, 191.8174, 16.462599, 17.690899, 189.84619, -18.8643, 17.690899, 191.8174, 16.462599, -17.690899, 191.8174, 16.462599, -17.690899, 189.84619, -18.8643, 17.690899, 189.84619, -18.8643, -17.690899, 189.84619, -18.8643, 17.690899, 373.16428, -64.872795, 17.690899, 189.84619, -18.8643, -17.690899, 189.84619, -18.8643, -17.690899, 373.16428, -64.872795, 17.690899, 373.16428, -64.872795, -17.690899, 373.16428, -64.872795, 17.690899, 278.5476, -94.858894, 17.690899, 373.16428, -64.872795, -17.690899, 373.16428, -64.872795, -17.690899, 278.5476, -94.858894, 17.690899, 278.5476, -94.858894, -17.690899, 278.5476, -94.858894, 17.690899, -2.699, -114.0862, 17.690899, 278.5476, -94.858894, -17.690899, 278.5476, -94.858894, -17.690899, -2.699, -114.0862, 17.690899, -2.699, -114.0862, 17.690899, 11.554999, 133.176, 53.0727, 263.39978, 83.217094, 53.0727, 6.3926997, 133.4735, 17.690899, 11.554999, 133.176, 17.690899, 288.4191, 81.774796, 53.0727, 263.39978, 83.217094, 17.690899, 288.4191, 81.774796, 53.0727, 343.85968, 43.1382, 53.0727, 263.39978, 83.217094, 17.690899, 288.4191, 81.774796, 17.690899, 378.9527, 41.1152, 53.0727, 343.85968, 43.1382, 17.690899, 378.9527, 41.1152, 17.690899, 191.8174, 16.462599, 53.0727, 343.85968, 43.1382, 53.0727, 343.85968, 43.1382, 17.690899, 191.8174, 16.462599, 53.0727, 377.0015, 5.7871, 17.690899, 191.8174, 16.462599, 53.0727, 375.07828, -29.5425, 53.0727, 377.0015, 5.7871, 17.690899, 191.8174, 16.462599, 17.690899, 189.84619, -18.8643, 53.0727, 375.07828, -29.5425, 17.690899, 189.84619, -18.8643, 17.690899, 373.16428, -64.872795, 53.0727, 375.07828, -29.5425, 53.0727, 375.07828, -29.5425, 17.690899, 373.16428, -64.872795, 53.0727, 338.10898, -62.8519, 17.690899, 373.16428, -64.872795, 53.0727, 253.3974, -93.409, 53.0727, 338.10898, -62.8519, 17.690899, 373.16428, -64.872795, 17.690899, 278.5476, -94.858894, 53.0727, 253.3974, -93.409, 17.690899, 278.5476, -94.858894, 53.0727, -7.8613997, -113.7886, 53.0727, 253.3974, -93.409, 17.690899, 278.5476, -94.858894, 17.690899, -2.699, -114.0862, 53.0727, -7.8613997, -113.7886, 53.0727, 6.3926997, 133.4735, 88.4545, 214.6202, 86.0291, 88.4545, 4.4769, 133.584, 53.0727, 6.3926997, 133.4735, 53.0727, 263.39978, 83.217094, 88.4545, 214.6202, 86.0291, 53.0727, 263.39978, 83.217094, 88.4545, 261.3783, 47.893097, 88.4545, 214.6202, 86.0291, 53.0727, 263.39978, 83.217094, 53.0727, 343.85968, 43.1382, 88.4545, 261.3783, 47.893097, 53.0727, 343.85968, 43.1382, 88.4545, 284.4613, 11.1219, 88.4545, 261.3783, 47.893097, 53.0727, 343.85968, 43.1382, 53.0727, 377.0015, 5.7871, 88.4545, 284.4613, 11.1219, 53.0727, 377.0015, 5.7871, 88.4545, 282.4963, -24.205399, 88.4545, 284.4613, 11.1219, 53.0727, 377.0015, 5.7871, 53.0727, 375.07828, -29.5425, 88.4545, 282.4963, -24.205399, 53.0727, 375.07828, -29.5425, 88.4545, 255.3888, -58.083298, 88.4545, 282.4963, -24.205399, 53.0727, 375.07828, -29.5425, 53.0727, 338.10898, -62.8519, 88.4545, 255.3888, -58.083298, 53.0727, 338.10898, -62.8519, 88.4545, 204.4406, -90.5868, 88.4545, 255.3888, -58.083298, 53.0727, 338.10898, -62.8519, 53.0727, 253.3974, -93.409, 88.4545, 204.4406, -90.5868, 53.0727, 253.3974, -93.409, 88.4545, -9.7771, -113.6782, 88.4545, 204.4406, -90.5868, 53.0727, 253.3974, -93.409, 53.0727, -7.8613997, -113.7886, 88.4545, -9.7771, -113.6782, 88.4545, 4.4769, 133.584, 123.836296, 2.4406, 98.260796, 123.836296, 4.4769, 133.584, 88.4545, 4.4769, 133.584, 88.4545, 214.6202, 86.0291, 123.836296, 2.4406, 98.260796, 88.4545, 214.6202, 86.0291, 123.836296, 2.3200998, 62.827198, 123.836296, 2.4406, 98.260796, 88.4545, 214.6202, 86.0291, 88.4545, 261.3783, 47.893097, 123.836296, 2.3200998, 62.827198, 88.4545, 261.3783, 47.893097, 123.836296, 5.4460998, 27.2064, 123.836296, 2.3200998, 62.827198, 88.4545, 261.3783, 47.893097, 88.4545, 284.4613, 11.1219, 123.836296, 5.4460998, 27.2064, 88.4545, 284.4613, 11.1219, 123.836296, 3.4097998, -8.1167, 123.836296, 5.4460998, 27.2064, 88.4545, 284.4613, 11.1219, 88.4545, 282.4963, -24.205399, 123.836296, 3.4097998, -8.1167, 88.4545, 282.4963, -24.205399, 123.836296, -3.7888, -43.1423, 123.836296, 3.4097998, -8.1167, 88.4545, 282.4963, -24.205399, 88.4545, 255.3888, -58.083298, 123.836296, -3.7888, -43.1423, 88.4545, 255.3888, -58.083298, 123.836296, -7.7408, -78.354996, 123.836296, -3.7888, -43.1423, 88.4545, 255.3888, -58.083298, 88.4545, 204.4406, -90.5868, 123.836296, -7.7408, -78.354996, 88.4545, 204.4406, -90.5868, 123.836296, -9.7771, -113.6782, 123.836296, -7.7408, -78.354996, 88.4545, 204.4406, -90.5868, 88.4545, -9.7771, -113.6782, 123.836296, -9.7771, -113.6782, -123.836296, 2.4406, 98.260796, -123.836296, 5.4460998, 27.2064, -123.836296, 2.3200998, 62.827198, -123.836296, 2.4406, 98.260796, -123.836296, 3.4099, -8.1167, -123.836296, 5.4460998, 27.2064, -88.4545, 4.4769, 133.584, -123.836296, 2.4406, 98.260796, -123.836296, 4.4769, 133.584, -53.0727, 6.3926997, 133.4735, -123.836296, 2.4406, 98.260796, -88.4545, 4.4769, 133.584, -53.0727, 6.3926997, 133.4735, -123.836296, 3.4099, -8.1167, -123.836296, 2.4406, 98.260796, -17.690899, 11.554999, 133.176, -123.836296, 3.4099, -8.1167, -53.0727, 6.3926997, 133.4735, -17.690899, 11.554999, 133.176, -123.836296, -7.7408, -78.354996, -123.836296, 3.4099, -8.1167, -123.836296, 3.4099, -8.1167, -123.836296, -7.7408, -78.354996, -123.836296, -3.7888, -43.1423, 53.0727, 6.3926997, 133.4735, -17.690899, 11.554999, 133.176, 17.690899, 11.554999, 133.176, 53.0727, 6.3926997, 133.4735, -123.836296, -7.7408, -78.354996, -17.690899, 11.554999, 133.176, 88.4545, 4.4769, 133.584, -123.836296, -7.7408, -78.354996, 53.0727, 6.3926997, 133.4735, -123.836296, -7.7408, -78.354996, -88.4545, -9.7771, -113.6782, -123.836296, -9.7771, -113.6782, -123.836296, -7.7408, -78.354996, -53.0727, -7.8613997, -113.7886, -88.4545, -9.7771, -113.6782, -123.836296, -7.7408, -78.354996, -17.690899, -2.699, -114.0862, -53.0727, -7.8613997, -113.7886, 88.4545, 4.4769, 133.584, -17.690899, -2.699, -114.0862, -123.836296, -7.7408, -78.354996, -17.690899, -2.699, -114.0862, 53.0727, -7.8613997, -113.7886, 17.690899, -2.699, -114.0862, 88.4545, 4.4769, 133.584, 53.0727, -7.8613997, -113.7886, -17.690899, -2.699, -114.0862, 53.0727, -7.8613997, -113.7886, 123.836296, -9.7771, -113.6782, 88.4545, -9.7771, -113.6782, 88.4545, 4.4769, 133.584, 123.836296, -9.7771, -113.6782, 53.0727, -7.8613997, -113.7886, 123.836296, -9.7771, -113.6782, 123.836296, -3.7888, -43.1423, 123.836296, -7.7408, -78.354996, 123.836296, -9.7771, -113.6782, 88.4545, 4.4769, 133.584, 123.836296, -3.7888, -43.1423, 123.836296, -3.7888, -43.1423, 88.4545, 4.4769, 133.584, 123.836296, 3.4097998, -8.1167, 123.836296, 3.4097998, -8.1167, 88.4545, 4.4769, 133.584, 123.836296, 2.3200998, 62.827198, 123.836296, 3.4097998, -8.1167, 123.836296, 2.3200998, 62.827198, 123.836296, 5.4460998, 27.2064, 123.836296, 2.3200998, 62.827198, 88.4545, 4.4769, 133.584, 123.836296, 2.4406, 98.260796, 123.836296, 2.4406, 98.260796, 88.4545, 4.4769, 133.584, 123.836296, 4.4769, 133.584)
+
+[sub_resource type="ParticleProcessMaterial" id="ParticleProcessMaterial_m887n"]
+resource_local_to_scene = true
+emission_shape = 1
+emission_sphere_radius = 60.0
+direction = Vector3(0, 1, 0)
+spread = 0.0
+initial_velocity_max = 150.0
+gravity = Vector3(0, 9.8, 0)
+scale_max = 15.0
+collision_mode = 1
+collision_friction = 0.0
+collision_bounce = 0.0
+collision_use_scale = true
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_3fq1s"]
+resource_local_to_scene = true
+transparency = 1
+vertex_color_use_as_albedo = true
+albedo_color = Color(0, 0, 0, 0.43529412)
+emission = Color(0, 0, 0, 0.5137255)
+
+[sub_resource type="SphereMesh" id="SphereMesh_otd4a"]
+resource_local_to_scene = true
+material = SubResource("StandardMaterial3D_3fq1s")
+
+[sub_resource type="Curve" id="Curve_m887n"]
+_data = [Vector2(0, 1), 0.0, 0.0, 0, 0, Vector2(0.7225549, 1), 0.0, 0.0, 0, 0, Vector2(1, 0), 0.0, 0.0, 0, 0]
+point_count = 3
+
+[sub_resource type="CurveTexture" id="CurveTexture_3fq1s"]
+curve = SubResource("Curve_m887n")
+
+[sub_resource type="ParticleProcessMaterial" id="ParticleProcessMaterial_a8im6"]
+resource_local_to_scene = true
+particle_flag_align_y = true
+emission_shape = 1
+emission_sphere_radius = 60.0
+direction = Vector3(0, 1, 0)
+initial_velocity_min = 50.0
+initial_velocity_max = 100.0
+scale_max = 10.0
+scale_curve = SubResource("CurveTexture_3fq1s")
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_t7vbc"]
+resource_local_to_scene = true
+transparency = 1
+vertex_color_use_as_albedo = true
+albedo_color = Color(1, 0.5529412, 0, 1)
+emission_enabled = true
+emission = Color(1, 0.49803922, 0, 0.5137255)
+
+[sub_resource type="SphereMesh" id="SphereMesh_lfpic"]
+resource_local_to_scene = true
+material = SubResource("StandardMaterial3D_t7vbc")
+height = 2.805
+
+[sub_resource type="ParticleProcessMaterial" id="ParticleProcessMaterial_k2ra4"]
+resource_local_to_scene = true
+emission_shape = 1
+emission_sphere_radius = 60.0
+direction = Vector3(0, 1, 0)
+initial_velocity_min = 50.0
+initial_velocity_max = 100.0
+scale_max = 15.0
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_wqc32"]
+resource_local_to_scene = true
+transparency = 1
+vertex_color_use_as_albedo = true
+albedo_color = Color(0, 0, 0, 0.43529412)
+
+[sub_resource type="SphereMesh" id="SphereMesh_exwvd"]
+resource_local_to_scene = true
+material = SubResource("StandardMaterial3D_wqc32")
+
+[sub_resource type="Animation" id="Animation_v1e02"]
+length = 0.001
+tracks/0/type = "value"
+tracks/0/imported = false
+tracks/0/enabled = true
+tracks/0/path = NodePath(".:Lava_Level")
+tracks/0/interp = 1
+tracks/0/loop_wrap = true
+tracks/0/keys = {
+"times": PackedFloat32Array(0),
+"transitions": PackedFloat32Array(1),
+"update": 1,
+"values": [125]
+}
+tracks/1/type = "value"
+tracks/1/imported = false
+tracks/1/enabled = true
+tracks/1/path = NodePath(".:Pressure")
+tracks/1/interp = 1
+tracks/1/loop_wrap = true
+tracks/1/keys = {
+"times": PackedFloat32Array(0),
+"transitions": PackedFloat32Array(1),
+"update": 1,
+"values": [0]
+}
+tracks/2/type = "value"
+tracks/2/imported = false
+tracks/2/enabled = true
+tracks/2/path = NodePath(".:IsGoingToErupt")
+tracks/2/interp = 1
+tracks/2/loop_wrap = true
+tracks/2/keys = {
+"times": PackedFloat32Array(0),
+"transitions": PackedFloat32Array(1),
+"update": 1,
+"values": [false]
+}
+tracks/3/type = "value"
+tracks/3/imported = false
+tracks/3/enabled = true
+tracks/3/path = NodePath(".:IsPressureLeaking")
+tracks/3/interp = 1
+tracks/3/loop_wrap = true
+tracks/3/keys = {
+"times": PackedFloat32Array(0),
+"transitions": PackedFloat32Array(1),
+"update": 1,
+"values": [false]
+}
+
+[sub_resource type="Animation" id="Animation_coo4b"]
+resource_name = "Volcano"
+length = 300.0
+loop_mode = 1
+tracks/0/type = "value"
+tracks/0/imported = false
+tracks/0/enabled = true
+tracks/0/path = NodePath(".:Lava_Level")
+tracks/0/interp = 1
+tracks/0/loop_wrap = true
+tracks/0/keys = {
+"times": PackedFloat32Array(0, 126.7, 300),
+"transitions": PackedFloat32Array(1, 1, 1),
+"update": 1,
+"values": [125, 250, 125]
+}
+tracks/1/type = "value"
+tracks/1/imported = false
+tracks/1/enabled = true
+tracks/1/path = NodePath(".:Pressure")
+tracks/1/interp = 1
+tracks/1/loop_wrap = true
+tracks/1/keys = {
+"times": PackedFloat32Array(0, 126.7, 300),
+"transitions": PackedFloat32Array(1, 1, 1),
+"update": 1,
+"values": [0, 100, 0]
+}
+tracks/2/type = "value"
+tracks/2/imported = false
+tracks/2/enabled = true
+tracks/2/path = NodePath(".:IsGoingToErupt")
+tracks/2/interp = 1
+tracks/2/loop_wrap = true
+tracks/2/keys = {
+"times": PackedFloat32Array(0, 300),
+"transitions": PackedFloat32Array(1, 1),
+"update": 1,
+"values": [false, false]
+}
+tracks/3/type = "value"
+tracks/3/imported = false
+tracks/3/enabled = true
+tracks/3/path = NodePath(".:IsPressureLeaking")
+tracks/3/interp = 1
+tracks/3/loop_wrap = true
+tracks/3/keys = {
+"times": PackedFloat32Array(0, 300),
+"transitions": PackedFloat32Array(1, 1),
+"update": 1,
+"values": [false, false]
+}
+
+[sub_resource type="AnimationLibrary" id="AnimationLibrary_4f0xq"]
+_data = {
+&"RESET": SubResource("Animation_v1e02"),
+&"Volcano": SubResource("Animation_coo4b")
+}
+
+[sub_resource type="SceneReplicationConfig" id="SceneReplicationConfig_kspno"]
+properties/0/path = NodePath("Volcano/volcano:position")
+properties/0/spawn = true
+properties/0/replication_mode = 1
+properties/1/path = NodePath("Volcano/volcano:rotation")
+properties/1/spawn = true
+properties/1/replication_mode = 1
+properties/2/path = NodePath("Volcano/volcano:scale")
+properties/2/spawn = true
+properties/2/replication_mode = 1
+properties/3/path = NodePath("Volcano:position")
+properties/3/spawn = true
+properties/3/replication_mode = 1
+properties/4/path = NodePath("Volcano:rotation")
+properties/4/spawn = true
+properties/4/replication_mode = 1
+properties/5/path = NodePath("Volcano:scale")
+properties/5/spawn = true
+properties/5/replication_mode = 1
+properties/6/path = NodePath(".:position")
+properties/6/spawn = true
+properties/6/replication_mode = 1
+properties/7/path = NodePath(".:rotation")
+properties/7/spawn = true
+properties/7/replication_mode = 1
+properties/8/path = NodePath(".:scale")
+properties/8/spawn = true
+properties/8/replication_mode = 1
+properties/9/path = NodePath(".:IsVolcanoAsh")
+properties/9/spawn = true
+properties/9/replication_mode = 1
+properties/10/path = NodePath(".:IsPressureLeaking")
+properties/10/spawn = true
+properties/10/replication_mode = 1
+properties/11/path = NodePath(".:IsGoingToErupt")
+properties/11/spawn = true
+properties/11/replication_mode = 1
+properties/12/path = NodePath(".:Pressure")
+properties/12/spawn = true
+properties/12/replication_mode = 1
+properties/13/path = NodePath(".:Lava_Level")
+properties/13/spawn = true
+properties/13/replication_mode = 1
+properties/14/path = NodePath(".:launch_radius")
+properties/14/spawn = true
+properties/14/replication_mode = 1
+properties/15/path = NodePath(".:launch_force")
+properties/15/spawn = true
+properties/15/replication_mode = 1
+properties/16/path = NodePath(".:launch_interval")
+properties/16/spawn = true
+properties/16/replication_mode = 1
+
+[sub_resource type="SphereShape3D" id="SphereShape3D_lhoig"]
+radius = 53.759
+
+[node name="volcano" type="StaticBody3D" unique_id=155383846 groups=["Volcano"]]
+collision_layer = 16
+collision_mask = 385
+script = ExtResource("1_3fq1s")
+
+[node name="launch_marker" type="Marker3D" parent="." unique_id=1547638632]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 3.2641163, 372.7893, -15.118576)
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="." unique_id=1387515441]
+shape = SubResource("ConcavePolygonShape3D_m887n")
+
+[node name="Smoke" type="GPUParticles3D" parent="." unique_id=1448149535]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 5.30945, 361.779, -21.4574)
+amount = 1000
+lifetime = 5.0
+randomness = 1.0
+visibility_aabb = AABB(-58.60888, -57.13556, -59.970276, 117.14829, 967.47253, 119.54341)
+process_material = SubResource("ParticleProcessMaterial_m887n")
+draw_pass_1 = SubResource("SphereMesh_otd4a")
+
+[node name="Erupt Sparks" type="GPUParticles3D" parent="." unique_id=1670428151]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 5.58344, 408.84, -19.9021)
+emitting = false
+amount = 3000
+lifetime = 3.0
+one_shot = true
+explosiveness = 1.0
+visibility_aabb = AABB(-231.25519, -59.94941, -228.50272, 459.98126, 345.57846, 469.30838)
+process_material = SubResource("ParticleProcessMaterial_a8im6")
+draw_pass_1 = SubResource("SphereMesh_lfpic")
+
+[node name="Erupt Smoke" type="GPUParticles3D" parent="." unique_id=1828307724]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 5.58344, 408.84, -19.9021)
+emitting = false
+amount = 3000
+lifetime = 3.0
+one_shot = true
+explosiveness = 1.0
+visibility_aabb = AABB(-205.91684, -55.53253, -237.88928, 439.3877, 343.52756, 486.9402)
+process_material = SubResource("ParticleProcessMaterial_k2ra4")
+draw_pass_1 = SubResource("SphereMesh_exwvd")
+
+[node name="Volcano" parent="." unique_id=1395059966 instance=ExtResource("3_t7vbc")]
+
+[node name="volcano2" parent="Volcano" index="0" unique_id=1952238046]
+surface_material_override/0 = ExtResource("3_m887n")
+surface_material_override/1 = ExtResource("4_3fq1s")
+
+[node name="Erupt Sound" type="AudioStreamPlayer3D" parent="." unique_id=1161809023]
+transform = Transform3D(5, 0, 0, 0, 5, 0, 0, 0, 5, 0, 318.367, 0)
+stream = ExtResource("6_wqc32")
+volume_db = 80.0
+max_distance = 4096.0
+
+[node name="Volcano_Animation" type="AnimationPlayer" parent="." unique_id=1834543101]
+libraries/ = SubResource("AnimationLibrary_4f0xq")
+autoplay = &"Volcano"
+
+[node name="Lava loop" type="AudioStreamPlayer3D" parent="." unique_id=1409483434]
+transform = Transform3D(2, 0, 0, 0, 2, 0, 0, 0, 2, 0, 180.253, 0)
+stream = ExtResource("7_exwvd")
+volume_db = 16.054
+autoplay = true
+max_distance = 500.0
+
+[node name="MultiplayerSynchronizer" type="MultiplayerSynchronizer" parent="." unique_id=136822687]
+replication_config = SubResource("SceneReplicationConfig_kspno")
+
+[node name="OmniLight3D" type="OmniLight3D" parent="." unique_id=366638761]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -1.04098, 330.21796, 0.212049)
+light_color = Color(1, 0.516667, 0, 1)
+light_energy = 1000.0
+shadow_enabled = true
+omni_range = 363.787
+
+[node name="Volcano_Area" type="Area3D" parent="." unique_id=1774524554 groups=["Lava_Area", "Volcano"]]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 301.8597, 0)
+collision_layer = 8
+collision_mask = 385
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="Volcano_Area" unique_id=1472593047]
+shape = SubResource("SphereShape3D_lhoig")
+
+[editable path="Volcano"]
