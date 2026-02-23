@@ -136,7 +136,7 @@ public partial class Player : CharacterBody3D
 		Input.SetMouseMode(Input.MouseModeEnum.Visible);
 	}
 
-
+	[Rpc(MultiplayerApi.RpcMode.AnyPeer, CallLocal = true)]
 	public void _SetAdminMode(bool enable)
 	{
 		AdminMode = enable;

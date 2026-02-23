@@ -1,6 +1,6 @@
 [gd_scene format=3 uid="uid://tjhhsh3ck07n"]
 
-[ext_resource type="Script" uid="uid://l32d45ywsbg4" path="res://CShard_Scripts/tornado.cs" id="1_lw5ai"]
+[ext_resource type="Script" uid="uid://l32d45ywsbg4" path="res://CShard_Scripts/Tornado.cs" id="1_lw5ai"]
 [ext_resource type="ArrayMesh" uid="uid://di8x2d8t2vsw6" path="res://Models/obj/tornado.obj" id="2_lw5ai"]
 [ext_resource type="ArrayMesh" uid="uid://b0ei05ejws20x" path="res://Models/obj/tornado_wave.obj" id="5_13pl0"]
 

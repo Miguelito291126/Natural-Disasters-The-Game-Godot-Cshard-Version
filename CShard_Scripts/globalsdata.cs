@@ -30,20 +30,40 @@ public partial class DataResource : Resource
 
 	public void SaveFile()
 	{
-		ResourceSaver.Save(this, Path);
-
+		Error err = ResourceSaver.Save(this, Path);
+		if (err != Error.Ok)
+		{
+			GD.PrintErr($"Error al guardar la configuración: {err}");
+		}
 	}
 
 	public static DataResource LoadFile()
 	{
-		DataResource data = ResourceLoader.Load(Path) as DataResource;
-		if(data == null)
+		if (!FileAccess.FileExists(Path))
 		{
-			data = new DataResource();
+			return new DataResource();
 		}
 
-		return data;
+		try 
+		{
+			// Intentamos cargar el recurso
+			var loadedResource = ResourceLoader.Load(Path, "", ResourceLoader.CacheMode.Replace);
+			
+			// Si el cast falla (InvalidCastException) o es nulo, creamos uno nuevo
+			if (loadedResource is DataResource data)
+			{
+				return data;
+			}
+		}
+		catch (System.Exception e)
+		{
+			GD.PrintErr($"Fallo crítico al cargar datos: {e.Message}. Creando nuevo archivo...");
+		}
+
+		// Si llegamos aquí, algo falló con el archivo viejo, así que devolvemos uno limpio
+		return new DataResource();
 	}
+
 
 
 

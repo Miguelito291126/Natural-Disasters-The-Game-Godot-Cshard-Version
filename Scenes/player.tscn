@@ -1,7 +1,7 @@
 [gd_scene format=4 uid="uid://b2g31vrdy6c1x"]
 
-[ext_resource type="Script" uid="uid://21pwx6opx3py" path="res://CShard_Scripts/player.cs" id="1_qqcod"]
-[ext_resource type="Script" uid="uid://ccpg60bqu221x" path="res://CShard_Scripts/camera_3d.cs" id="2_qqcod"]
+[ext_resource type="Script" uid="uid://21pwx6opx3py" path="res://CShard_Scripts/Player.cs" id="1_qqcod"]
+[ext_resource type="Script" uid="uid://ccpg60bqu221x" path="res://CShard_Scripts/Camera3d.cs" id="2_qqcod"]
 [ext_resource type="Texture2D" uid="uid://bevx5iyc2q82h" path="res://Sprites/kenney_particle_pack/smoke_01.png" id="3_kstye"]
 [ext_resource type="AudioStream" uid="uid://djwg2fx6tlsvk" path="res://Sounds/disasters/player/vomit.wav" id="4_13lgf"]
 [ext_resource type="Material" uid="uid://dm41re6d42qbq" path="res://Materials/player blue.tres" id="4_qqcod"]

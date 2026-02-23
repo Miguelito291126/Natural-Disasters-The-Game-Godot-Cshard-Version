@@ -1,6 +1,6 @@
 [gd_scene format=3 uid="uid://doi73cvnxims6"]
 
-[ext_resource type="Script" uid="uid://nhxy6cx6btq8" path="res://CShard_Scripts/explosion.cs" id="1_a801j"]
+[ext_resource type="Script" uid="uid://nhxy6cx6btq8" path="res://CShard_Scripts/Explosion.cs" id="1_a801j"]
 [ext_resource type="AudioStream" uid="uid://51sjjqi43ypi" path="res://Sounds/disasters/atmospheric/explosion_light9.mp3" id="3_i7oed"]
 
 [sub_resource type="SphereShape3D" id="SphereShape3D_up542"]

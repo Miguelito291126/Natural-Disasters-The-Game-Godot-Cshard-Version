@@ -1,6 +1,6 @@
 [gd_scene format=3 uid="uid://ddlqooa2yb6y4"]
 
-[ext_resource type="Script" uid="uid://cy6epvahl1dip" path="res://CShard_Scripts/breakable_hause.cs" id="1_gw74x"]
+[ext_resource type="Script" uid="uid://cy6epvahl1dip" path="res://CShard_Scripts/BreakableHause.cs" id="1_gw74x"]
 [ext_resource type="AudioStream" uid="uid://c4r72cwbqtbdx" path="res://Sounds/Door Open.mp3" id="2_51njh"]
 [ext_resource type="PackedScene" uid="uid://tnp2kd6nh30i" path="res://Models/Blend Format/hause.blend" id="2_f6ooy"]
 

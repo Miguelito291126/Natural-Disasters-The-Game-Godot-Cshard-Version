@@ -1,6 +1,6 @@
 [gd_scene format=3 uid="uid://w8budjn2m22a"]
 
-[ext_resource type="Script" uid="uid://6q5cv5o2jrri" path="res://CShard_Scripts/earthquake.cs" id="1_2v7mq"]
+[ext_resource type="Script" uid="uid://6q5cv5o2jrri" path="res://CShard_Scripts/Earthquake.cs" id="1_2v7mq"]
 [ext_resource type="AudioStream" uid="uid://cfaw4q0rp0hnu" path="res://Sounds/disasters/nature/earthquake.wav" id="2_2v7mq"]
 [ext_resource type="AudioStream" uid="uid://ma7g5g3l2kqr" path="res://Sounds/disasters/earthquake/earthquake_weak.wav" id="3_u5jqd"]
 [ext_resource type="AudioStream" uid="uid://bpdx6h6i6fbdh" path="res://Sounds/disasters/earthquake/earthquake_strong.wav" id="4_t4mnf"]

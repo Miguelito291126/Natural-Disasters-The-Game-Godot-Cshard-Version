@@ -23,7 +23,7 @@ public partial class LoadScene : Node
 			};
 
 	public static string LoadingScreenPath = "res://Scenes/loading_screen.tscn";
-	public PackedScene LoadingScreen = ResourceLoader.Load<PackedScene>(LoadingScreenPath);
+	public PackedScene LoadingScreenScene = ResourceLoader.Load<PackedScene>(LoadingScreenPath);
 	public PackedScene LoaderResource;
 	public string ScenePath;
 	public Array Progress = new Array();
@@ -39,13 +39,15 @@ public partial class LoadScene : Node
 			ScenePath = next_scene;
 		}
 
-		LoadingScreen loading_screen_intance = LoadingScreen.Instantiate<LoadingScreen>();
-		Globals.Instance.Main.AddChild(loading_screen_intance);
+		LoadingScreen loadingScreenInstance = LoadingScreenScene.Instantiate<LoadingScreen>();
+		Globals.Instance.Main.AddChild(loadingScreenInstance);
 
-		ProgressChanged += loading_screen_intance.UpdateProgressBar;
-		LoadDone += loading_screen_intance.FadeOutLoadingScreen;
+		// Suscribirse a los eventos de C#
+		this.ProgressChanged += loadingScreenInstance.UpdateProgressBar;
+		this.LoadDone += loadingScreenInstance.FadeOutLoadingScreen;
 
-		await ToSignal(loading_screen_intance, "safe_to_load");
+		// Usar el nombre de señal generado por Godot
+		await ToSignal(loadingScreenInstance, LoadingScreen.SignalName.SafeToLoad);
 
 		if(current_scene != null && IsInstanceValid(current_scene))
 		{
@@ -89,7 +91,7 @@ public partial class LoadScene : Node
 
 			case ResourceLoader.ThreadLoadStatus.InProgress:
 			{
-				EmitSignal("progress_changed", Progress[0]);
+				EmitSignal(SignalName.ProgressChanged, Progress[0]);
 				break; }
 			case ResourceLoader.ThreadLoadStatus.Loaded:
 			{
@@ -108,8 +110,8 @@ public partial class LoadScene : Node
 					}
 				}
 
-				EmitSignal("progress_changed", 1.0);
-				EmitSignal("load_done");
+				EmitSignal(SignalName.ProgressChanged, 1.0);
+				EmitSignal(SignalName.LoadDone);
 				SetProcess(false);
 				break; }
 		}

@@ -18,9 +18,11 @@ public partial class LoadingScreen : CanvasLayer
 	public async void FadeOutLoadingScreen()
 	{
 		Animationplayer.Play("fade_out");
-		await ToSignal(Animationplayer, "AnimationFinished");
+		// Cambia "AnimationFinished" por AnimationPlayer.SignalName.AnimationFinished
+		await ToSignal(Animationplayer, AnimationPlayer.SignalName.AnimationFinished);
 		this.QueueFree();
 	}
+
 
 	public override void _Ready()
 	{

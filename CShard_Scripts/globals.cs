@@ -962,12 +962,12 @@ public partial class Globals : Node
 
 			if(assigned_ok)
 			{
-				Rpc(MethodName.SyncAssignedCharacter, AssignedCharacter);
+				Rpc(nameof(SyncAssignedCharacter), AssignedCharacter);
 				SyncAssignedCharacter(AssignedCharacter);
-				Rpc(MethodName.SyncPlayerList);
-				RpcId(peer_id, MethodName.SyncDestrolledNodes, DestrolledNode);
+				Rpc(nameof(SyncPlayerList));
+				RpcId(peer_id, nameof(SyncDestrolledNodes), DestrolledNode);
 				// envia al cliente
-				RpcId(peer_id, MethodName.SetWeatherAndDisaster, CurrentWeatherAndDisasterInt);
+				RpcId(peer_id, nameof(SetWeatherAndDisaster), CurrentWeatherAndDisasterInt);
 			}
 			else
 			{
@@ -977,10 +977,10 @@ public partial class Globals : Node
 
 		else
 		{
-			Rpc(MethodName.SyncAssignedCharacter, AssignedCharacter);
+			Rpc(nameof(SyncAssignedCharacter), AssignedCharacter);
 			SyncAssignedCharacter(AssignedCharacter);
-			Rpc(MethodName.SyncPlayerList);
-			RpcId(peer_id, MethodName.SyncDestrolledNodes, DestrolledNode);
+			Rpc(nameof(SyncPlayerList));
+			RpcId(peer_id, nameof(SyncDestrolledNodes), DestrolledNode);
 			// broadcast
 			PrintRole("No se pudo aadir al jugador con el id: " + peer_id.ToString());
 		}
@@ -1011,9 +1011,9 @@ public partial class Globals : Node
 
 
 			
-			Rpc(MethodName.SyncAssignedCharacter);
+			Rpc(nameof(SyncAssignedCharacter));
 			SyncAssignedCharacter(AssignedCharacter);
-			Rpc(MethodName.SyncPlayerList);
+			Rpc(nameof(SyncPlayerList));
 		}
 
 
@@ -1023,9 +1023,9 @@ public partial class Globals : Node
 			{
 				AssignedCharacter.Remove((int)peer_id);
 			}
-			Rpc(MethodName.SyncAssignedCharacter, AssignedCharacter);
+			Rpc(nameof(SyncAssignedCharacter), AssignedCharacter);
 			SyncAssignedCharacter(AssignedCharacter);
-			Rpc(MethodName.SyncPlayerList);
+			Rpc(nameof(SyncPlayerList));
 			PrintRole("player no found: " + peer_id.ToString());
 		}
 	}
@@ -1036,7 +1036,7 @@ public partial class Globals : Node
 		if(Multiplayer.IsServer())
 		{
 			var random_weather_and_disaster = GD.RandRange(0, 13);
-			Rpc(MethodName.SetWeatherAndDisaster, random_weather_and_disaster);
+			Rpc(nameof(SetWeatherAndDisaster), random_weather_and_disaster);
 		}
 	}
 

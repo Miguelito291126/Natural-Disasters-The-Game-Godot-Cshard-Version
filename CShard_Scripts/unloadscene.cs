@@ -17,7 +17,7 @@ public partial class UnloadScene : Node
 	}
 
 	public static string UnloadingScreenPath = "res://Scenes/loading_screen.tscn";
-	public PackedScene UnloadingScreen = ResourceLoader.Load<PackedScene>(UnloadingScreenPath);
+	public PackedScene UnloadingScreenScene = ResourceLoader.Load<PackedScene>(UnloadingScreenPath);
 	public PackedScene UnloaderResource;
 	public Variant Scene;
 	public string ScenePath;
@@ -34,13 +34,13 @@ public partial class UnloadScene : Node
 			Scene = current_scene;
 		}
 
-		LoadingScreen unloading_screen_scene = UnloadingScreen.Instantiate<LoadingScreen>();
+		LoadingScreen unloading_screen_scene = UnloadingScreenScene.Instantiate<LoadingScreen>();
 		Globals.Instance.Main.AddChild(unloading_screen_scene);
 
 		this.ProgressChanged += unloading_screen_scene.UpdateProgressBar;
 		this.UnloadDone += unloading_screen_scene.FadeOutLoadingScreen;
 
-		await ToSignal(this, "unload_done");
+		await ToSignal(this, LoadingScreen.SignalName.SafeToLoad);
 
 		if(current_scene != null)
 		{
@@ -91,13 +91,13 @@ public partial class UnloadScene : Node
 				return ; 
 
 			case ResourceLoader.ThreadLoadStatus.InProgress:
-				EmitSignal("progress_changed", Progress[0]);
+				EmitSignal(SignalName.ProgressChanged, Progress[0]);
 				break; 
 			case ResourceLoader.ThreadLoadStatus.Loaded:
 			
 				Globals.Instance.PrintRole("Completed");
-				EmitSignal("progress_changed", 1.0);
-				EmitSignal("unload_done");
+				EmitSignal(SignalName.ProgressChanged, 1.0);
+				EmitSignal(SignalName.UnloadDone);
 				SetProcess(false);
 				break; 
 		}

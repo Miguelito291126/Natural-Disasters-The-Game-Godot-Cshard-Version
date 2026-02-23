@@ -1,6 +1,6 @@
 [gd_scene format=3 uid="uid://dn3bvjtj17h4k"]
 
-[ext_resource type="Script" uid="uid://c03ca4iiyavbw" path="res://CShard_Scripts/thunder.cs" id="1_g2avj"]
+[ext_resource type="Script" uid="uid://c03ca4iiyavbw" path="res://CShard_Scripts/Thunder.cs" id="1_g2avj"]
 [ext_resource type="AudioStream" uid="uid://wgheb2ui6v63" path="res://Sounds/disasters/nature/thunder1.wav" id="2_g2avj"]
 
 [sub_resource type="Curve" id="Curve_a801j"]

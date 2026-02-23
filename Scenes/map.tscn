@@ -1,9 +1,9 @@
 [gd_scene format=3 uid="uid://csivk4bmioako"]
 
-[ext_resource type="Script" uid="uid://b7ly3pq863rpl" path="res://CShard_Scripts/map.cs" id="1_6q3n4"]
+[ext_resource type="Script" uid="uid://b7ly3pq863rpl" path="res://CShard_Scripts/Map.cs" id="1_6q3n4"]
 [ext_resource type="Shader" uid="uid://4lxdfdreyjat" path="res://clouds.gdshader" id="2_sc6k1"]
 [ext_resource type="Texture2D" uid="uid://p56xwtihxq22" path="res://Sprites/dark-black-texture-with-beautiful-stars-vector.jpg" id="3_bukha"]
-[ext_resource type="Script" uid="uid://bbliiv05grls2" path="res://CShard_Scripts/map_environment.cs" id="4_4c2oa"]
+[ext_resource type="Script" uid="uid://bbliiv05grls2" path="res://CShard_Scripts/MapEnvironment.cs" id="4_4c2oa"]
 [ext_resource type="AudioStream" uid="uid://debjmlamr7n2y" path="res://Sounds/music/natural disasters the game song.wav" id="10_w1fny"]
 [ext_resource type="PackedScene" uid="uid://ddlqooa2yb6y4" path="res://Scenes/hause.tscn" id="11_8ni8s"]
 [ext_resource type="PackedScene" uid="uid://yrq2iuii7a14" path="res://Scenes/chat.tscn" id="14_x5dfk"]
