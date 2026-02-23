@@ -8,14 +8,14 @@ public partial class LoadingScreen : CanvasLayer
 	public delegate void SafeToLoadEventHandler();
 
 	public ProgressBar ProgressBar;
-	public Node Animationplayer;
+	public AnimationPlayer Animationplayer;
 
-	public void UpdateProgressBar(double new_value)
+	public void UpdateProgressBar(float new_value)
 	{
 		ProgressBar.SetValueNoSignal(new_value * 100);
 	}
 
-	public void FadeOutLoadingScreen()
+	public async void FadeOutLoadingScreen()
 	{
 		Animationplayer.Play("fade_out");
 		await ToSignal(Animationplayer, "AnimationFinished");
@@ -25,6 +25,6 @@ public partial class LoadingScreen : CanvasLayer
 	public override void _Ready()
 	{
 		ProgressBar = GetNode<ProgressBar>("Control/ProgressBar");
-		Animationplayer = GetNode("AnimationPlayer");
+		Animationplayer = GetNode<AnimationPlayer>("AnimationPlayer");
 	}
 }

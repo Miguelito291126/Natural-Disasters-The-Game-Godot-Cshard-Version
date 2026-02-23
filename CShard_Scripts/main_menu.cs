@@ -1,3 +1,5 @@
+using System.Collections.Generic;
+using System.Linq;
 using Godot;
 using Godot.Collections;
 
@@ -20,7 +22,7 @@ public partial class MainMenu : Control
 	public OptionButton AntiTropic;
 	public HSlider Volumen;
 	public HSlider VolumenMusic;
-	public Time time;
+	public HSlider Time;
 	public OptionButton Quality;
 	public AudioStreamPlayer Music;
 	public Label ErrorText;
@@ -30,42 +32,42 @@ public partial class MainMenu : Control
 
 	public bool MultiplayerMode = false;
 
-	public Dictionary ResolutionsDic = new() {
-			{"2400x1080 ", new Vector2i(2400, 1080)},
-			{"1920x1080", new Vector2i(1920, 1080)},
-			{"1600x900", new Vector2i(1600, 900)},
-			{"1440x1080", new Vector2i(1440, 1080)},
-			{"1440x900", new Vector2i(1440, 900)},
-			{"1366x768", new Vector2i(1366, 768)},
-			{"1360x768", new Vector2i(1360, 768)},
-			{"1280x1024", new Vector2i(1280, 1024)},
-			{"1280x962", new Vector2i(1280, 962)},
-			{"1280x960", new Vector2i(1280, 960)},
-			{"1280x800", new Vector2i(1280, 800)},
-			{"1280x768", new Vector2i(1280, 768)},
-			{"1280x720", new Vector2i(1280, 720)},
-			{"1176x664", new Vector2i(1176, 664)},
-			{"1152x648", new Vector2i(1152, 648)},
-			{"1024x768", new Vector2i(1024, 768)},
-			{"800x600", new Vector2i(800, 600)},
-			{"720x480", new Vector2i(720, 480)},
+	public Godot.Collections.Dictionary<string, Vector2I> ResolutionsDic = new Godot.Collections.Dictionary<string, Vector2I>() {
+			{"2400x1080 ", new Vector2I(2400, 1080)},
+			{"1920x1080", new Vector2I(1920, 1080)},
+			{"1600x900", new Vector2I(1600, 900)},
+			{"1440x1080", new Vector2I(1440, 1080)},
+			{"1440x900", new Vector2I(1440, 900)},
+			{"1366x768", new Vector2I(1366, 768)},
+			{"1360x768", new Vector2I(1360, 768)},
+			{"1280x1024", new Vector2I(1280, 1024)},
+			{"1280x962", new Vector2I(1280, 962)},
+			{"1280x960", new Vector2I(1280, 960)},
+			{"1280x800", new Vector2I(1280, 800)},
+			{"1280x768", new Vector2I(1280, 768)},
+			{"1280x720", new Vector2I(1280, 720)},
+			{"1176x664", new Vector2I(1176, 664)},
+			{"1152x648", new Vector2I(1152, 648)},
+			{"1024x768", new Vector2I(1024, 768)},
+			{"800x600", new Vector2I(800, 600)},
+			{"720x480", new Vector2I(720, 480)},
 			};
 
 	public void Addresolutions()
 	{
-		var current_resolution = Globals.GlobalsData.Resolution;
+		var current_resolution = Globals.Instance.GlobalsData.Resolution;
 		var index = 0;
 
-		foreach(Dictionary r in ResolutionsDic)
+		foreach(System.Collections.Generic.KeyValuePair<string, Vector2I> r in ResolutionsDic)
 		{
-			Resolutions.AddItem(r, index);
+			Resolutions.AddItem(r.Key, index);
 			index += 1;
 		}
 	}
 
 
 	// Called when the node enters the scene tree for the first time.
-	public override void _Ready()
+	public async override void _Ready()
 	{
 		MainMenuPanel = GetNode<Control>("Panel/Menu");
 		Tittle = GetNode<Label>("Panel/Menu/HBoxContainer/Title");
@@ -83,14 +85,14 @@ public partial class MainMenu : Control
 		AntiTropic = GetNode<OptionButton>("Panel/Settings/antitropic");
 		Volumen = GetNode<HSlider>("Panel/Settings/Volumen");
 		VolumenMusic = GetNode<HSlider>("Panel/Settings/Volumen Music");
-		Time = GetNode<Time>("Panel/Play/Time");
+		Time = GetNode<HSlider>("Panel/Play/Time");
 		Quality = GetNode<OptionButton>("Panel/Settings/Quality");
 		Music = GetNode<AudioStreamPlayer>("Music");
 		ErrorText = GetNode<Label>("Panel/Multiplayer/Label");
 		Resolutions = GetNode<OptionButton>("Panel/Settings/Resolutions");
 		Version = GetNode<Label>("Panel/Version");
 		Credits = GetNode<Label>("Panel/Credits");
-		Globals.MainMenu = this;
+		Globals.Instance.MainMenu = this;
 
 		MainMenuPanel.Show();
 		Tittle.Show();
@@ -99,47 +101,47 @@ public partial class MainMenu : Control
 		MultiplayerList.Hide();
 		PlayMenu.Hide();
 
-		Version.Text = "V" + Globals.Version;
-		Tittle.Text = Globals.Gamename;
-		Credits.Text = "by " + Globals.Credits;
+		Version.Text = "V" + Globals.Instance.Version;
+		Tittle.Text = (string)Globals.Instance.Gamename;
+		Credits.Text = "by " + Globals.Instance.Credits;
 
 		LoadGameScene();
-		Globals.SetUpLisener();
+		Globals.Instance.SetUpLisener();
 
-		if(OS.HasFeature("dedicated_server") || OS.GetCmdlineUserArgs() || OS.GetCmdlineUserArgs().Contains("server").Contains("s"))
+		if(OS.HasFeature("dedicated_server") || OS.GetCmdlineUserArgs() != null || OS.GetCmdlineUserArgs().Contains("server"))
 		{
-			Globals.PrintRole("Starting server...");
+			Globals.Instance.PrintRole("Starting server...");
 
 			var args = OS.GetCmdlineUserArgs();
-			foreach(int i in GD.Range(args.Count))
+			foreach(int i in GD.Range(args.Length))
 			{
-				Globals.PrintRole("args: " + args[i]);
+				Globals.Instance.PrintRole("args: " + args[i]);
 
 				if(args[i] == "--port")
 				{
-					if(i + 1 < args.Size())
+					if(i + 1 < args.Length)
 					{
-						Globals.Port = args[i + 1].ToInt();
-						Globals.LisenerPort = Globals.Port + 1;
-						Globals.BroadcasterPort = Globals.Port - 1;
+						Globals.Instance.Port = args[i + 1].ToInt();
+						Globals.Instance.LisenerPort = Globals.Instance.Port + 1;
+						Globals.Instance.BroadcasterPort = Globals.Instance.Port - 1;
 					}
 				}
 				else if(args[i] == "--gamemode")
 				{
-					if(i + 1 < args.Size())
+					if(i + 1 < args.Length)
 					{
-						Globals.Gamemode = args[i + 1];
+						Globals.Instance.Gamemode = args[i + 1];
 					}
 				}
 
 				//PANIC! <Globals . print_role ( port:  + str ( Globals . port ) )> unexpected at Token(type='TEXT', value='Globals', lineno=96, index=2923, end=2930)
 
-				Globals.PrintRole("ip: " + IP.ResolveHostname(Str(OS.GetEnvironment("COMPUTERNAME")), IP.Type.TypeIpv4));
-				Globals.PrintRole("Init dedicated server...");
+				Globals.Instance.PrintRole("ip: " + IP.ResolveHostname(OS.GetEnvironment("COMPUTERNAME"), IP.Type.Ipv4));
+				Globals.Instance.PrintRole("Init dedicated server...");
 
 				await ToSignal(GetTree().CreateTimer(2), "Timeout");
 
-				Globals.Hostwithport(Globals.Port);
+				Globals.Instance.PlayMultiplayerServer();
 			}
 		}
 	}
@@ -148,34 +150,34 @@ public partial class MainMenu : Control
 	{
 		Addresolutions();
 
-		IpText.Text = Globals.Ip;
-		PortText.Text = Str(Globals.Port);
+		IpText.Text = Globals.Instance.Ip;
+		PortText.Text = Globals.Instance.Port.ToString();
 
-		_OnAntialiasingItemSelected(Globals.GlobalsData.Antialiasing);
-		_OnAntitropicItemSelected(Globals.GlobalsData.Antitropic);
-		_OnVsycnToggled(Globals.GlobalsData.Vsync);
-		_OnVolumenValueChanged(Globals.GlobalsData.Volumen);
-		_OnVolumenMusicValueChanged(Globals.GlobalsData.VolumenMusic);
-		_OnResolutionsItemSelected(Globals.GlobalsData.Resolution);
-		_OnFullscreenToggled(Globals.GlobalsData.Fullscreen);
-		_OnFpsToggled(Globals.GlobalsData.FPS);
-		_OnUsernameTextChanged(Globals.Username);
-		_OnHSlider2ValueChanged(Globals.GlobalsData.TimerDisasters);
-		_OnOptionButtonItemSelected(Globals.GlobalsData.Quality);
+		_OnAntialiasingItemSelected(Globals.Instance.GlobalsData.Antialiasing);
+		_OnAntitropicItemSelected(Globals.Instance.GlobalsData.Antitropic);
+		_OnVsycnToggled(Globals.Instance.GlobalsData.Vsync);
+		_OnVolumenValueChanged(Globals.Instance.GlobalsData.Volumen);
+		_OnVolumenMusicValueChanged(Globals.Instance.GlobalsData.VolumenMusic);
+		_OnResolutionsItemSelected(Globals.Instance.GlobalsData.Resolution);
+		_OnFullscreenToggled(Globals.Instance.GlobalsData.Fullscreen);
+		_OnFpsToggled(Globals.Instance.GlobalsData.FPS);
+		_OnUsernameTextChanged(Globals.Instance.Username);
+		_OnHSlider2ValueChanged(Globals.Instance.GlobalsData.TimerDisasters);
+		_OnOptionButtonItemSelected(Globals.Instance.GlobalsData.Quality);
 
-		Fullscreen.ButtonPressed = Globals.GlobalsData.Fullscreen;
-		Fps.ButtonPressed = Globals.GlobalsData.FPS;
-		Vsync.ButtonPressed = Globals.GlobalsData.Vsync;
-		Volumen.Value = Globals.GlobalsData.Volumen;
-		VolumenMusic.Value = Globals.GlobalsData.VolumenMusic;
-		Time.Value = Globals.GlobalsData.TimerDisasters;
-		Quality.Selected = Globals.GlobalsData.Quality;
-		AntiAliasing.Selected = Globals.GlobalsData.Antialiasing;
-		Resolutions.Selected = Globals.GlobalsData.Resolution;
-		AntiTropic.Selected = Globals.GlobalsData.Antitropic;
+		Fullscreen.ButtonPressed = Globals.Instance.GlobalsData.Fullscreen;
+		Fps.ButtonPressed = Globals.Instance.GlobalsData.FPS;
+		Vsync.ButtonPressed = Globals.Instance.GlobalsData.Vsync;
+		Volumen.Value = Globals.Instance.GlobalsData.Volumen;
+		VolumenMusic.Value = Globals.Instance.GlobalsData.VolumenMusic;
+		Time.Value = Globals.Instance.GlobalsData.TimerDisasters;
+		Quality.Selected = Globals.Instance.GlobalsData.Quality;
+		AntiAliasing.Selected = Globals.Instance.GlobalsData.Antialiasing;
+		Resolutions.Selected = Globals.Instance.GlobalsData.Resolution;
+		AntiTropic.Selected = Globals.Instance.GlobalsData.Antitropic;
 	}
 		
-	public override void _Process(double _delta)
+	public async override void _Process(double _delta)
 	{
 		if(this.Visible)
 		{
@@ -190,24 +192,24 @@ public partial class MainMenu : Control
 
 	protected void _OnIpTextChanged(string new_text)
 	{
-		Globals.Ip = new_text;
+		Globals.Instance.Ip = new_text;
 	}
 
 
 	protected void _OnPortTextChanged(string new_text)
 	{
-		Globals.Port = Int(new_text);
-		Globals.LisenerPort = Int(new_text) + 1;
-		Globals.BroadcasterPort = Int(new_text) - 1;
-		Globals.SetUpLisener();
+		Globals.Instance.Port = new_text.ToInt();
+		Globals.Instance.LisenerPort = Globals.Instance.Port + 1;
+		Globals.Instance.BroadcasterPort = Globals.Instance.Port - 1;
+		Globals.Instance.SetUpLisener();
 	}
 
 
-	protected void _OnJoinPressed()
+	protected async void _OnJoinPressed()
 	{
-		if(Globals.Username.Length() < 10 && Globals.Username.Length() >= 1)
+		if(Globals.Instance.Username.Count() < 10 && Globals.Instance.Username.Count() >= 1)
 		{
-			Globals.PlayMultiplayerClient();
+			Globals.Instance.PlayMultiplayerClient();
 		}
 		else
 		{
@@ -240,27 +242,27 @@ public partial class MainMenu : Control
 
 	protected void _OnSandboxPressed()
 	{
-		Globals.Gamemode = "sandbox";
+		Globals.Instance.Gamemode = "sandbox";
 		if(MultiplayerMode)
 		{
-			Globals.PlayMultiplayerServer();
+			Globals.Instance.PlayMultiplayerServer();
 		}
 		else
 		{
-			LoadScene.LoadScene(this, "map");
+			LoadScene.Instance.loadscene(this, "map");
 		}
 	}
 
 	protected void _OnSurvivalPressed()
 	{
-		Globals.Gamemode = "survival";
+		Globals.Instance.Gamemode = "survival";
 		if(MultiplayerMode)
 		{
-			Globals.PlayMultiplayerServer();
+			Globals.Instance.PlayMultiplayerServer();
 		}
 		else
 		{
-			LoadScene.LoadScene(this, "map");
+			LoadScene.Instance.loadscene(this, "map");
 		}
 	}
 
@@ -283,25 +285,25 @@ public partial class MainMenu : Control
 
 	protected void _OnFpsToggled(bool toggled_on)
 	{
-		Globals.GlobalsData.FPS = toggled_on;
-		Globals.GlobalsData.SaveFile();
+		Globals.Instance.GlobalsData.FPS = toggled_on;
+		Globals.Instance.GlobalsData.SaveFile();
 	}
 
 
 	protected void _OnVsycnToggled(bool toggled_on)
 	{
-		Globals.GlobalsData.Vsync = toggled_on;
+		Globals.Instance.GlobalsData.Vsync = toggled_on;
 
 		if(toggled_on)
 		{
-			DisplayServer.WindowSetVsyncMode(DisplayServer.VSyncMode.VsyncEnabled);
+			DisplayServer.WindowSetVsyncMode(DisplayServer.VSyncMode.Enabled);
 		}
 		else
 		{
-			DisplayServer.WindowSetVsyncMode(DisplayServer.VSyncMode.VsyncDisabled);
+			DisplayServer.WindowSetVsyncMode(DisplayServer.VSyncMode.Disabled);
 		}
 
-		Globals.GlobalsData.SaveFile();
+		Globals.Instance.GlobalsData.SaveFile();
 	}
 
 
@@ -317,32 +319,32 @@ public partial class MainMenu : Control
 
 	protected void _OnUsernameTextChanged(string new_text)
 	{
-		Globals.Username = new_text;
-		Globals.GlobalsData.SaveFile();
+		Globals.Instance.Username = new_text;
+		Globals.Instance.GlobalsData.SaveFile();
 	}
 
 
-	protected void _OnHSlider2ValueChanged(Variant value)
+	protected void _OnHSlider2ValueChanged(int value)
 	{
-		Globals.GlobalsData.TimerDisasters = value;
-		Globals.GlobalsData.SaveFile();
+		Globals.Instance.GlobalsData.TimerDisasters = value;
+		Globals.Instance.GlobalsData.SaveFile();
 	}
 
 
-	protected void _OnVolumenValueChanged(double value)
+	protected void _OnVolumenValueChanged(int value)
 	{
-		Globals.GlobalsData.Volumen = value;
+		Globals.Instance.GlobalsData.Volumen = value;
 		AudioServer.SetBusVolumeDb(AudioServer.GetBusIndex("Master"), Mathf.LinearToDb(value));
-		Globals.GlobalsData.SaveFile();
+		Globals.Instance.GlobalsData.SaveFile();
 	}
 
 	protected void _OnResolutionsItemSelected(int index)
 	{
-		Globals.GlobalsData.Resolution = index;
-		var size = ResolutionsDic.Get(Resolutions.GetItemText(index));
-		DisplayServer.WindowSetSize(Size);
-		GetViewport().SetSize(Size);
-		Globals.GlobalsData.SaveFile();
+		Globals.Instance.GlobalsData.Resolution = index;
+		var size = ResolutionsDic.GetValueOrDefault(Resolutions.GetItemText(index));
+		DisplayServer.WindowSetSize(size);
+		GetTree().Root.Size = size;
+		Globals.Instance.GlobalsData.SaveFile();
 	}
 
 
@@ -350,21 +352,21 @@ public partial class MainMenu : Control
 	{
 		if(toggled_on == true)
 		{
-			DisplayServer.WindowSetMode(DisplayServer.WindowMode.WindowModeFullscreen);
+			DisplayServer.WindowSetMode(DisplayServer.WindowMode.Fullscreen);
 		}
 		else
 		{
-			DisplayServer.WindowSetMode(DisplayServer.WindowMode.WindowModeWindowed);
+			DisplayServer.WindowSetMode(DisplayServer.WindowMode.Windowed);
 		}
-		Globals.GlobalsData.Fullscreen = toggled_on;
-		Globals.GlobalsData.SaveFile();
+		Globals.Instance.GlobalsData.Fullscreen = toggled_on;
+		Globals.Instance.GlobalsData.SaveFile();
 	}
 
 
 	protected void _OnSingleplayerPressed()
 	{
 		MultiplayerMode = false;
-		MainMenu.Hide();
+		MainMenuPanel.Hide();
 		Multiplayer.Hide();
 		Settings.Hide();
 		MultiplayerList.Hide();
@@ -372,24 +374,24 @@ public partial class MainMenu : Control
 	}
 
 
-	protected void _OnVolumenMusicValueChanged(Variant value)
+	protected void _OnVolumenMusicValueChanged(int value)
 	{
-		Globals.GlobalsData.VolumenMusic = value;
+		Globals.Instance.GlobalsData.VolumenMusic = value;
 		AudioServer.SetBusVolumeDb(AudioServer.GetBusIndex("Music"), Mathf.LinearToDb(value));
-		Globals.GlobalsData.SaveFile();
+		Globals.Instance.GlobalsData.SaveFile();
 	}
 
 
 	protected void _OnOptionButtonItemSelected(int index)
 	{
-		Globals.GlobalsData.Quality = index;
-		Globals.GlobalsData.SaveFile();
+		Globals.Instance.GlobalsData.Quality = index;
+		Globals.Instance.GlobalsData.SaveFile();
 	}
 
 
 	protected void _OnMultiplayerListPressed()
 	{
-		MainMenu.Hide();
+		MainMenuPanel.Hide();
 		Multiplayer.Hide();
 		Settings.Hide();
 		MultiplayerList.Show();
@@ -399,7 +401,7 @@ public partial class MainMenu : Control
 
 	protected void _OnBackMultiplayerPressed()
 	{
-		MainMenu.Hide();
+		MainMenuPanel.Show();
 		Multiplayer.Show();
 		Settings.Hide();
 		MultiplayerList.Hide();
@@ -419,41 +421,41 @@ public partial class MainMenu : Control
 
 	protected void _OnAntialiasingItemSelected(int index)
 	{
-		Globals.GlobalsData.Antialiasing = index;
+		Globals.Instance.GlobalsData.Antialiasing = index;
 
 		var viewport = GetViewport();
 
 		switch(index)
 		{
 			case 0:
-			{viewport.Msaa3d = Viewport.Msaa.MsaaDisabled;
+			{viewport.Msaa3D = Viewport.Msaa.Disabled;
 				break; }
 			case 1:
-			{viewport.Msaa3d = Viewport.Msaa.Msaa2x;
+			{viewport.Msaa3D = Viewport.Msaa.Msaa2X;
 				break; }
 			case 2:
-			{viewport.Msaa3d = Viewport.Msaa.Msaa4x;
+			{viewport.Msaa3D = Viewport.Msaa.Msaa4X;
 				break; }
 			case 3:
-			{viewport.Msaa3d = Viewport.Msaa.Msaa8x;
+			{viewport.Msaa3D = Viewport.Msaa.Msaa8X;
 				break; }
 		}
 
-		Globals.GlobalsData.SaveFile();
+		Globals.Instance.GlobalsData.SaveFile();
 	}
 
 
 	protected void _OnAntitropicItemSelected(int index)
 	{
-		Globals.GlobalsData.Antitropic = index;
+		Globals.Instance.GlobalsData.Antitropic = index;
 
 		var levels = new Godot.Collections.Array{1, 2, 4, 8, 16, };
 
-		if(index >= 0 && index < levels.Size())
+		if(index >= 0 && index < levels.Count())
 		{
 			ProjectSettings.SetSetting("rendering/textures/default_filters/anisotropic_filtering_level", levels[index]);
 		}
 
-		Globals.GlobalsData.SaveFile();
+		Globals.Instance.GlobalsData.SaveFile();
 	}
 }

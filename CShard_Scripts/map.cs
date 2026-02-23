@@ -1,15 +1,19 @@
+using System.Linq;
 using Godot;
+using Godot.Collections;
+
 [GlobalClass]
 public partial class Map : Node3D
 {
-	public Node Worldenvironment;
+	public WorldEnvironment Worldenvironment;
 	[Export] public PackedScene SnowDecalScene;
 	[Export] public PackedScene SandDecalScene;
+	
 
 
 	public string CurrentDisaster = "";
-	public Godot.Collections.Array ActiveDisasterNodes = new();
-	public Godot.Collections.Array ActiveDecals = new();
+	public Array<Node3D> ActiveDisasterNodes = new Array<Node3D>();
+	public Array<Node3D> ActiveDecals = new Array<Node3D>();
 	public bool IsSpawningLightning = false;
 
 
@@ -17,53 +21,54 @@ public partial class Map : Node3D
 	{
 		if(Multiplayer.IsServer())
 		{
-			Globals.SetWeatherAndDisaster.Rpc("Original");
-			Globals.Timer.Stop();
-			Globals.Started = false;
+			Globals.Instance.SetWeatherAndDisaster("Original");
+			Globals.Instance.Timer.Stop();
+			Globals.Instance.Started = false;
 		}
 	}
 
 	public override void _Ready()
 	{
-		Worldenvironment = GetNode("WorldEnvironment");
-		Globals.Map = this;
-
-		if(!Globals.CurrentWeatherAndDisasterChanged.IsConnected(_on_disaster_changed))
+		Worldenvironment = GetNode<WorldEnvironment>("WorldEnvironment");
+		Globals.Instance.Map = this;
+		
+		if (!Globals.Instance.IsConnected(nameof(Globals.CurrentWeatherAndDisasterChanged), Callable.From((System.Action<string>)_OnDisasterChanged)))
 		{
-			Globals.CurrentWeatherAndDisasterChanged.Connect(_on_disaster_changed);
+			Globals.Instance.CurrentWeatherAndDisasterChanged += _OnDisasterChanged;
 		}
+
 
 
 		if(Multiplayer.IsServer())
 		{
-			Globals.SetWeatherAndDisaster.Rpc("Original");
+			Rpc(Globals.MethodName.SetWeatherAndDisaster, "Original");
 
-			if(Globals.Gamemode == "survival")
+			if(Globals.Instance.Gamemode == "survival")
 			{
 				if(!OS.HasFeature("dedicated_server"))
 				{
-					Globals.MultiplayerPlayerSpawner();
+					Globals.Instance.MultiplayerPlayerSpawner();
 				}
 
-				foreach(PackedInt32array i in Multiplayer.GetPeers())
+				foreach(int i in Multiplayer.GetPeers())
 				{
-					Globals.MultiplayerPlayerSpawner(i);
+					Globals.Instance.MultiplayerPlayerSpawner(i);
 				}
 
-				Globals.Timer.WaitTime = Globals.GlobalsData.TimerDisasters;
-				Globals.Timer.Start();
+				Globals.Instance.Timer.WaitTime = Globals.Instance.GlobalsData.TimerDisasters;
+				Globals.Instance.Timer.Start();
 			}
 
 			else
 			{
 				if(!OS.HasFeature("dedicated_server"))
 				{
-					Globals.MultiplayerPlayerSpawner();
+					Globals.Instance.MultiplayerPlayerSpawner();
 				}
 
-				foreach(PackedInt32array i in Multiplayer.GetPeers())
+				foreach(int i in Multiplayer.GetPeers())
 				{
-					Globals.MultiplayerPlayerSpawner(i);
+					Globals.Instance.MultiplayerPlayerSpawner(i);
 				}
 			}
 		}
@@ -73,9 +78,9 @@ public partial class Map : Node3D
 	// Llama a la función wind para cada objeto en la escena
 	public override void _PhysicsProcess(double _delta)
 	{
-		foreach(Node node in GetChildren())
+		foreach(Node3D node in GetChildren())
 		{
-			Globals.Wind(node);
+			Globals.Instance.Wind(node);
 		}
 	}
 
@@ -84,25 +89,25 @@ public partial class Map : Node3D
 	{
 		if(Multiplayer.IsServer())
 		{
-			if(OS.HasFeature("dedicated_server") || OS.GetCmdlineUserArgs() || OS.GetCmdlineUserArgs().Contains("server").Contains("s"))
+			if(OS.HasFeature("dedicated_server") || OS.GetCmdlineUserArgs() != null || OS.GetCmdlineUserArgs().Contains("server"))
 			{
-				Globals.Started = true;
+				Globals.Instance.Started = true;
 			}
 			else
 			{
 				if(Multiplayer.MultiplayerPeer == null || Multiplayer.MultiplayerPeer is OfflineMultiplayerPeer)
 				{
-					Globals.Started = true;
+					Globals.Instance.Started = true;
 					return;
 				}
 
-				if(Globals.PlayersConected.Size() > 1)
+				if(Globals.Instance.PlayersConected.Count > 1)
 				{
-					Globals.Started = true;
+					Globals.Instance.Started = true;
 				}
 				else
 				{
-					Globals.Started = false;
+					Globals.Instance.Started = false;
 				}
 			}
 		}
@@ -110,13 +115,13 @@ public partial class Map : Node3D
 
 	protected void _StartSunOriginal()
 		{
-			Globals.TemperatureTarget = Globals.TemperatureOriginal;
-			Globals.HumidityTarget = Globals.HumidityOriginal;
-			Globals.BradiationTarget = Globals.BradiationOriginal;
-			Globals.OxygenTarget = Globals.OxygenOriginal;
-			Globals.PressureTarget = Globals.PressureOriginal;
-			Globals.WindDirectionTarget = Globals.WindDirectionOriginal;
-			Globals.WindSpeedTarget = Globals.WindSpeedOriginal;
+			Globals.Instance.TemperatureTarget = Globals.Instance.TemperatureOriginal;
+			Globals.Instance.HumidityTarget = Globals.Instance.HumidityOriginal;
+			Globals.Instance.BradiationTarget = Globals.Instance.BradiationOriginal;
+			Globals.Instance.OxygenTarget = Globals.Instance.OxygenOriginal;
+			Globals.Instance.PressureTarget = Globals.Instance.PressureOriginal;
+			Globals.Instance.WindDirectionTarget = Globals.Instance.WindDirectionOriginal;
+			Globals.Instance.WindSpeedTarget = Globals.Instance.WindSpeedOriginal;
 
 			_UpdateEnvironment();
 		}
@@ -124,18 +129,18 @@ public partial class Map : Node3D
 
 		protected void _StartTsunami()
 		{
-			var tsunami = Globals.TsunamiScene.Instantiate();
+			Tsunami tsunami = Globals.Instance.TsunamiScene.Instantiate<Tsunami>();
 			tsunami.Position = new Vector3(0, 0, 0);
 			AddChild(tsunami, true);
-ActiveDisasterNodes.Add(tsunami);
+			ActiveDisasterNodes.Add(tsunami);
 
-			Globals.TemperatureTarget = GD.RandRange(20, 31);
-			Globals.HumidityTarget = GD.RandRange(0, 20);
-			Globals.BradiationTarget = 0;
-			Globals.OxygenTarget = 100;
-			Globals.PressureTarget = GD.RandRange(10000, 10020);
-			Globals.WindDirectionTarget = new Vector3(GD.RandRange( - 1, 1), 0, GD.RandRange( - 1, 1));
-			Globals.WindSpeedTarget = GD.RandRange(0, 10);
+			Globals.Instance.TemperatureTarget = GD.RandRange(20, 31);
+			Globals.Instance.HumidityTarget = GD.RandRange(0, 20);
+			Globals.Instance.BradiationTarget = 0;
+			Globals.Instance.OxygenTarget = 100;
+			Globals.Instance.PressureTarget = GD.RandRange(10000, 10020);
+			Globals.Instance.WindDirectionTarget = new Vector3(GD.RandRange( - 1, 1), 0, GD.RandRange( - 1, 1));
+			Globals.Instance.WindSpeedTarget = GD.RandRange(0, 10);
 
 			_UpdateEnvironment();
 		}
@@ -144,13 +149,13 @@ ActiveDisasterNodes.Add(tsunami);
 		protected void _StartThunderstorm()
 		{
 
-			Globals.TemperatureTarget = GD.RandRange(5, 15);
-			Globals.HumidityTarget = GD.RandRange(30, 40);
-			Globals.BradiationTarget = 0;
-			Globals.OxygenTarget = 100;
-			Globals.PressureTarget = GD.RandRange(8000, 9000);
-			Globals.WindDirectionTarget = new Vector3(GD.RandRange( - 1, 1), 0, GD.RandRange( - 1, 1));
-			Globals.WindSpeedTarget = GD.RandRange(0, 30);
+			Globals.Instance.TemperatureTarget = GD.RandRange(5, 15);
+			Globals.Instance.HumidityTarget = GD.RandRange(30, 40);
+			Globals.Instance.BradiationTarget = 0;
+			Globals.Instance.OxygenTarget = 100;
+			Globals.Instance.PressureTarget = GD.RandRange(8000, 9000);
+			Globals.Instance.WindDirectionTarget = new Vector3(GD.RandRange( - 1, 1), 0, GD.RandRange( - 1, 1));
+			Globals.Instance.WindSpeedTarget = GD.RandRange(0, 30);
 
 			_UpdateEnvironment();
 			_SpawnLightningTimer();
@@ -159,13 +164,13 @@ ActiveDisasterNodes.Add(tsunami);
 
 		protected void _StartMeteorShower()
 		{
-			Globals.TemperatureTarget = GD.RandRange(20, 31);
-			Globals.HumidityTarget = GD.RandRange(0, 20);
-			Globals.PressureTarget = GD.RandRange(10000, 10020);
-			Globals.BradiationTarget = 0;
-			Globals.OxygenTarget = 100;
-			Globals.WindDirectionTarget = new Vector3(GD.RandRange( - 1, 1), 0, GD.RandRange( - 1, 1));
-			Globals.WindSpeedTarget = GD.RandRange(0, 10);
+			Globals.Instance.TemperatureTarget = GD.RandRange(20, 31);
+			Globals.Instance.HumidityTarget = GD.RandRange(0, 20);
+			Globals.Instance.PressureTarget = GD.RandRange(10000, 10020);
+			Globals.Instance.BradiationTarget = 0;
+			Globals.Instance.OxygenTarget = 100;
+			Globals.Instance.WindDirectionTarget = new Vector3(GD.RandRange( - 1, 1), 0, GD.RandRange( - 1, 1));
+			Globals.Instance.WindSpeedTarget = GD.RandRange(0, 10);
 
 			_SpawnMeteorShowerTimer();
 			_UpdateEnvironment();
@@ -173,13 +178,13 @@ ActiveDisasterNodes.Add(tsunami);
 
 		protected void _StartBlizzard()
 		{
-			Globals.TemperatureTarget = GD.RandRange( - 20,  - 35);
-			Globals.HumidityTarget = GD.RandRange(20, 30);
-			Globals.BradiationTarget = 0;
-			Globals.OxygenTarget = 100;
-			Globals.PressureTarget = GD.RandRange(8000, 9020);
-			Globals.WindDirectionTarget = new Vector3(GD.RandRange( - 1, 1), 0, GD.RandRange( - 1, 1));
-			Globals.WindSpeedTarget = GD.RandRange(40, 50);
+			Globals.Instance.TemperatureTarget = GD.RandRange( - 20,  - 35);
+			Globals.Instance.HumidityTarget = GD.RandRange(20, 30);
+			Globals.Instance.BradiationTarget = 0;
+			Globals.Instance.OxygenTarget = 100;
+			Globals.Instance.PressureTarget = GD.RandRange(8000, 9020);
+			Globals.Instance.WindDirectionTarget = new Vector3(GD.RandRange( - 1, 1), 0, GD.RandRange( - 1, 1));
+			Globals.Instance.WindSpeedTarget = GD.RandRange(40, 50);
 
 
 			_UpdateEnvironment();
@@ -188,36 +193,36 @@ ActiveDisasterNodes.Add(tsunami);
 
 		protected void _StartSandstorm()
 		{
-			Globals.TemperatureTarget = GD.RandRange(30, 35);
-			Globals.HumidityTarget = GD.RandRange(0, 5);
-			Globals.BradiationTarget = 0;
-			Globals.OxygenTarget = 100;
-			Globals.PressureTarget = GD.RandRange(10000, 10020);
-			Globals.WindDirectionTarget = new Vector3(GD.RandRange( - 1, 1), 0, GD.RandRange( - 1, 1));
-			Globals.WindSpeedTarget = GD.RandRange(30, 50);
+			Globals.Instance.TemperatureTarget = GD.RandRange(30, 35);
+			Globals.Instance.HumidityTarget = GD.RandRange(0, 5);
+			Globals.Instance.BradiationTarget = 0;
+			Globals.Instance.OxygenTarget = 100;
+			Globals.Instance.PressureTarget = GD.RandRange(10000, 10020);
+			Globals.Instance.WindDirectionTarget = new Vector3(GD.RandRange( - 1, 1), 0, GD.RandRange( - 1, 1));
+			Globals.Instance.WindSpeedTarget = GD.RandRange(30, 50);
 
 			_UpdateEnvironment();
 		}
 
 		protected void _StartVolcano()
 		{
-			Globals.TemperatureTarget = GD.RandRange(20, 31);
-			Globals.HumidityTarget = GD.RandRange(0, 20);
-			Globals.BradiationTarget = 0;
-			Globals.OxygenTarget = 100;
-			Globals.PressureTarget = GD.RandRange(10000, 10020);
-			Globals.WindDirectionTarget = new Vector3(GD.RandRange( - 1, 1), 0, GD.RandRange( - 1, 1));
-			Globals.WindSpeedTarget = GD.RandRange(0, 10);
+			Globals.Instance.TemperatureTarget = GD.RandRange(20, 31);
+			Globals.Instance.HumidityTarget = GD.RandRange(0, 20);
+			Globals.Instance.BradiationTarget = 0;
+			Globals.Instance.OxygenTarget = 100;
+			Globals.Instance.PressureTarget = GD.RandRange(10000, 10020);
+			Globals.Instance.WindDirectionTarget = new Vector3(GD.RandRange( - 1, 1), 0, GD.RandRange( - 1, 1));
+			Globals.Instance.WindSpeedTarget = GD.RandRange(0, 10);
 
 			var rand_pos = new Vector3(GD.RandRange(0, 4097), 1000, GD.RandRange(0, 4097));
-			var space_state = GetWorld3d().DirectSpaceState;
+			var space_state = GetWorld3D().DirectSpaceState;
 			var ray = PhysicsRayQueryParameters3D.Create(rand_pos, rand_pos - new Vector3(0, 10000, 0));
 			var result = space_state.IntersectRay(ray);
 
-			var volcano = Globals.VolcanoScene.Instantiate();
+			Volcano volcano = Globals.Instance.VolcanoScene.Instantiate<Volcano>();
 			if(result.ContainsKey("position"))
 			{
-				volcano.Position = result.Position;
+				volcano.Position = (Vector3)result["position"];
 			}
 			else
 			{
@@ -234,16 +239,16 @@ ActiveDisasterNodes.Add(tsunami);
 		protected void _StartTornado()
 		{
 
-			var rand_pos = new Vector3(GD.RandRange(0, 4097), 1000, GD.RandRange(0, 4097));
-			var space_state = GetWorld3d().DirectSpaceState;
-			var ray = PhysicsRayQueryParameters3D.Create(rand_pos, rand_pos - new Vector3(0, 10000, 0));
-			var result = space_state.IntersectRay(ray);
+			Vector3 rand_pos = new Vector3(GD.RandRange(0, 4097), 1000, GD.RandRange(0, 4097));
+			PhysicsDirectSpaceState3D space_state = GetWorld3D().DirectSpaceState;
+			PhysicsRayQueryParameters3D ray = PhysicsRayQueryParameters3D.Create(rand_pos, rand_pos - new Vector3(0, 10000, 0));
+			Dictionary result = space_state.IntersectRay(ray);
 
 
-			var tornado = Globals.TornadoScene.Instantiate();
+			Tornado tornado = Globals.Instance.TornadoScene.Instantiate<Tornado>();
 			if(result.ContainsKey("position"))
 			{
-				tornado.Position = result.Position;
+				tornado.Position = (Vector3)result["position"];
 			}
 			else
 			{
@@ -252,13 +257,13 @@ ActiveDisasterNodes.Add(tsunami);
 			AddChild(tornado, true);
 			ActiveDisasterNodes.Append(tornado);
 
-			Globals.TemperatureTarget = GD.RandRange(5, 15);
-			Globals.HumidityTarget = GD.RandRange(30, 40);
-			Globals.BradiationTarget = 0;
-			Globals.OxygenTarget = 100;
-			Globals.PressureTarget = GD.RandRange(8000, 9000);
-			Globals.WindDirectionTarget = new Vector3(GD.RandRange( - 1, 1), 0, GD.RandRange( - 1, 1));
-			Globals.WindSpeedTarget = GD.RandRange(0, 30);
+			Globals.Instance.TemperatureTarget = GD.RandRange(5, 15);
+			Globals.Instance.HumidityTarget = GD.RandRange(30, 40);
+			Globals.Instance.BradiationTarget = 0;
+			Globals.Instance.OxygenTarget = 100;
+			Globals.Instance.PressureTarget = GD.RandRange(8000, 9000);
+			Globals.Instance.WindDirectionTarget = new Vector3(GD.RandRange( - 1, 1), 0, GD.RandRange( - 1, 1));
+			Globals.Instance.WindSpeedTarget = GD.RandRange(0, 30);
 
 			_UpdateEnvironment();
 			_SpawnLightningTimer();
@@ -267,28 +272,28 @@ ActiveDisasterNodes.Add(tsunami);
 
 		protected void _StartAcidRain()
 		{
-			Globals.TemperatureTarget = GD.RandRange(20, 31);
-			Globals.HumidityTarget = GD.RandRange(0, 20);
-			Globals.BradiationTarget = 100;
-			Globals.OxygenTarget = 100;
-			Globals.PressureTarget = GD.RandRange(10000, 10020);
-			Globals.WindDirectionTarget = new Vector3(GD.RandRange( - 1, 1), 0, GD.RandRange( - 1, 1));
-			Globals.WindSpeedTarget = GD.RandRange(0, 10);
+			Globals.Instance.TemperatureTarget = GD.RandRange(20, 31);
+			Globals.Instance.HumidityTarget = GD.RandRange(0, 20);
+			Globals.Instance.BradiationTarget = 100;
+			Globals.Instance.OxygenTarget = 100;
+			Globals.Instance.PressureTarget = GD.RandRange(10000, 10020);
+			Globals.Instance.WindDirectionTarget = new Vector3(GD.RandRange( - 1, 1), 0, GD.RandRange( - 1, 1));
+			Globals.Instance.WindSpeedTarget = GD.RandRange(0, 10);
 
 			_UpdateEnvironment();
 		}
 
 		protected void _StartEarthquake()
 		{
-			Globals.TemperatureTarget = GD.RandRange(20, 31);
-			Globals.HumidityTarget = GD.RandRange(0, 20);
-			Globals.BradiationTarget = 0;
-			Globals.OxygenTarget = 100;
-			Globals.PressureTarget = GD.RandRange(10000, 10020);
-			Globals.WindDirectionTarget = new Vector3(GD.RandRange( - 1, 1), 0, GD.RandRange( - 1, 1));
-			Globals.WindSpeedTarget = GD.RandRange(0, 10);
+			Globals.Instance.TemperatureTarget = GD.RandRange(20, 31);
+			Globals.Instance.HumidityTarget = GD.RandRange(0, 20);
+			Globals.Instance.BradiationTarget = 0;
+			Globals.Instance.OxygenTarget = 100;
+			Globals.Instance.PressureTarget = GD.RandRange(10000, 10020);
+			Globals.Instance.WindDirectionTarget = new Vector3(GD.RandRange( - 1, 1), 0, GD.RandRange( - 1, 1));
+			Globals.Instance.WindSpeedTarget = GD.RandRange(0, 10);
 
-			var earquake = Globals.EarthquakeScene.Instantiate();
+			var earquake = Globals.Instance.EarthquakeScene.Instantiate();
 			AddChild(earquake, true);
 			ActiveDisasterNodes.Append(earquake);
 
@@ -298,13 +303,13 @@ ActiveDisasterNodes.Add(tsunami);
 
 		protected void _StartSun()
 		{
-			Globals.TemperatureTarget = GD.RandRange(20, 31);
-			Globals.HumidityTarget = GD.RandRange(0, 20);
-			Globals.BradiationTarget = 0;
-			Globals.OxygenTarget = 100;
-			Globals.PressureTarget = GD.RandRange(10000, 10020);
-			Globals.WindDirectionTarget = new Vector3(GD.RandRange( - 1, 1), 0, GD.RandRange( - 1, 1));
-			Globals.WindSpeedTarget = GD.RandRange(0, 10);
+			Globals.Instance.TemperatureTarget = GD.RandRange(20, 31);
+			Globals.Instance.HumidityTarget = GD.RandRange(0, 20);
+			Globals.Instance.BradiationTarget = 0;
+			Globals.Instance.OxygenTarget = 100;
+			Globals.Instance.PressureTarget = GD.RandRange(10000, 10020);
+			Globals.Instance.WindDirectionTarget = new Vector3(GD.RandRange( - 1, 1), 0, GD.RandRange( - 1, 1));
+			Globals.Instance.WindSpeedTarget = GD.RandRange(0, 10);
 
 			_UpdateEnvironment();
 		}
@@ -312,13 +317,13 @@ ActiveDisasterNodes.Add(tsunami);
 
 		protected void _StartCloud()
 		{
-			Globals.TemperatureTarget = GD.RandRange(20, 25);
-			Globals.HumidityTarget = GD.RandRange(10, 30);
-			Globals.BradiationTarget = 0;
-			Globals.OxygenTarget = 100;
-			Globals.PressureTarget = GD.RandRange(9000, 10000);
-			Globals.WindDirectionTarget = new Vector3(GD.RandRange( - 1, 1), 0, GD.RandRange( - 1, 1));
-			Globals.WindSpeedTarget = GD.RandRange(0, 10);
+			Globals.Instance.TemperatureTarget = GD.RandRange(20, 25);
+			Globals.Instance.HumidityTarget = GD.RandRange(10, 30);
+			Globals.Instance.BradiationTarget = 0;
+			Globals.Instance.OxygenTarget = 100;
+			Globals.Instance.PressureTarget = GD.RandRange(9000, 10000);
+			Globals.Instance.WindDirectionTarget = new Vector3(GD.RandRange( - 1, 1), 0, GD.RandRange( - 1, 1));
+			Globals.Instance.WindSpeedTarget = GD.RandRange(0, 10);
 
 
 			_UpdateEnvironment();
@@ -328,26 +333,26 @@ ActiveDisasterNodes.Add(tsunami);
 		protected void _StartRaining()
 		{
 
-			Globals.TemperatureTarget = GD.RandRange(10, 20);
-			Globals.HumidityTarget = GD.RandRange(20, 40);
-			Globals.BradiationTarget = 0;
-			Globals.OxygenTarget = 100;
-			Globals.PressureTarget = GD.RandRange(9000, 9020);
-			Globals.WindDirectionTarget = new Vector3(GD.RandRange( - 1, 1), 0, GD.RandRange( - 1, 1));
-			Globals.WindSpeedTarget = GD.RandRange(0, 20);
+			Globals.Instance.TemperatureTarget = GD.RandRange(10, 20);
+			Globals.Instance.HumidityTarget = GD.RandRange(20, 40);
+			Globals.Instance.BradiationTarget = 0;
+			Globals.Instance.OxygenTarget = 100;
+			Globals.Instance.PressureTarget = GD.RandRange(9000, 9020);
+			Globals.Instance.WindDirectionTarget = new Vector3(GD.RandRange( - 1, 1), 0, GD.RandRange( - 1, 1));
+			Globals.Instance.WindSpeedTarget = GD.RandRange(0, 20);
 
 			_UpdateEnvironment();
 		}
 
 		protected void _StartStorm()
 		{
-			Globals.TemperatureTarget = GD.RandRange(5, 15);
-			Globals.HumidityTarget = GD.RandRange(30, 40);
-			Globals.BradiationTarget = 0;
-			Globals.OxygenTarget = 100;
-			Globals.PressureTarget = GD.RandRange(8000, 9000);
-			Globals.WindDirectionTarget = new Vector3(GD.RandRange( - 1, 1), 0, GD.RandRange( - 1, 1));
-			Globals.WindSpeedTarget = GD.RandRange(30, 60);
+			Globals.Instance.TemperatureTarget = GD.RandRange(5, 15);
+			Globals.Instance.HumidityTarget = GD.RandRange(30, 40);
+			Globals.Instance.BradiationTarget = 0;
+			Globals.Instance.OxygenTarget = 100;
+			Globals.Instance.PressureTarget = GD.RandRange(8000, 9000);
+			Globals.Instance.WindDirectionTarget = new Vector3(GD.RandRange( - 1, 1), 0, GD.RandRange( - 1, 1));
+			Globals.Instance.WindSpeedTarget = GD.RandRange(30, 60);
 
 			_UpdateEnvironment();
 			_SpawnLightningTimer();
@@ -356,13 +361,13 @@ ActiveDisasterNodes.Add(tsunami);
 
 		protected void _StartDustStorm()
 		{
-			Globals.TemperatureTarget = GD.RandRange(30, 40);
-			Globals.HumidityTarget = GD.RandRange(0, 10);
-			Globals.BradiationTarget = 0;
-			Globals.OxygenTarget = 0;
-			Globals.PressureTarget = GD.RandRange(10000, 10020);
-			Globals.WindDirectionTarget = new Vector3(GD.RandRange( - 1, 1), 0, GD.RandRange( - 1, 1));
-			Globals.WindSpeedTarget = GD.RandRange(0, 50);
+			Globals.Instance.TemperatureTarget = GD.RandRange(30, 40);
+			Globals.Instance.HumidityTarget = GD.RandRange(0, 10);
+			Globals.Instance.BradiationTarget = 0;
+			Globals.Instance.OxygenTarget = 0;
+			Globals.Instance.PressureTarget = GD.RandRange(10000, 10020);
+			Globals.Instance.WindDirectionTarget = new Vector3(GD.RandRange( - 1, 1), 0, GD.RandRange( - 1, 1));
+			Globals.Instance.WindSpeedTarget = GD.RandRange(0, 50);
 
 			_UpdateEnvironment();
 		}
@@ -447,7 +452,7 @@ ActiveDisasterNodes.Add(tsunami);
 
 
 		// Limpiar efectos del desastre anterior
-		foreach(Variant node in ActiveDisasterNodes)
+		foreach(Node node in ActiveDisasterNodes)
 		{
 			if(GodotObject.IsInstanceValid(node))
 			{
@@ -456,9 +461,9 @@ ActiveDisasterNodes.Add(tsunami);
 		}
 		ActiveDisasterNodes.Clear();
 
-		if(Globals.Gamemode == "survival")
+		if(Globals.Instance.Gamemode == "survival")
 		{
-			Globals.AddPoints.Rpc();
+			Rpc(Globals.MethodName.AddPoints);
 		}
 	}
 
@@ -469,9 +474,9 @@ ActiveDisasterNodes.Add(tsunami);
 			return ;
 		}
 
-		var space_state = GetWorld3d().DirectSpaceState;
+		var space_state = GetWorld3D().DirectSpaceState;
 
-		foreach(int i in amount)
+		for (int i = 0; i < amount; i++)
 		{
 
 
@@ -483,15 +488,15 @@ ActiveDisasterNodes.Add(tsunami);
 
 			if(result.ContainsKey("position"))
 			{
-				var decal = scene.Instantiate();
+				Decal decal = scene.Instantiate<Decal>();
 
 
 				// Tamañó aleatorio entre 3 y 500
-				var random_size = GD.RandRange(3.0, 500.0);
+				float random_size = (float)GD.RandRange(3.0, 500.0);
 				decal.Size = new Vector3(random_size, random_size, random_size);
 
-				decal.Position = result.Position + new Vector3(0, 0.05, 0);
-				decal.Rotation.Y = GD.RandRange(0, Mathf.Tau);
+				decal.Position = (Vector3)result["position"] + new Vector3(0, 0.05f, 0);
+				decal.Rotation = new Vector3(0, (float)GD.RandRange(0, Mathf.Tau), 0);
 
 				AddChild(decal, true);
 				ActiveDecals.Append(decal);
@@ -500,9 +505,9 @@ ActiveDisasterNodes.Add(tsunami);
 	}
 
 
-	protected void _SpawnDecalsOverTime(Variant scene, Variant total, Variant delay)
+	protected async void _SpawnDecalsOverTime(PackedScene scene, int total, float delay)
 	{
-		foreach(Variant i in total)
+		for (int i = 0; i < total; i++)
 		{
 			_SpawnDecals(scene, 1);
 			await ToSignal(GetTree().CreateTimer(delay), "Timeout");
@@ -510,12 +515,12 @@ ActiveDisasterNodes.Add(tsunami);
 	}
 
 
-	protected void _SpawnMeteorShowerTimer()
+	protected async void _SpawnMeteorShowerTimer()
 	{
-		while(Globals.CurrentWeatherAndDisaster == "Meteors shower")
+		while(Globals.Instance.CurrentWeatherAndDisaster == "Meteors shower")
 		{
-			var meteor = Globals.MeteorScene.Instantiate();
-			var rand_pos = new Vector3(GD.RandRange(0, 4097), 1000, GD.RandRange(0, 4097));
+			Meteors meteor = Globals.Instance.MeteorScene.Instantiate<Meteors>();
+			Vector3 rand_pos = new Vector3(GD.RandRange(0, 4097), 1000, GD.RandRange(0, 4097));
 			meteor.Position = rand_pos;
 			AddChild(meteor, true);
 			ActiveDisasterNodes.Append(meteor);
@@ -526,14 +531,14 @@ ActiveDisasterNodes.Add(tsunami);
 
 	protected void _UpdateEnvironment()
 	{
-		var player = Globals.LocalPlayer;
+		var player = Globals.Instance.LocalPlayer;
 
 		if(!GodotObject.IsInstanceValid(player))
 		{
 			return ;
 		}
 
-		var is_outdoor = Globals.IsOutdoor(player);
+		var is_outdoor = Globals.Instance.IsOutdoor(player);
 
 
 		// Ajustes por desastre
@@ -542,49 +547,49 @@ ActiveDisasterNodes.Add(tsunami);
 			case "blizzard":
 			{
 				player.SnowNode.Emitting = is_outdoor;
-				GetNode("WorldEnvironment").Environment.VolumetricFogAlbedo = new Color(1, 1, 1);
+				GetNode<WorldEnvironment>("WorldEnvironment").Environment.VolumetricFogAlbedo = new Color(1, 1, 1);
 				break; }
 			case "Sand Storm":
 			{
 				player.SandNode.Emitting = is_outdoor;
-				GetNode("WorldEnvironment").Environment.VolumetricFogAlbedo = new Color(1, 0.647059, 0);
+				GetNode<WorldEnvironment>("WorldEnvironment").Environment.VolumetricFogAlbedo = new Color(1, 0.647059f, 0);
 				break; }
 			case "Acid rain":
 			{
 				player.RainNode.Emitting = is_outdoor;
-				GetNode("WorldEnvironment").Environment.VolumetricFogAlbedo = new Color(0, 1, 0);
+				GetNode<WorldEnvironment>("WorldEnvironment").Environment.VolumetricFogAlbedo = new Color(0, 1, 0);
 				break; }
 			case "Dust Storm":
 			{
 				player.DustNode.Emitting = is_outdoor;
-				GetNode("WorldEnvironment").Environment.VolumetricFogAlbedo = new Color(0, 0, 0);
+				GetNode<WorldEnvironment>("WorldEnvironment").Environment.VolumetricFogAlbedo = new Color(0, 0, 0);
 				break; }
 			default:
 			{
 				player.SnowNode.Emitting = false;
 				player.SandNode.Emitting = false;
 				player.DustNode.Emitting = false;
-				GetNode("WorldEnvironment").Environment.VolumetricFogAlbedo = new Color(1, 1, 1);
+				GetNode<WorldEnvironment>("WorldEnvironment").Environment.VolumetricFogAlbedo = new Color(1, 1, 1);
 				break; }
 		}
 
 
 		// Cuando hay lluvia/tormenta u otros eventos que requieren niebla, activarla s�lo si el jugador est� al aire libre
-		var foggy_disasters = new array{"Thunderstorm", "Raining", "Storm", "Tornado", "blizzard", "Sand Storm", "Cloud", "Acid rain", "Dust Storm", };
-		var rain_disasters = new array{"Thunderstorm", "Raining", "Storm", "Tornado", "Acid rain", };
-		GetNode("WorldEnvironment").Environment.VolumetricFogEnabled = foggy_disasters && is_outdoor.Contains(CurrentDisaster);
+		var foggy_disasters = new Array<string>{"Thunderstorm", "Raining", "Storm", "Tornado", "blizzard", "Sand Storm", "Cloud", "Acid rain", "Dust Storm"};
+		var rain_disasters = new Array<string>{"Thunderstorm", "Raining", "Storm", "Tornado", "Acid rain"};
+		GetNode<WorldEnvironment>("WorldEnvironment").Environment.VolumetricFogEnabled = foggy_disasters.Contains(CurrentDisaster) && is_outdoor;
 
 
-		// Nodos de part�culas generales
+		// Nodos de partculas generales
 		player.RainNode.Emitting = (rain_disasters.Contains(CurrentDisaster)) && is_outdoor;
 
 
 		// Ajuste de nubes
 
-		GetNode("WorldEnvironment").Environment.Sky.SkyMaterial.SetShaderParameter("clouds_fuzziness", ( foggy_disasters.Contains(CurrentDisaster) ? 0.25 : 1 ));
+		((ShaderMaterial)GetNode<WorldEnvironment>("WorldEnvironment").Environment.Sky.SkyMaterial).SetShaderParameter("clouds_fuzziness", ( foggy_disasters.Contains(CurrentDisaster) ? 0.25 : 1 ));
 	}
 
-	protected void _SpawnLightningTimer()
+	protected async void _SpawnLightningTimer()
 	{
 		if(IsSpawningLightning)
 		{
@@ -594,17 +599,17 @@ ActiveDisasterNodes.Add(tsunami);
 		// Evitar m�ltiples instancias del timer
 		IsSpawningLightning = true;
 
-		while(Globals.CurrentWeatherAndDisaster == "Thunderstorm" && IsSpawningLightning)
+		while(Globals.Instance.CurrentWeatherAndDisaster == "Thunderstorm" && IsSpawningLightning)
 		{
-			var player = Globals.LocalPlayer;
+			var player = Globals.Instance.LocalPlayer;
 
-			if(GodotObject.IsInstanceValid(player) && Globals.IsOutdoor(player))
+			if(GodotObject.IsInstanceValid(player) && Globals.Instance.IsOutdoor(player))
 			{
 				if(GD.RandRange(1, 25) == 25)
 				{
-					var lighting = Globals.ThunderstormScene.Instantiate();
+					Thunder lighting = Globals.Instance.ThunderstormScene.Instantiate<Thunder>();
 					var rand_pos = new Vector3(GD.RandRange(0, 4097), 1000, GD.RandRange(0, 4097));
-					var space_state = GetWorld3d().DirectSpaceState;
+					var space_state = GetWorld3D().DirectSpaceState;
 
 					if(space_state != null)
 					{
@@ -613,7 +618,7 @@ ActiveDisasterNodes.Add(tsunami);
 
 						if(result.ContainsKey("position"))
 						{
-							lighting.Position = result.Position;
+							lighting.Position = (Vector3)result["position"];
 						}
 						else
 						{

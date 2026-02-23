@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using Godot;
 using Godot.Collections;
 
@@ -6,55 +7,55 @@ public partial class PauseMenu : CanvasLayer
 {
 	public bool MouseActionState = false;
 
-	public Node Worldenvironment;
-	public Node Light;
-	public Node Light2;
+	public WorldEnvironment Worldenvironment;
+	public DirectionalLight3D Light;
+	public DirectionalLight3D Light2;
 
-	public Variant MainMenu;
-	public Variant Settings;
-	public Variant Fullscreen;
-	public Variant Vsync;
-	public Variant Fps;
-	public Variant AntiAliasing;
-	public Variant AntiTropic;
-	public Variant Volumen;
-	public Node VolumenMusic;
-	public Time time;
-	public Variant Quality;
-	public Variant Resolutions;
+	public Control MainMenu;
+	public Control Settings;
+	public CheckButton Fullscreen;
+	public CheckButton Vsync;
+	public CheckButton Fps;
+	public OptionButton AntiAliasing;
+	public OptionButton AntiTropic;
+	public HSlider Volumen;
+	public HSlider VolumenMusic;
+	public HSlider Time;
+	public OptionButton Quality;
+	public OptionButton Resolutions;
 
-
-	public Dictionary ResolutionsDic = new() {
-			{"2400x1080 ", new Vector2i(2400, 1080)},
-			{"1920x1080", new Vector2i(1920, 1080)},
-			{"1600x900", new Vector2i(1600, 900)},
-			{"1440x1080", new Vector2i(1440, 1080)},
-			{"1440x900", new Vector2i(1440, 900)},
-			{"1366x768", new Vector2i(1366, 768)},
-			{"1360x768", new Vector2i(1360, 768)},
-			{"1280x1024", new Vector2i(1280, 1024)},
-			{"1280x962", new Vector2i(1280, 962)},
-			{"1280x960", new Vector2i(1280, 960)},
-			{"1280x800", new Vector2i(1280, 800)},
-			{"1280x768", new Vector2i(1280, 768)},
-			{"1280x720", new Vector2i(1280, 720)},
-			{"1176x664", new Vector2i(1176, 664)},
-			{"1152x648", new Vector2i(1152, 648)},
-			{"1024x768", new Vector2i(1024, 768)},
-			{"800x600", new Vector2i(800, 600)},
-			{"720x480", new Vector2i(720, 480)},
+	
+	public Godot.Collections.Dictionary<string, Vector2I> ResolutionsDic = new Godot.Collections.Dictionary<string, Vector2I>() {
+			{"2400x1080 ", new Vector2I(2400, 1080)},
+			{"1920x1080", new Vector2I(1920, 1080)},
+			{"1600x900", new Vector2I(1600, 900)},
+			{"1440x1080", new Vector2I(1440, 1080)},
+			{"1440x900", new Vector2I(1440, 900)},
+			{"1366x768", new Vector2I(1366, 768)},
+			{"1360x768", new Vector2I(1360, 768)},
+			{"1280x1024", new Vector2I(1280, 1024)},
+			{"1280x962", new Vector2I(1280, 962)},
+			{"1280x960", new Vector2I(1280, 960)},
+			{"1280x800", new Vector2I(1280, 800)},
+			{"1280x768", new Vector2I(1280, 768)},
+			{"1280x720", new Vector2I(1280, 720)},
+			{"1176x664", new Vector2I(1176, 664)},
+			{"1152x648", new Vector2I(1152, 648)},
+			{"1024x768", new Vector2I(1024, 768)},
+			{"800x600", new Vector2I(800, 600)},
+			{"720x480", new Vector2I(720, 480)},
 			};
 
 	public DataResource GlobalsData = DataResource.LoadFile();
 
 	public void Addresolutions()
 	{
-		var current_resolution = Globals.GlobalsData.Resolution;
+		var current_resolution = Globals.Instance.GlobalsData.Resolution;
 		var index = 0;
 
-		foreach(Dictionary r in ResolutionsDic)
+		foreach(KeyValuePair<string, Vector2I> r in ResolutionsDic)
 		{
-			Resolutions.AddItem(r, index);
+			Resolutions.AddItem(r.Key, index);
 			index += 1;
 		}
 	}
@@ -63,9 +64,6 @@ public partial class PauseMenu : CanvasLayer
 	// Called when the node enters the scene tree for the first time.
 	public override void _Ready()
 	{
-		Worldenvironment = Globals.Map.GetNode("WorldEnvironment");
-		Light = Worldenvironment.GetNode("Sun");
-		Light2 = Worldenvironment.GetNode("Moon");
 		MainMenu = GetNode<Control>("Panel/Menu");
 		Settings = GetNode<Control>("Panel/Settings");
 		Fullscreen = GetNode<CheckButton>("Panel/Settings/Fullscreen");
@@ -96,40 +94,40 @@ public partial class PauseMenu : CanvasLayer
 	{
 		Addresolutions();
 
-		_OnAntialiasingItemSelected(Globals.GlobalsData.Antialiasing);
-		_OnAntitropicItemSelected(Globals.GlobalsData.Antitropic);
-		_OnVsycnToggled(Globals.GlobalsData.Vsync);
-		_OnVolumenValueChanged(Globals.GlobalsData.Volumen);
-		_OnVolumenMusicValueChanged(Globals.GlobalsData.VolumenMusic);
-		_OnResolutionsItemSelected(Globals.GlobalsData.Resolution);
-		_OnFullscreenToggled(Globals.GlobalsData.Fullscreen);
-		_OnFpsToggled(Globals.GlobalsData.FPS);
-		_OnTimeValueChanged(Globals.GlobalsData.TimerDisasters);
-		_OnOptionButtonItemSelected(Globals.GlobalsData.Quality);
+		_OnAntialiasingItemSelected(Globals.Instance.GlobalsData.Antialiasing);
+		_OnAntitropicItemSelected(Globals.Instance.GlobalsData.Antitropic);
+		_OnVsycnToggled(Globals.Instance.GlobalsData.Vsync);
+		_OnVolumenValueChanged(Globals.Instance.GlobalsData.Volumen);
+		_OnVolumenMusicValueChanged(Globals.Instance.GlobalsData.VolumenMusic);
+		_OnResolutionsItemSelected(Globals.Instance.GlobalsData.Resolution);
+		_OnFullscreenToggled(Globals.Instance.GlobalsData.Fullscreen);
+		_OnFpsToggled(Globals.Instance.GlobalsData.FPS);
+		_OnTimeValueChanged(Globals.Instance.GlobalsData.TimerDisasters);
+		_OnOptionButtonItemSelected(Globals.Instance.GlobalsData.Quality);
 
 
-		Fullscreen.ButtonPressed = Globals.GlobalsData.Fullscreen;
-		Fps.ButtonPressed = Globals.GlobalsData.FPS;
-		Vsync.ButtonPressed = Globals.GlobalsData.Vsync;
-		Volumen.Value = Globals.GlobalsData.Volumen;
-		VolumenMusic.Value = Globals.GlobalsData.VolumenMusic;
-		Time.Value = Globals.GlobalsData.TimerDisasters;
-		Quality.Selected = Globals.GlobalsData.Quality;
-		Resolutions.Selected = Globals.GlobalsData.Resolution;
-		AntiAliasing.Selected = Globals.GlobalsData.Antialiasing;
-		AntiTropic.Selected = Globals.GlobalsData.Antitropic;
+		Fullscreen.ButtonPressed = Globals.Instance.GlobalsData.Fullscreen;
+		Fps.ButtonPressed = Globals.Instance.GlobalsData.FPS;
+		Vsync.ButtonPressed = Globals.Instance.GlobalsData.Vsync;
+		Volumen.Value = Globals.Instance.GlobalsData.Volumen;
+		VolumenMusic.Value = Globals.Instance.GlobalsData.VolumenMusic;
+		Time.Value = Globals.Instance.GlobalsData.TimerDisasters;
+		Quality.Selected = Globals.Instance.GlobalsData.Quality;
+		Resolutions.Selected = Globals.Instance.GlobalsData.Resolution;
+		AntiAliasing.Selected = Globals.Instance.GlobalsData.Antialiasing;
+		AntiTropic.Selected = Globals.Instance.GlobalsData.Antitropic;
 	}
 
 
 	protected void _OnIpTextChanged(string new_text)
 	{
-		Globals.Ip = new_text;
+		Globals.Instance.Ip = new_text;
 	}
 
 
 	protected void _OnPortTextChanged(string new_text)
 	{
-		Globals.Port = Int(new_text);
+		Globals.Instance.Port = int.Parse(new_text);
 	}
 
 
@@ -150,39 +148,39 @@ public partial class PauseMenu : CanvasLayer
 	protected void _OnExitPressed()
 	{
 		Pause();
-		Globals.CloseConection();
+		Globals.Instance.CloseConection();
 	}
 
 	public override void _ExitTree()
 	{
-		Globals.TemperatureTarget = Globals.TemperatureOriginal;
-		Globals.HumidityTarget = Globals.HumidityOriginal;
-		Globals.PressureTarget = Globals.PressureOriginal;
-		Globals.WindDirectionTarget = Globals.WindDirectionOriginal;
-		Globals.WindSpeedTarget = Globals.WindSpeedOriginal;
+		Globals.Instance.TemperatureTarget = Globals.Instance.TemperatureOriginal;
+		Globals.Instance.HumidityTarget = Globals.Instance.HumidityOriginal;
+		Globals.Instance.PressureTarget = Globals.Instance.PressureOriginal;
+		Globals.Instance.WindDirectionTarget = Globals.Instance.WindDirectionOriginal;
+		Globals.Instance.WindSpeedTarget = Globals.Instance.WindSpeedOriginal;
 	}
 
 	protected void _OnFpsToggled(bool toggled_on)
 	{
-		Globals.GlobalsData.FPS = toggled_on;
-		Globals.GlobalsData.SaveFile();
+		Globals.Instance.GlobalsData.FPS = toggled_on;
+		Globals.Instance.GlobalsData.SaveFile();
 	}
 
 
 	protected void _OnVsycnToggled(bool toggled_on)
 	{
-		Globals.GlobalsData.Vsync = toggled_on;
+		Globals.Instance.GlobalsData.Vsync = toggled_on;
 
 		if(toggled_on)
 		{
-			DisplayServer.WindowSetVsyncMode(DisplayServer.VSyncMode.VsyncEnabled);
+			DisplayServer.WindowSetVsyncMode(DisplayServer.VSyncMode.Enabled);
 		}
 		else
 		{
-			DisplayServer.WindowSetVsyncMode(DisplayServer.VSyncMode.VsyncDisabled);
+			DisplayServer.WindowSetVsyncMode(DisplayServer.VSyncMode.Disabled);
 		}
 
-		Globals.GlobalsData.SaveFile();
+		Globals.Instance.GlobalsData.SaveFile();
 	}
 
 	protected void _OnBackPressed()
@@ -192,9 +190,9 @@ public partial class PauseMenu : CanvasLayer
 	}
 
 
-	protected Node _GetLocalPlayer()
+	protected Player _GetLocalPlayer()
 	{
-		foreach(Node p in GetTree().GetNodesInGroup("player"))
+		foreach(Player p in GetTree().GetNodesInGroup("player"))
 		{
 			if(p.IsMultiplayerAuthority())
 			{
@@ -210,11 +208,11 @@ public partial class PauseMenu : CanvasLayer
 	{
 		if(MouseActionState)
 		{
-			Input.SetMouseMode(Input.MouseMode.MouseModeCaptured);
+			Input.SetMouseMode(Input.MouseModeEnum.Captured);
 		}
 		else
 		{
-			Input.SetMouseMode(Input.MouseMode.MouseModeVisible);
+			Input.SetMouseMode(Input.MouseModeEnum.Visible);
 		}
 
 		MouseActionState = !MouseActionState;
@@ -222,23 +220,23 @@ public partial class PauseMenu : CanvasLayer
 
 	public void Pause()
 	{
-		Globals.IsPauseMenuOpen = !Globals.IsPauseMenuOpen;
+		Globals.Instance.IsPauseMenuOpen = !Globals.Instance.IsPauseMenuOpen;
 
 		if(Multiplayer.MultiplayerPeer is OfflineMultiplayerPeer)
 		{
 			GetTree().Paused = false;
 		}
 
-		if(!Globals.IsPauseMenuOpen)
+		if(!Globals.Instance.IsPauseMenuOpen)
 		{
-			Input.SetMouseMode(Input.MouseMode.MouseModeCaptured);
+			Input.SetMouseMode(Input.MouseModeEnum.Captured);
 		}
 		else
 		{
-			Input.SetMouseMode(Input.MouseMode.MouseModeVisible);
+			Input.SetMouseMode(Input.MouseModeEnum.Visible);
 		}
 
-		this.Visible = Globals.IsPauseMenuOpen;
+		this.Visible = Globals.Instance.IsPauseMenuOpen;
 	}
 
 
@@ -261,41 +259,41 @@ public partial class PauseMenu : CanvasLayer
 	}
 
 
-	protected void _OnTimeValueChanged(Variant value)
+	protected void _OnTimeValueChanged(int value)
 	{
 		var player = _GetLocalPlayer();
 		if(player == null || !player.AdminMode)
 		{
-			Globals.PrintRole("You dont have perms");
+			Globals.Instance.PrintRole("You dont have perms");
 			return ;
 		}
 
-		if(!Globals.Started)
+		if(!Globals.Instance.Started)
 		{
 			return ;
 		}
 
-		Globals.GlobalsData.TimerDisasters = value;
-		Globals.GlobalsData.SaveFile();
-		Globals.Timer.WaitTime = value;
+		Globals.Instance.GlobalsData.TimerDisasters = value;
+		Globals.Instance.GlobalsData.SaveFile();
+		Globals.Instance.Timer.WaitTime = value;
 	}
 
 
-	protected void _OnVolumenValueChanged(double value)
+	protected void _OnVolumenValueChanged(int value)
 	{
-		Globals.GlobalsData.Volumen = value;
+		Globals.Instance.GlobalsData.Volumen = value;
 		AudioServer.SetBusVolumeDb(AudioServer.GetBusIndex("Master"), Mathf.LinearToDb(value));
-		Globals.GlobalsData.SaveFile();
+		Globals.Instance.GlobalsData.SaveFile();
 	}
 
 
 	protected void _OnResolutionsItemSelected(int index)
 	{
-		Globals.GlobalsData.Resolution = index;
-		var size = ResolutionsDic.Get(Resolutions.GetItemText(index));
+		Globals.Instance.GlobalsData.Resolution = index;
+		var size = ResolutionsDic.GetValueOrDefault(Resolutions.GetItemText(index));
 		DisplayServer.WindowSetSize(size);
-		GetViewport().SetSize(size);
-		Globals.GlobalsData.SaveFile();
+		GetTree().Root.Size = size; 
+		Globals.Instance.GlobalsData.SaveFile();
 	}
 
 
@@ -303,19 +301,19 @@ public partial class PauseMenu : CanvasLayer
 	{
 		if(toggled_on == true)
 		{
-			DisplayServer.WindowSetMode(DisplayServer.WindowMode.WindowModeFullscreen);
+			DisplayServer.WindowSetMode(DisplayServer.WindowMode.Fullscreen);
 		}
 		else
 		{
-			DisplayServer.WindowSetMode(DisplayServer.WindowMode.WindowModeWindowed);
+			DisplayServer.WindowSetMode(DisplayServer.WindowMode.Windowed);
 		}
-		Globals.GlobalsData.Fullscreen = toggled_on;
-		Globals.GlobalsData.SaveFile();
+		Globals.Instance.GlobalsData.Fullscreen = toggled_on;
+		Globals.Instance.GlobalsData.SaveFile();
 	}
 
 	protected void _OnResetPlayerPressed()
 	{
-		GetParent()._ResetPlayer();
+		GetParent<Player>()._ResetPlayer();
 	}
 
 	protected void _OnReturnPressed()
@@ -323,11 +321,11 @@ public partial class PauseMenu : CanvasLayer
 		Pause();
 	}
 
-	protected void _OnVolumenMusicValueChanged(Variant value)
+	protected void _OnVolumenMusicValueChanged(int value)
 	{
-		Globals.GlobalsData.VolumenMusic = value;
+		Globals.Instance.GlobalsData.VolumenMusic = value;
 		AudioServer.SetBusVolumeDb(AudioServer.GetBusIndex("Music"), Mathf.LinearToDb(value));
-		Globals.GlobalsData.SaveFile();
+		Globals.Instance.GlobalsData.SaveFile();
 	}
 
 	protected void _OnOptionButtonItemSelected(int index)
@@ -361,51 +359,49 @@ public partial class PauseMenu : CanvasLayer
 				break; }
 		}
 
-		Globals.GlobalsData.Quality = index;
-		Globals.GlobalsData.SaveFile();
+		Globals.Instance.GlobalsData.Quality = index;
+		Globals.Instance.GlobalsData.SaveFile();
 	}
 
 	protected void _OnAntialiasingItemSelected(int index)
 	{
-		Globals.GlobalsData.Antialiasing = index;
+		Globals.Instance.GlobalsData.Antialiasing = index;
 
 		var viewport = GetViewport();
 
 		switch(index)
 		{
 			case 0:
-			{viewport.Msaa3d = Viewport.Msaa.MsaaDisabled;
+			{viewport.Msaa3D = Viewport.Msaa.Disabled;
 				break; }
 			case 1:
-			{viewport.Msaa3d = Viewport.Msaa.Msaa2x;
+			{viewport.Msaa3D = Viewport.Msaa.Msaa2X;
 				break; }
 			case 2:
-			{viewport.Msaa3d = Viewport.Msaa.Msaa4x;
+			{viewport.Msaa3D = Viewport.Msaa.Msaa4X;
 				break; }
 			case 3:
-			{viewport.Msaa3d = Viewport.Msaa.Msaa8x;
+			{viewport.Msaa3D = Viewport.Msaa.Msaa8X;
 				break; }
 		}
 
-		Globals.GlobalsData.SaveFile();
+		Globals.Instance.GlobalsData.SaveFile();
 	}
 
 
 	protected void _OnAntitropicItemSelected(int index)
 	{
-		Globals.GlobalsData.Antitropic = index;
+		Globals.Instance.GlobalsData.Antitropic = index;
 
-		var levels = new Godot.Collections.Array{1, 2, 4, 8, 16, };
+		var levels = new Array<int>{1, 2, 4, 8, 16, };
 
-		if(index >= 0 && index < levels.Size())
+		if(index >= 0 && index < levels.Count)
 		{
-
-
 			ProjectSettings.SetSetting("rendering/textures/default_filters/anisotropic_filtering_level", levels[index]);
 			ProjectSettings.Save();
 		}
 
-		Globals.GlobalsData.SaveFile();
+		Globals.Instance.GlobalsData.SaveFile();
 	}
 
 }

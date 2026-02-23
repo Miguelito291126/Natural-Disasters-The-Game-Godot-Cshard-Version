@@ -2,38 +2,40 @@ using Godot;
 using Godot.Collections;
 
 [GlobalClass]
-public partial class unloadscene : Node
+public partial class UnloadScene : Node
 {
 	[Signal]
-	public delegate void ProgressChangedEventHandler(Variant progress);
+	public delegate void ProgressChangedEventHandler(float progress);
 	[Signal]
 	public delegate void UnloadDoneEventHandler();
 
-	public string UnloadingScreenPath = "res://Scenes/loading_screen.tscn";
-	public Resource UnloadingScreen = Load(UnloadingScreenPath);
+	public static UnloadScene Instance;
+
+	public UnloadScene()
+	{
+		Instance = this;
+	}
+
+	public static string UnloadingScreenPath = "res://Scenes/loading_screen.tscn";
+	public PackedScene UnloadingScreen = ResourceLoader.Load<PackedScene>(UnloadingScreenPath);
 	public PackedScene UnloaderResource;
 	public Variant Scene;
 	public string ScenePath;
-	public Godot.Collections.Array Progress = new Godot.Collections.Array{};
+	public Array Progress = new Array();
 
 	public bool UseSubTheads = false;
 
-	public async void UnloadScene(Variant current_scene)
+	public async void unloadscene(Node current_scene)
 	{
 
-		if(current_scene != null && current_scene is Node node)
+		if(current_scene != null)
 		{
-			ScenePath = node.SceneFilePath;
+			ScenePath = current_scene.SceneFilePath;
 			Scene = current_scene;
 		}
-	}
 
-	public async void UnloadScene()
-	{
-		UnloadScene(null);
-
-		var unloading_screen_scene = UnloadingScreen.Instantiate();
-		Globals.Main.AddChild(unloading_screen_scene);
+		LoadingScreen unloading_screen_scene = UnloadingScreen.Instantiate<LoadingScreen>();
+		Globals.Instance.Main.AddChild(unloading_screen_scene);
 
 		this.ProgressChanged += unloading_screen_scene.UpdateProgressBar;
 		this.UnloadDone += unloading_screen_scene.FadeOutLoadingScreen;
@@ -49,21 +51,21 @@ public partial class unloadscene : Node
 		}
 
 		var loader_next_scene = ResourceLoader.LoadThreadedRequest(ScenePath, "", UseSubTheads);
-		if(loader_next_scene == OK)
+		if(loader_next_scene == Error.Ok)
 		{
-			Globals.PrintRole("unloading...");
+			Globals.Instance.PrintRole("unloading...");
 			SetProcess(true);
 		}
 	}
 
 	public void ClearNodegameExceptSpawner()
 	{
-		if(!GodotObject.IsInstanceValid(Globals.Main))
+		if(!IsInstanceValid(Globals.Instance.Main))
 		{
 			return ;
 		}
 
-		foreach(Node child in Globals.Main.GetChildren())
+		foreach(Node child in Globals.Instance.Main.GetChildren())
 		{
 			if(child.Name != "MapSpawner")
 			{
@@ -75,32 +77,29 @@ public partial class unloadscene : Node
 
 	public override void _Process(double _delta)
 	{
-		var load_status = ResourceLoader.LoadThreadedGetStatus(ScenePath, Progress);
+		ResourceLoader.ThreadLoadStatus load_status = ResourceLoader.LoadThreadedGetStatus(ScenePath, Progress);
 		switch(load_status)
 		{
-			case 0:
-			{
-				Globals.PrintRole("failed to load: invalid resource");
+			case ResourceLoader.ThreadLoadStatus.InvalidResource:
+				Globals.Instance.PrintRole("failed to load: invalid resource");
 				SetProcess(false);
 				return ;
-				break; }
-			case 2:
-			{
-				Globals.PrintRole("failed to load");
+			case ResourceLoader.ThreadLoadStatus.Failed:
+			
+				Globals.Instance.PrintRole("failed to load");
 				SetProcess(false);
-				return ;
-				break; }
-			case 1:
-			{
+				return ; 
+
+			case ResourceLoader.ThreadLoadStatus.InProgress:
 				EmitSignal("progress_changed", Progress[0]);
-				break; }
-			case 3:
-			{
-				Globals.PrintRole("Completed");
+				break; 
+			case ResourceLoader.ThreadLoadStatus.Loaded:
+			
+				Globals.Instance.PrintRole("Completed");
 				EmitSignal("progress_changed", 1.0);
 				EmitSignal("unload_done");
 				SetProcess(false);
-				break; }
+				break; 
 		}
 	}
 

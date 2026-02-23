@@ -5,42 +5,42 @@ using Godot.Collections;
 public partial class SpawnMenu : CanvasLayer
 {
 	public GridContainer Container;
-	[Export] public Array<Node> Spawnlist;
+	[Export] public Array<Node3D> Spawnlist;
 	[Export] public Array<Button> Buttonlist;
-	[Export] public Array<Node> Spawnedobject;
-	public Node Camera;
+	[Export] public Array<Node3D> Spawnedobject;
+	public Camera3d Camera;
 
-	public Resource EntityScene = /* preload has no equivalent, add a 'ResourcePreloader' Node in your scene */("res://Scenes/entity.tscn");
-public Array<string> SpawnList = new() {
-			"res://Scenes/meteor.tscn", 
-			"res://Scenes/tornado.tscn", 
-			"res://Scenes/volcano.tscn", 
-			"res://Scenes/tsunami.tscn", 
-			"res://Scenes/earthquake.tscn", 
-			"res://Scenes/thunder.tscn", 
-			"res://Scenes/cube.tscn", 
-			"res://Scenes/sphere.tscn", 
-			"res://Scenes/hause.tscn", 
-			};
+	public PackedScene EntityScene = ResourceLoader.Load<PackedScene>("res://Scenes/entity.tscn");
+	public Array<string> SpawnList = new() {
+				"res://Scenes/meteor.tscn", 
+				"res://Scenes/tornado.tscn", 
+				"res://Scenes/volcano.tscn", 
+				"res://Scenes/tsunami.tscn", 
+				"res://Scenes/earthquake.tscn", 
+				"res://Scenes/thunder.tscn", 
+				"res://Scenes/cube.tscn", 
+				"res://Scenes/sphere.tscn", 
+				"res://Scenes/hause.tscn", 
+				};
 
 	public override void _EnterTree()
 	{
-		SetMultiplayerAuthority(GetParent().Name.ToInt());
+		SetMultiplayerAuthority(int.Parse(GetParent<Player>().Name));
 	}
 
 	public override void _Ready()
 	{
 		Container = GetNode<GridContainer>("Panel/GridContainer");
-		Camera = GetParent().GetNode("head/Camera3D");
-		this.Visible = false;
+		Camera = GetParent().GetNode<Camera3d>("head/Camera3D");
+		Visible = false;
 
 		LoadSpawnlistEntities();
 		LoadButtons();
 	}
 
-	protected Node _GetLocalPlayer()
+	protected Player _GetLocalPlayer()
 	{
-		foreach(Node p in GetTree().GetNodesInGroup("player"))
+		foreach(Player p in GetTree().GetNodesInGroup("player"))
 		{
 
 			if(p.IsMultiplayerAuthority())
@@ -57,7 +57,7 @@ public Array<string> SpawnList = new() {
 	{
 		foreach(string spawn in SpawnList)
 		{
-			var node = Load(spawn).Instantiate();
+			Node3D node = ResourceLoader.Load<PackedScene>(spawn).Instantiate<Node3D>();
 			Spawnlist.Add(node);
 		}
 	}
@@ -65,68 +65,53 @@ public Array<string> SpawnList = new() {
 
 	public void LoadButtons()
 	{
-		foreach(Node i in Spawnlist)
+		foreach(Node3D i in Spawnlist)
 		{
-			var entity = EntityScene.Instantiate();
-			var label = entity.GetNode("Label");
+			// 1. Instanciamos como Control (o el tipo que sea tu UI)
+			var entity = EntityScene.Instantiate<Control>();
+			
+			var label = entity.GetNode<Label>("Label");
 			label.Text = i.Name;
-			label.AddThemeFontSizeOverride("FontSize", 20);
-			label.CustomMinimumSize = new Vector2(150, 150);
+			
+			var icon = entity.GetNode<TextureButton>("Icon");
+			
+			// 2. Lógica de iconos (simplificada con C#)
 
-			// cada celda fija
-			var icon = entity.GetNode("Icon");
-			icon.StretchMode = TextureRect.StretchMode.StretchKeepAspectCentered;
-			icon.CustomMinimumSize = new Vector2(64, 64);
+			string nodeName = i.Name.ToString(); // Convertimos StringName a string
 
-			// icono fijo
-			// Intentar cargar icono con varias variantes (por si hay espacios/may�sculas)
-var candidates = new Array {
-						$"res://Icons/{i.Name}_icon.png",
-						$"res://Icons/{i.Name.Replace(" ", "_")}_icon.png",
-						$"res://Icons/{i.Name.ToLower().Replace(" ", "_")}_icon.png",
-						$"res://Icons/{i.Name.ToLower().Replace(" ", "")}_icon.png",
-							};
+			string[] candidates = {
+				$"res://Icons/{nodeName}_icon.png",
+				$"res://Icons/{nodeName.Replace(" ", "_")}_icon.png",
+				$"res://Icons/{nodeName.ToLower().Replace(" ", "_")}_icon.png",
+				$"res://Icons/{nodeName.ToLower().Replace(" ", "")}_icon.png"
+			};
 
-			var icon_image = null;
-			foreach(Variant p in candidates)
+
+			Texture2D icon_image = null;
+			foreach(string path in candidates)
 			{
-				icon_image = Load(p);
-				if(icon_image != null)
-				{
+				if (FileAccess.FileExists(path)) {
+					icon_image = GD.Load<Texture2D>(path);
 					break;
 				}
 			}
 
-
-			// Fallback a un icono por defecto si no se encuentra ninguno
-			if(icon_image == null)
-			{
-				icon_image = Load("res://Icons/default_icon.png");
-				if(icon_image == null)
-				{
-					Globals.PrintRole("spawn_menu.gd: icon not found for '%s' (tried %s). Create 'res://Icons/default_icon.png' to avoid this message." % new Array{i.Name, Str(candidates), });
-				}
-			}
-
-			if(icon_image != null)
-			{
-				icon.TextureNormal = icon_image;
-			}
+			icon.TextureNormal = icon_image ?? GD.Load<Texture2D>("res://Icons/default_icon.png");
 
 			Container.AddChild(entity);
-			icon.Pressed.Connect(() =>
-			{
-				OnPress(i);
-			});
+
+			// 3. Conexión de señal corregida usando eventos de C#
+			icon.Pressed += () => OnPress(i);
 		}
 	}
 
-	public void OnPress(Node i)
+
+	public void OnPress(Node3D i)
 	{
-		var player = _GetLocalPlayer() as Player;
+		var player = _GetLocalPlayer();
 		if(player == null || !player.AdminMode)
 		{
-			Globals.PrintRole("You dont have perms");
+			Globals.Instance.PrintRole("You dont have perms");
 			return ;
 		}
 
@@ -135,15 +120,16 @@ var candidates = new Array {
 			return ;
 		}
 
-		var raycast = GetParent().Interactor;
+		var raycast = GetParent<Player>().Interactor;
 
 		if(raycast.IsColliding())
 		{
-			var collision_point = raycast.GetCollisionPoint();
-			var collision_normal = raycast.GetCollisionNormal();
+			Vector3 collision_point = raycast.GetCollisionPoint();
+			Vector3 collision_normal = raycast.GetCollisionNormal();
 
-			var new_i = i.Duplicate();
-			new_i.Transform.Origin = collision_point + collision_normal * 0.5;
+			// En OnPress
+			Node3D new_i = (Node3D)i.Duplicate();
+			new_i.GlobalPosition = collision_point + (collision_normal * 0.5f);
 			Spawnedobject.Add(new_i);
 
 
@@ -152,33 +138,35 @@ var candidates = new Array {
 
 
 			// A�adir al mapa como propiedad de la escena
-			Globals.Map.AddChild(new_i, true);
+			Globals.Instance.Map.AddChild(new_i, true);
 		}
 	}
 
 
 	public void Spawnmenu()
 	{
-		Globals.IsSpawnMenuOpen = !Globals.IsSpawnMenuOpen;
+		Globals.Instance.IsSpawnMenuOpen = !Globals.Instance.IsSpawnMenuOpen;
 
-		if(Globals.IsSpawnMenuOpen)
+		if(Globals.Instance.IsSpawnMenuOpen)
 		{
-			Input.SetMouseMode(Input.MouseMode.MouseModeVisible);
+			Input.SetMouseMode(Input.MouseModeEnum.Visible);
 		}
 		else
 		{
-			Input.SetMouseMode(Input.MouseMode.MouseModeCaptured);
+			Input.SetMouseMode(Input.MouseModeEnum.Captured);
 		}
 
-		this.Visible = Globals.IsSpawnMenuOpen;
+		this.Visible = Globals.Instance.IsSpawnMenuOpen;
 	}
 
 
 	public void Remove()
 	{
-		if(Spawnedobject.Size() > 0)
+		if(Spawnedobject.Count > 0)
 		{
-			var last = Spawnedobject.PopBack();
+			var last = Spawnedobject[Spawnedobject.Count - 1];
+			Spawnedobject.RemoveAt(Spawnedobject.Count - 1);
+
 			if(GodotObject.IsInstanceValid(last))
 			{
 				last.QueueFree();
@@ -195,7 +183,7 @@ var candidates = new Array {
 			return ;
 		}
 
-		if(Globals.Gamemode == "survival")
+		if(Globals.Instance.Gamemode == "survival")
 		{
 			return ;
 		}

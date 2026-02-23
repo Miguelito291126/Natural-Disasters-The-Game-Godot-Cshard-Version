@@ -4,7 +4,7 @@ using Godot.Collections;
 [GlobalClass]
 public partial class Meteors : RigidBody3D
 {
-	public Resource ExplosionScene = /* preload has no equivalent, add a 'ResourcePreloader' Node in your scene */("res://Scenes/explosion.tscn");
+	public PackedScene ExplosionScene = ResourceLoader.Load<PackedScene>("res://Scenes/explosion.tscn");
 	[Export] public int RandNum = GD.RandRange(1, 50);
 	[Export] public bool IsVolcanoRock = false;
 
@@ -21,16 +21,15 @@ public partial class Meteors : RigidBody3D
 	}
 
 
-	protected void _OnBodyEntered(Variant body)
+	protected void _OnBodyEntered(Node3D body)
 	{
 		if(body == this)
 		{
-			return ;
+			return;
 		}
 
-		var explosion_node = ExplosionScene.Instantiate();
+		Explosion explosion_node = ExplosionScene.Instantiate<Explosion>();
 		explosion_node.GlobalPosition = this.GlobalPosition;
-		explosion_node.GetNode("Area3D/CollisionShape3D").Shape.Radius = RandNum;
 		GetParent().AddChild(explosion_node, true);
 		this.QueueFree();
 	}

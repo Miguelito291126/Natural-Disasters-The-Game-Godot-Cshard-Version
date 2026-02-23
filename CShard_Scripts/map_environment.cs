@@ -9,21 +9,23 @@ public partial class MapEnvironment : WorldEnvironment
 
     public int MinutesPerDay = 1440;
     public int MinutesPerHour = 60;
-    public double IngameToRealMinuteDuration => (2.0 * Mathf.Pi) / MinutesPerDay;
+    public float IngameToRealMinuteDuration; // Calculado en el constructor
+
+
     public Variant SunNode;
     // Referencia al nodo del sol
     public int CelestialSpeedPerHour = 15; // grados por hora
-    public double SunAngle = -90.0; // ángulo inicial del sol
-    public double MoonAngle = 90.0;
-    public double InterpolationSpeed = 1.0;
+    public float SunAngle = -90.0f; // ángulo inicial del sol
+    public float MoonAngle = 90.0f;
+    public float InterpolationSpeed = 1.0f;
 
     [Export] public int IngameSpeed = 1;
     [Export] public int InitialHour { get; set; } = 12;
 
     // Tiempo interno (en "real minutes" usados por la conversión)
-    private double Time = 0.0;
+    private float Time = 0.0f;
 
-    public double PastMinute = -1.0;
+    public float PastMinute = -1.0f;
 
     // Valores calculados
     public int TotalMinutes { get; private set; }
@@ -31,7 +33,13 @@ public partial class MapEnvironment : WorldEnvironment
     public int Day { get; private set; }
     public int Hour { get; private set; }
     public int Minute { get; private set; }
-    public double TimeOfDay { get; private set; }
+    public float TimeOfDay { get; private set; }
+
+    public MapEnvironment()
+    {
+        // El cálculo se hace cuando el objeto se crea
+        IngameToRealMinuteDuration = (float)((2.0 * Mathf.Pi) / MinutesPerDay);
+    }
 
     public override void _Ready()
     {
@@ -46,7 +54,7 @@ public partial class MapEnvironment : WorldEnvironment
     public override void _Process(double delta)
     {
         // Avanza el tiempo
-        Time += delta * IngameToRealMinuteDuration * IngameSpeed;
+        Time += (float)(delta * IngameToRealMinuteDuration * IngameSpeed);
         _RecalculateTime(delta);
     }
 
@@ -64,17 +72,17 @@ public partial class MapEnvironment : WorldEnvironment
             // Aquí puedes poner lógica que deba ejecutarse al cambiar el minuto
         }
 
-        TimeOfDay = Hour + Minute / 60.0;
+        TimeOfDay = Hour + Minute / 60.0f;
 
         // Calcular ángulos objetivo
-        SunAngle = -90.0 + (TimeOfDay * CelestialSpeedPerHour);
-        MoonAngle = SunAngle + 180.0;
+        SunAngle = -90.0f + (TimeOfDay * CelestialSpeedPerHour);
+        MoonAngle = SunAngle + 180.0f;
 
         // Normalizar [0,360)
-        if (SunAngle < 0.0) SunAngle += 360.0;
-        SunAngle = SunAngle % 360.0;
-        if (MoonAngle < 0.0) MoonAngle += 360.0;
-        MoonAngle = MoonAngle % 360.0;
+        if (SunAngle < 0.0f) SunAngle += 360.0f;
+        SunAngle = SunAngle % 360.0f;
+        if (MoonAngle < 0.0f) MoonAngle += 360.0f;
+        MoonAngle = MoonAngle % 360.0f;
 
         // Interpolación
         float t = Mathf.Clamp((float)(InterpolationSpeed * delta), 0f, 1f);

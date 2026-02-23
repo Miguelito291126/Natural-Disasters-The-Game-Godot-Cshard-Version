@@ -6,9 +6,9 @@ using Godot.Collections;
 [GlobalClass]
 public partial class Volcano : Node3D
 {
-	public Resource FireballScene = /* preload has no equivalent, add a 'ResourcePreloader' Node in your scene */("res://Scenes/meteor.tscn");
+	public PackedScene FireballScene = ResourceLoader.Load<PackedScene>("res://Scenes/meteor.tscn");
 	// Escena de la bola de fuego
-	public Resource EarthquakeScene = /* preload has no equivalent, add a 'ResourcePreloader' Node in your scene */("res://Scenes/earthquake.tscn");
+	public PackedScene EarthquakeScene = ResourceLoader.Load<PackedScene>("res://Scenes/earthquake.tscn");
 
 
 	[Export] public int LaunchInterval = 5;
@@ -26,31 +26,31 @@ public partial class Volcano : Node3D
 	[Export] public bool IsPressureLeaking = false;
 	[Export] public bool IsVolcanoAsh = false;
 
-	public Node volcano;
-	public Node VolcanoArea;
+	public Node3D volcano;
+	public Node3D VolcanoArea;
 
-	public Node Smoke;
-	public Node EruptSparks;
-	public Node EruptSmoke;
-	public Node EruptSound;
+	public GpuParticles3D Smoke;
+	public GpuParticles3D EruptSparks;
+	public GpuParticles3D EruptSmoke;
+	public AudioStreamPlayer3D EruptSound;
 	public Marker3D LaunchMarker;
 
 	public override void _Ready()
 	{
-		volcano = GetNode("Volcano");
-		VolcanoArea = GetNode("Volcano_Area");
-		Smoke = GetNode("Smoke");
-		EruptSparks = GetNode("Erupt Sparks");
-		EruptSmoke = GetNode("Erupt Smoke");
-		EruptSound = GetNode("Erupt Sound");
-		LaunchMarker = GetNode("launch_marker");
+		volcano = GetNode<Node3D>("Volcano");
+		VolcanoArea = GetNode<Node3D>("Volcano_Area");
+		Smoke = GetNode<GpuParticles3D>("Smoke");
+		EruptSparks = GetNode<GpuParticles3D>("Erupt Sparks");
+		EruptSmoke = GetNode<GpuParticles3D>("Erupt Smoke");
+		EruptSound = GetNode<AudioStreamPlayer3D>("Erupt Sound");
+		LaunchMarker = GetNode<Marker3D>("launch_marker");
 		LaunchPosition = LaunchMarker.GlobalPosition;
 	}
 
-	public void CheckPressure()
+	public async void CheckPressure()
 	{
 
-		// Verifica si la presi�n del volc�n es mayor o igual a 100
+		// Verifica si la presin del volcn es mayor o igual a 100
 		if(Pressure >= 100)
 		{
 
@@ -61,24 +61,32 @@ public partial class Volcano : Node3D
 				// Establece que el volc�n est� en proceso de erupci�n
 				IsGoingToErupt = true;
 
+				// 1. Declaramos la variable fuera para poder usarla después en el QueueFree
+				Node3D earthquakeNode = null; 
 
-				var earthquake;
-
-
-				// Si un n�mero aleatorio entre 1 y 3 es igual a 3
 				if(GD.Randi() % 3 == 0)
 				{
+					// 2. Instanciamos (ajusta 'Earthquake' al nombre real de tu clase de terremoto)
+					var earthquakeInstance = EarthquakeScene.Instantiate<Node3D>(); 
+					GetParent().AddChild(earthquakeInstance);
+					
+					// 3. CORRECCIÓN: Asignar la posición completa
+					earthquakeInstance.GlobalPosition = GlobalPosition; 
+					
+					earthquakeNode = earthquakeInstance;
+				}
 
-					// Crea una instancia del objeto que representa el terremoto
-					earthquake = EarthquakeScene.Instantiate();
-					GetParent().AddChild(earthquake);
-					earthquake.GlobalTransform.Origin = GlobalTransform.Origin;
+				// ... esperar tiempo ...
+
+				if(IsInstanceValid(earthquakeNode))
+				{
+					earthquakeNode.QueueFree();
 				}
 
 
-				// Llama a la funci�n Erupt despu�s de un tiempo aleatorio entre 10 y 20 segundos
+				// Llama a la funcin Erupt despus de un tiempo aleatorio entre 10 y 20 segundos
 				await ToSignal(GetTree().CreateTimer(GD.RandRange(10, 20)), "Timeout");
-				if(GodotObject.IsInstanceValid(this))
+				if(IsInstanceValid(this))
 				{
 					Erupt();
 					Pressure = 99;
@@ -88,16 +96,16 @@ public partial class Volcano : Node3D
 
 				await ToSignal(GetTree().CreateTimer(GD.RandRange(10, 20)), "Timeout");
 
-				if(GodotObject.IsInstanceValid(earthquake))
+				if(GodotObject.IsInstanceValid(earthquakeNode))
 				{
-					earthquake.QueueFree();
+					earthquakeNode.QueueFree();
 				}
 			}
 		}
 	}
 
 
-	public void Erupt()
+	public async void Erupt()
 	{
 		Smoke.Emitting = false;
 		EruptSparks.Emitting = true;
@@ -105,24 +113,23 @@ public partial class Volcano : Node3D
 		EruptSound.Play();
 		_LaunchFireball(LaunchAmount, LaunchInterval);
 
-		await ToSignal(this, "Await");
-		GetTree().CreateTimer(10).Timeout;
+		await ToSignal(GetTree().CreateTimer(10), "timeout");
 
 		IsVolcanoAsh = true;
 
 		Smoke.Emitting = true;
 
-		Globals.TemperatureTarget = GD.RandRange(30, 40);
-		Globals.HumidityTarget = GD.RandRange(0, 10);
-		Globals.BradiationTarget = 0;
-		Globals.OxygenTarget = 0;
-		Globals.PressureTarget = GD.RandRange(10000, 10020);
-		Globals.WindDirectionTarget = new Vector3(GD.RandRange( - 1, 1), 0, GD.RandRange( - 1, 1));
-		Globals.WindSpeedTarget = GD.RandRange(0, 50);
+		Globals.Instance.TemperatureTarget = GD.RandRange(30, 40);
+		Globals.Instance.HumidityTarget = GD.RandRange(0, 10);
+		Globals.Instance.BradiationTarget = 0;
+		Globals.Instance.OxygenTarget = 0;
+		Globals.Instance.PressureTarget = GD.RandRange(10000, 10020);
+		Globals.Instance.WindDirectionTarget = new Vector3(GD.RandRange( - 1, 1), 0, GD.RandRange( - 1, 1));
+		Globals.Instance.WindSpeedTarget = GD.RandRange(0, 50);
 
 		if(IsVolcanoAsh)
 		{
-			Globals.SetWeatherAndDisaster.Rpc("Dust Storm");
+			Globals.Instance.SetWeatherAndDisaster("Dust Storm");
 		}
 	}
 
@@ -131,12 +138,12 @@ public partial class Volcano : Node3D
 		CheckPressure();
 	}
 
-	protected void _LaunchFireball(int range, int time)
+	protected async void _LaunchFireball(int range, int time)
 	{
-		foreach(int i in range)
+		for(int i = 0; i < range; i++)
 		{
-			var fireball = FireballScene.Instantiate();
-			var launch_direction = new Vector3(GD.RandRange( - 1, 1), 1, GD.RandRange( - 1, 1)).Normalized();
+			Meteors fireball = FireballScene.Instantiate<Meteors>();
+			Vector3 launch_direction = new Vector3(GD.RandRange( - 1, 1), 1, GD.RandRange( - 1, 1)).Normalized();
 			// Direcci�n hacia arriba
 			GetParent().AddChild(fireball, true);
 			// Agregar la bola de fuego como hijo del volc�n primero

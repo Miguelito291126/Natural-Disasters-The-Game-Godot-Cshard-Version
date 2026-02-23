@@ -16,15 +16,15 @@ public partial class DeathMenu : CanvasLayer
 			GetTree().Paused = false;
 		}
 
-		GetParent()._ResetPlayer();
-		Input.SetMouseMode(Input.MouseMode.MouseModeCaptured);
+		GetParent<Player>()._ResetPlayer();
+		Input.SetMouseMode(Input.MouseModeEnum.Captured);
 		this.Hide();
 	}
 
 
 	protected void _OnExitPressed()
 	{
-		Globals.CloseConection();
+		Globals.Instance.CloseConection();
 	}
 
 

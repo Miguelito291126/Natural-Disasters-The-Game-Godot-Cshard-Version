@@ -8,20 +8,20 @@ public partial class Player : CharacterBody3D
 	[Export] public string Username = "Player";
 	[Export] public int Points = 0;
 
-	public int SPEED = 0;
+	public float SPEED = 0;
 
-	public const double SPEED_RUN = 25.0;
-	public const double SPEED_WALK = 15.0;
-	public const double SPEED_NOCLIP = 100.0;
-	public const double JUMP_VELOCITY = 14.0;
-	public const double SENSIBILITY = 0.02;
-	public const double LERP_VAL = 0.15;
+	public const float SPEED_RUN = 25.0f;
+	public const float SPEED_WALK = 15.0f;
+	public const float SPEED_NOCLIP = 100.0f;
+	public const float JUMP_VELOCITY = 14.0f;
+	public const float SENSIBILITY = 0.02f;
+	public const float LERP_VAL = 0.15f;
 
-	public const double BobFreq = 2.0;
-	public const double BobAm = 0.08;
-	[Export] public double TBob = 0.0;
+	public const float BobFreq = 2.0f;
+	public const float BobAm = 0.08f;
+	[Export] public float TBob = 0.0f;
 
-	[Export] public double Mass = 0.5;
+	[Export] public float Mass = 0.5f;
 
 
 	public int MaxHearth = 100;
@@ -29,7 +29,7 @@ public partial class Player : CharacterBody3D
 	public int MaxOxygen = 100;
 	public int MaxBradiation = 100;
 
-	[Export] public int FallStrength = 0;
+	[Export] public float FallStrength = 0;
 
 
 	public int MinHearth = 0;
@@ -38,12 +38,12 @@ public partial class Player : CharacterBody3D
 	public int MinBdradiation = 0;
 
 
-	[Export] public double Hearth = 100;
+	[Export] public float Hearth = 100.0f;
 
-	[Export] public double BodyTemperature = 37;
-	[Export] public double BodyOxygen = 100;
-	[Export] public double BodyBradiation = 0;
-	[Export] public double BodyWind = 0;
+	[Export] public float BodyTemperature = 37.0f;
+	[Export] public float BodyOxygen = 100.0f;
+	[Export] public float BodyBradiation = 0.0f;
+	[Export] public float BodyWind = 0.0f;
 
 	[Export] public bool Outdoor = false;
 	[Export] public bool IsInWater = false;
@@ -53,8 +53,8 @@ public partial class Player : CharacterBody3D
 	[Export] public bool IsOnFire = false;
 	[Export] public bool IsAlive = true;
 
-	[Export] public double SwimFactor = 0.25;
-	[Export] public double SwimCap = 50;
+	[Export] public float SwimFactor = 0.25f;
+	[Export] public float SwimCap = 50.0f;
 
 	public GpuParticles3D RainNode;
 	public GpuParticles3D SplashNode;
@@ -64,11 +64,11 @@ public partial class Player : CharacterBody3D
 	public Control PauseMenuNode;
 	public AnimationPlayer AnimationplayerNode;
 	public AnimationTree AnimationTreeNode;
-	public Camera3D CameraNode;
+	public Camera3d CameraNode;
 	public Node3D HeadNode;
 	public Node3D HandNode;
 	public Node3D EsqueletoNode;
-	public Node Label;
+	public Label Label;
 	public ColorRect TempEffect;
 	public Control DeathMenu;
 	public GpuParticles3D FireParticles;
@@ -90,12 +90,12 @@ public partial class Player : CharacterBody3D
 
 	public RayCast3D Interactor;
 	public SpotLight3D SpotLight3D;
-	public Node Spawn;
+	public Marker3D Spawn;
 
 	public Skeleton3D Skeleton;
 	public PhysicalBoneSimulator3D SkeletonPhy;
 	public CollisionShape3D Capsule;
-	public Variant Mesh;
+	public MeshInstance3D Mesh;
 
 
 	// Hueso f�sico de referencia para el ragdoll (cerca del cuello/torso)
@@ -121,12 +121,13 @@ public partial class Player : CharacterBody3D
 
 	[Export] public string Character = "blue";
 	protected string _LastAppliedCharacter = "";
-	[Export] public Array PlayerMaterials = new Array{/* preload has no equivalent, add a 'ResourcePreloader' Node in your scene */("res://Materials/player blue.tres"), /* preload has no equivalent, add a 'ResourcePreloader' Node in your scene */("res://Materials/player red.tres"), /* preload has no equivalent, add a 'ResourcePreloader' Node in your scene */("res://Materials/player green.tres"), /* preload has no equivalent, add a 'ResourcePreloader' Node in your scene */("res://Materials/player yellow.tres"), };
+	[Export] public Array<Material> PlayerMaterials = new Array<Material>{/* preload has no equivalent, add a 'ResourcePreloader' Node in your scene */(Material)ResourceLoader.Load("res://Materials/player blue.tres"), /* preload has no equivalent, add a 'ResourcePreloader' Node in your scene */(Material)ResourceLoader.Load("res://Materials/player red.tres"), /* preload has no equivalent, add a 'ResourcePreloader' Node in your scene */(Material)ResourceLoader.Load("res://Materials/player green.tres"), /* preload has no equivalent, add a 'ResourcePreloader' Node in your scene */(Material)ResourceLoader.Load("res://Materials/player yellow.tres"), };
 
+	Vector3 velocity = Vector3.Zero;
 	public override void _EnterTree()
 	{
 		PlayerId = int.Parse(Name.ToString());
-		Globals.PrintRole("set authority to: " + Name);
+		Globals.Instance.PrintRole("set authority to: " + Name);
 		SetMultiplayerAuthority(PlayerId);
 	}
 
@@ -136,15 +137,16 @@ public partial class Player : CharacterBody3D
 	}
 
 
-	protected void _SetAdminMode(bool enable)
+	public void _SetAdminMode(bool enable)
 	{
 		AdminMode = enable;
 		if(Multiplayer.IsServer())
 		{
-			Globals.PrintRole($"Admin mode cambiado para {Username}: {enable}");
+			Globals.Instance.PrintRole($"Admin mode cambiado para {Username}: {enable}");
 		}
 	}
 
+	[Rpc(MultiplayerApi.RpcMode.AnyPeer, CallLocal = true)]
 	protected void _SetRagdollState(bool enable)
 	{
 		RagdollEnabled = enable;
@@ -213,11 +215,11 @@ public partial class Player : CharacterBody3D
 	{
 
 		// 1) Prioridad: seguir un hueso F�SICO (PhysicalBone3D), que s� se mueve con el ragdoll
-		if(RagdollFollowBone && CameraNode)
+		if(RagdollFollowBone != null && CameraNode != null)
 		{
 			var bone_transform = RagdollFollowBone.GlobalTransform;
 
-			// Posici�n: misma posici�n relativa que la c�mara viva, pero rotaci�n original (para que no mire al suelo)
+			// Posicin: misma posicin relativa que la cmara viva, pero rotacin original (para que no mire al suelo)
 			var local_origin = CameraDefaultLocalTransform.Origin;
 			var target_position = bone_transform * local_origin;
 			CameraNode.GlobalPosition = target_position;
@@ -227,7 +229,7 @@ public partial class Player : CharacterBody3D
 
 
 		// 2) Fallback: si por alguna raz�n no hay hueso f�sico, usar el hueso "cuello" del Skeleton
-		if(Skeleton && HeadBoneIndex >= 0 && CameraNode)
+		if(Skeleton != null && HeadBoneIndex >= 0 && CameraNode != null)
 		{
 			var bone_global_pose = Skeleton.GetBoneGlobalPose(HeadBoneIndex);
 			var bone_world_transform = Skeleton.GlobalTransform * bone_global_pose;
@@ -239,8 +241,8 @@ public partial class Player : CharacterBody3D
 		}
 	}
 
-
-	public void Damage(double amount)
+	[Rpc(MultiplayerApi.RpcMode.AnyPeer,CallLocal = true)]
+	public void Damage(float amount)
 	{
 		if(GodMode)
 		{
@@ -253,7 +255,7 @@ public partial class Player : CharacterBody3D
 		}
 
 		Hearth = Mathf.Clamp(Hearth - amount, MinHearth, MaxHearth);
-		Globals.PrintRole($"damage applied:{amount}, hearth now:{Hearth}");
+		Globals.Instance.PrintRole($"damage applied:{amount}, hearth now:{Hearth}");
 
 		if(Hearth <= 0)
 		{
@@ -264,10 +266,10 @@ public partial class Player : CharacterBody3D
 			if(IsMultiplayerAuthority())
 			{
 				Die();
-				Globals.RemovePoints();
+				Globals.Instance.RemovePoints();
 			}
 
-			RpcMethod(nameof(_SetRagdollState), true);
+			Rpc(nameof(_SetRagdollState), true);
 		}
 
 		else
@@ -286,7 +288,7 @@ public partial class Player : CharacterBody3D
 		}
 	}
 
-	public async void Ignite(Variant time)
+	public async void Ignite(int time)
 	{
 		IsOnFire = true;
 		await ToSignal(GetTree().CreateTimer(time), "Timeout");
@@ -310,7 +312,7 @@ public partial class Player : CharacterBody3D
 	public bool HayJugadoresConMismoNombre(string nombre_a_verificar, bool excluir_este_jugador = true)
 	{
 		var contador = 0;
-		foreach(Node player in GetTree().GetNodesInGroup("player"))
+		foreach(Player player in GetTree().GetNodesInGroup("player"))
 		{
 
 			// Si se debe excluir este jugador, saltarlo
@@ -338,11 +340,11 @@ public partial class Player : CharacterBody3D
 
 
 	// Funci�n para obtener todos los jugadores que tienen el mismo nombre
-	public Godot.Collections.Array ObtenerJugadoresConMismoNombre(string nombre_a_verificar, bool excluir_este_jugador = true)
+	public Array ObtenerJugadoresConMismoNombre(string nombre_a_verificar, bool excluir_este_jugador = true)
 	{
-		var jugadores_duplicados = new Godot.Collections.Array{};
+		Array jugadores_duplicados = new Array();
 
-		foreach(Node player in GetTree().GetNodesInGroup("player"))
+		foreach(Player player in GetTree().GetNodesInGroup("player"))
 		{
 
 			// Si se debe excluir este jugador, saltarlo
@@ -372,11 +374,11 @@ public partial class Player : CharacterBody3D
 		PauseMenuNode = GetNode<Control>("Pause menu");
 		AnimationplayerNode = GetNode<AnimationPlayer>("AnimationPlayer");
 		AnimationTreeNode = GetNode<AnimationTree>("AnimationTree");
-		CameraNode = GetNode<Camera3D>("head/Camera3D");
+		CameraNode = GetNode<Camera3d>("head/Camera3D");
 		HeadNode = GetNode<Node3D>("head");
 		HandNode = GetNode<Node3D>("head/hand");
 		EsqueletoNode = GetNode<Node3D>("Esqueleto");
-		Label = GetNode("Name");
+		Label = GetNode<Label>("Name");
 		TempEffect = GetNode<ColorRect>("Temp_Effect");
 		DeathMenu = GetNode<Control>("Death Menu");
 		FireParticles = GetNode<GpuParticles3D>("Fire");
@@ -392,12 +394,12 @@ public partial class Player : CharacterBody3D
 		WindExtremeSound = GetNode<AudioStreamPlayer3D>("Wind Extreme sound");
 		Interactor = GetNode<RayCast3D>("head/Camera3D/Interactor");
 		SpotLight3D = GetNode<SpotLight3D>("head/Camera3D/SpotLight3D");
-		Spawn = GetNode("../Spawn");
+		Spawn = GetNode<Marker3D>("../Spawn");
 		Skeleton = GetNode<Skeleton3D>("Esqueleto/Skeleton3D");
 		SkeletonPhy = GetNode<PhysicalBoneSimulator3D>("Esqueleto/Skeleton3D/PhysicalBoneSimulator3D");
-		Capsule = GetNode("CollisionShape3D");
-		Mesh = GetNode("Esqueleto/Skeleton3D/human");
-		RagdollFollowBone = GetNode("Esqueleto/Skeleton3D/PhysicalBoneSimulator3D/Physical Bone clumna3");
+		Capsule = GetNode<CollisionShape3D>("CollisionShape3D");
+		Mesh = GetNode<MeshInstance3D>("Esqueleto/Skeleton3D/human");
+		RagdollFollowBone = GetNode<Node3D>("Esqueleto/Skeleton3D/PhysicalBoneSimulator3D/Physical Bone clumna3");
 		RainNode.Emitting = false;
 		SandNode.Emitting = false;
 		SplashNode.Emitting = false;
@@ -405,20 +407,20 @@ public partial class Player : CharacterBody3D
 		SnowNode.Emitting = false;
 
 
-		Globals.PrintRole($"player name: {int.Parse(Name.ToString())}");
-		Globals.PrintRole($"is authority: {IsMultiplayerAuthority()}");
-		Globals.PrintRole($"get authority: {GetMultiplayerAuthority()}");
+		Globals.Instance.PrintRole($"player name: {int.Parse(Name.ToString())}");
+		Globals.Instance.PrintRole($"is authority: {IsMultiplayerAuthority()}");
+		Globals.Instance.PrintRole($"get authority: {GetMultiplayerAuthority()}");
 
 		CameraNode.Current = IsMultiplayerAuthority();
 
 
 		// Guardar transform original de la cabeza y de la c�mara
-		if(HeadNode)
+		if(HeadNode != null)
 		{
 			HeadDefaultTransform = HeadNode.GlobalTransform;
 			HeadDefaultLocalTransform = HeadNode.Transform;
 		}
-		if(CameraNode)
+		if(CameraNode != null)
 		{
 			CameraDefaultTransform = CameraNode.GlobalTransform;
 			CameraDefaultLocalTransform = CameraNode.Transform;
@@ -426,7 +428,7 @@ public partial class Player : CharacterBody3D
 
 
 		// Obtener el �ndice del hueso "cuello" para seguir en ragdoll
-		if(Skeleton)
+		if(Skeleton != null)
 		{
 			HeadBoneIndex = Skeleton.FindBone("cuello");
 
@@ -439,17 +441,17 @@ public partial class Player : CharacterBody3D
 
 		if(IsMultiplayerAuthority())
 		{
-			Globals.LocalPlayer = this;
-			Input.SetMouseMode(Input.MouseMode.MouseModeCaptured);
+			Globals.Instance.LocalPlayer = this;
+			Input.SetMouseMode(Input.MouseModeEnum.Captured);
 			_ResetPlayer();
-		RpcMethod(nameof(_SetRagdollState), false);
+			Rpc(nameof(_SetRagdollState), false);
 
 
-			// Verificar si hay jugadores con el mismo nombre y a�adir n�mero si es necesario
-			var nombre_base = Globals.Username;
+			// Verificar si hay jugadores con el mismo nombre y aadir nmero si es necesario
+			var nombre_base = Globals.Instance.Username;
 			var contador = 0;
 
-			foreach(Node player in GetTree().GetNodesInGroup("player"))
+			foreach(Player player in GetTree().GetNodesInGroup("player"))
 			{
 
 				// Saltar el jugador actual
@@ -461,7 +463,7 @@ public partial class Player : CharacterBody3D
 
 				// Verificar si el nombre coincide (sin contar n�meros a�adidos)
 				var player_username = player.Username;
-				if(player_username == nombre_base || player_username.BeginsWith(nombre_base))
+				if(player_username == nombre_base || player_username.StartsWith(nombre_base + "_"))
 				{
 					contador += 1;
 				}
@@ -471,8 +473,8 @@ public partial class Player : CharacterBody3D
 			// Si hay duplicados, a�adir n�mero al nombre
 			if(contador > 0)
 			{
-				Globals.Username = nombre_base + (contador + 1).ToString();
-				Username = Globals.Username;
+				Globals.Instance.Username = nombre_base + (contador + 1).ToString();
+				Username = Globals.Instance.Username;
 			}
 
 			if(Multiplayer.IsServer())
@@ -490,27 +492,27 @@ public partial class Player : CharacterBody3D
 			return ;
 		}
 
-		var body_heat_genK = delta;
-		var body_heat_genMAX = 0.01 / 4;
-		var fire_heat_emission = 50;
+		float body_heat_genK = (float)delta;
+		float body_heat_genMAX = 0.01f / 4;
+		float fire_heat_emission = 50;
 
-		var heatscale = 0;
-		var coolscale = 0;
+		float heatscale = 0;
+		float coolscale = 0;
 
-		var core_equilibrium = Mathf.Clamp((37 - BodyTemperature) * body_heat_genK,  - body_heat_genMAX, body_heat_genMAX);
-		var heatsource_equilibrium = Mathf.Clamp((fire_heat_emission * (heatscale)) * body_heat_genK, 0, body_heat_genMAX * 1.3);
-		var coldsource_equilibrium = Mathf.Clamp((fire_heat_emission * (coolscale)) * body_heat_genK, body_heat_genMAX *  - 1.3, 0);
+		float core_equilibrium = (float)Mathf.Clamp((37 - BodyTemperature) * body_heat_genK,  - body_heat_genMAX, body_heat_genMAX);
+		float heatsource_equilibrium = (float)Mathf.Clamp((fire_heat_emission * (heatscale)) * body_heat_genK, 0, body_heat_genMAX * 1.3);
+		float coldsource_equilibrium = (float)Mathf.Clamp((fire_heat_emission * (coolscale)) * body_heat_genK, body_heat_genMAX *  - 1.3, 0);
 
-		var ambient_equilibrium = Mathf.Clamp(((Globals.Temperature - BodyTemperature) * body_heat_genK),  - body_heat_genMAX * 1.1, body_heat_genMAX * 1.1);
+		float ambient_equilibrium = (float)Mathf.Clamp(((Globals.Instance.Temperature - BodyTemperature) * body_heat_genK),  - body_heat_genMAX * 1.1, body_heat_genMAX * 1.1);
 
-		if(Globals.Temperature >= 5 && Globals.Temperature <= 37)
+		if(Globals.Instance.Temperature >= 5 && Globals.Instance.Temperature <= 37)
 		{
 			ambient_equilibrium = 0;
 		}
 
 		BodyTemperature = Mathf.Clamp(BodyTemperature + core_equilibrium + heatsource_equilibrium + coldsource_equilibrium + ambient_equilibrium, MinTemp, MaxTemp);
-		TempEffect.Material.SetShaderParameter("temp", BodyTemperature);
-		TempEffect.Material.SetShaderParameter("Temp", BodyTemperature);
+		((ShaderMaterial)TempEffect.Material).SetShaderParameter("temp", BodyTemperature);
+		((ShaderMaterial)TempEffect.Material).SetShaderParameter("Temp", BodyTemperature);
 
 		var alpha_hot = 1 - ((44 - Mathf.Clamp(BodyTemperature, 39, 44)) / 5);
 		var alpha_cold = ((35 - Mathf.Clamp(BodyTemperature, 24, 35)) / 11);
@@ -519,11 +521,11 @@ public partial class Player : CharacterBody3D
 		{
 			if(alpha_cold != 0)
 			{
-				RpcMethod(nameof(Damage), alpha_hot + alpha_cold);
+				Rpc(nameof(Damage), alpha_hot + alpha_cold);
 			}
 			else if(alpha_hot != 0)
 			{
-				RpcMethod(nameof(Damage), alpha_hot + alpha_cold);
+				Rpc(nameof(Damage), alpha_hot + alpha_cold);
 			}
 		}
 
@@ -546,13 +548,13 @@ public partial class Player : CharacterBody3D
 			return ;
 		}
 
-		if(Globals.Oxygen <= 20 || Globals.IsInwater(this) || IsUnderWater || Globals.IsInlava(this) || IsUnderLava)
+		if(Globals.Instance.Oxygen <= 20 || Globals.Instance.IsInwater(this) || IsUnderWater || Globals.Instance.IsInlava(this) || IsUnderLava)
 		{
-			BodyOxygen = Mathf.Clamp(BodyOxygen - 5 * delta, MinOxygen, MaxOxygen);
+			BodyOxygen = (float)Mathf.Clamp(BodyOxygen - 5 * delta, MinOxygen, MaxOxygen);
 		}
 		else
 		{
-			BodyOxygen = Mathf.Clamp(BodyOxygen + 5 * delta, MinOxygen, MaxOxygen);
+			BodyOxygen = (float)Mathf.Clamp(BodyOxygen + 5 * delta, MinOxygen, MaxOxygen);
 		}
 
 
@@ -560,7 +562,7 @@ public partial class Player : CharacterBody3D
 		{
 			if(GD.RandRange(1, 25) == 25)
 			{
-				RpcMethod(nameof(Damage), GD.RandRange(1, 30));
+				Rpc(nameof(Damage), GD.RandRange(1, 30));
 			}
 		}
 	}
@@ -572,20 +574,20 @@ public partial class Player : CharacterBody3D
 			return ;
 		}
 
-		if(Globals.Bradiation >= 80 && Globals.IsOutdoor(this) && Outdoor)
+		if(Globals.Instance.Bradiation >= 80 && Globals.Instance.IsOutdoor(this) && Outdoor)
 		{
-			BodyBradiation = Mathf.Clamp(BodyBradiation + 5 * delta, MinBdradiation, MaxBradiation);
+			BodyBradiation = (float)Mathf.Clamp(BodyBradiation + 5 * delta, MinBdradiation, MaxBradiation);
 		}
 		else
 		{
-			BodyBradiation = Mathf.Clamp(BodyBradiation - 5 * delta, MinBdradiation, MaxBradiation);
+			BodyBradiation = (float)Mathf.Clamp(BodyBradiation - 5 * delta, MinBdradiation, MaxBradiation);
 		}
 
 		if(BodyBradiation >= 100)
 		{
 			if(GD.RandRange(1, 25) == 25)
 			{
-				RpcMethod(nameof(Damage), GD.RandRange(1, 30));
+				Rpc(nameof(Damage), GD.RandRange(1, 30));
 			}
 		}
 	}
@@ -597,9 +599,9 @@ public partial class Player : CharacterBody3D
 		var desired_char = Character;
 		if(!IsMultiplayerAuthority())
 		{
-			if(Globals.AssignedCharacter.Has(PlayerId))
+			if(Globals.Instance.AssignedCharacter.ContainsKey(PlayerId))
 			{
-				desired_char = Globals.AssignedCharacter[PlayerId];
+				desired_char = Globals.Instance.AssignedCharacter[PlayerId];
 			}
 		}
 
@@ -633,9 +635,9 @@ public partial class Player : CharacterBody3D
 		}
 	}
 
-	public void UpdateMaterial(Variant index)
+	public void UpdateMaterial(int index)
 	{
-		if(!Mesh)
+		if(Mesh == null || PlayerMaterials == null || index >= PlayerMaterials.Count)
 		{
 			return ;
 		}
@@ -673,7 +675,7 @@ public partial class Player : CharacterBody3D
 		{
 			if(GD.RandRange(1, 5) == 5)
 			{
-				RpcMethod(nameof(Damage), 5);
+				Rpc(nameof(Damage), 5);
 			}
 		}
 	}
@@ -690,14 +692,14 @@ public partial class Player : CharacterBody3D
 		var chat_node = GetTree().GetRoot().FindChild("Chat", true, false);
 		if(chat_node != null)
 		{
-			var line_edit = chat_node.GetNodeOrNull("Panel/Panel2/LineEdit");
+			LineEdit line_edit = chat_node.GetNodeOrNull<LineEdit>("Panel/Panel2/LineEdit");
 			if(line_edit != null && line_edit.HasFocus())
 			{
 				return ;
 			}
 		}
 
-		if(Globals.IsChatOpen)
+		if(Globals.Instance.IsChatOpen)
 		{
 			return ;
 		}
@@ -709,58 +711,58 @@ public partial class Player : CharacterBody3D
 				return ;
 			}
 
-			if(Globals.Gamemode != "sandbox")
+			if(Globals.Instance.Gamemode != "sandbox")
 			{
 				return ;
 			}
 
-			if(keyEvent.Keycode == KEY_1)
+			if(keyEvent.Keycode == Key.Key1)
 			{
-				Globals.SetWeatherAndDisaster.Rpc(1);
+				Rpc(nameof(Globals.Instance.SetWeatherAndDisaster), 1);
 			}
-			if(keyEvent.Keycode == KEY_2)
+			if(keyEvent.Keycode == Key.Key2)
 			{
-				Globals.SetWeatherAndDisaster.Rpc(2);
+				Rpc(nameof(Globals.Instance.SetWeatherAndDisaster), 2);
 			}
-			if(keyEvent.Keycode == KEY_3)
+			if(keyEvent.Keycode == Key.Key3)
 			{
-				Globals.SetWeatherAndDisaster.Rpc(3);
+				Rpc(nameof(Globals.Instance.SetWeatherAndDisaster), 3);
 			}
-			if(keyEvent.Keycode == KEY_4)
+			if(keyEvent.Keycode == Key.Key4)
 			{
-				Globals.SetWeatherAndDisaster.Rpc(4);
+				Rpc(nameof(Globals.Instance.SetWeatherAndDisaster), 4);
 			}
-			if(keyEvent.Keycode == KEY_5)
+			if(keyEvent.Keycode == Key.Key5)
 			{
-				Globals.SetWeatherAndDisaster.Rpc(5);
+				Rpc(nameof(Globals.Instance.SetWeatherAndDisaster), 5);
 			}
-			if(keyEvent.Keycode == KEY_6)
+			if(keyEvent.Keycode == Key.Key6)
 			{
-				Globals.SetWeatherAndDisaster.Rpc(6);
+				Rpc(nameof(Globals.Instance.SetWeatherAndDisaster), 6);
 			}
-			if(keyEvent.Keycode == KEY_7)
+			if(keyEvent.Keycode == Key.Key7)
 			{
-				Globals.SetWeatherAndDisaster.Rpc(7);
+				Rpc(nameof(Globals.Instance.SetWeatherAndDisaster), 7);
 			}
-			if(keyEvent.Keycode == KEY_8)
+			if(keyEvent.Keycode == Key.Key8)
 			{
-				Globals.SetWeatherAndDisaster.Rpc(8);
+				Rpc(nameof(Globals.Instance.SetWeatherAndDisaster), 8);
 			}
-			if(keyEvent.Keycode == KEY_9)
+			if(keyEvent.Keycode == Key.Key9)
 			{
-				Globals.SetWeatherAndDisaster.Rpc(9);
+				Rpc(nameof(Globals.Instance.SetWeatherAndDisaster), 9);
 			}
-			if(keyEvent.Keycode == KEY_0)
+			if(keyEvent.Keycode == Key.Key0)
 			{
-				Globals.SetWeatherAndDisaster.Rpc(0);
+				Rpc(nameof(Globals.Instance.SetWeatherAndDisaster), 0);
 			}
 		}
 	}
 
 	public void rainsound()
 	{
-		Globals.IsRaining = RainNode.Emitting && Globals.IsOutdoor(this) && Outdoor;
-		if(Globals.IsRaining)
+		Globals.Instance.IsRaining = RainNode.Emitting && Globals.Instance.IsOutdoor(this) && Outdoor;
+		if(Globals.Instance.IsRaining)
 		{
 			if(!RainSound.Playing)
 			{
@@ -815,19 +817,19 @@ public partial class Player : CharacterBody3D
 	{
 		UpdateCharacter();
 
-		// tambi�n para clientes no autoridad (solo material)
+		// tambin para clientes no autoridad (solo material)
 		if(!IsMultiplayerAuthority())
 		{
 			return ;
 		}
 
-		BodyTemp(delta);
-		BodyOxy(delta);
-		BodyRad(delta);
+		BodyTemp((float)delta);
+		BodyOxy((float)delta);
+		BodyRad((float)delta);
 		UnderwaterOrUnderlavaEffects();
 		IsOnFireEffects();
-		RainSound();
-		WindSound();
+		rainsound();
+		windsound();
 		UpdateLabels();
 	}
 
@@ -838,9 +840,9 @@ public partial class Player : CharacterBody3D
 			return ;
 		}
 
-		Username = Globals.Username;
-		Points = Globals.Points;
-		Label.Text = Globals.Username;
+		Username = Globals.Instance.Username;
+		Points = Globals.Instance.Points;
+		Label.Text = Globals.Instance.Username;
 	}
 
 	public override void _PhysicsProcess(double delta)
@@ -850,16 +852,18 @@ public partial class Player : CharacterBody3D
 			return ;
 		}
 
-		if(Globals.IsPauseMenuOpen)
+		if(Globals.Instance.IsPauseMenuOpen)
 		{
 			return ;
 		}
 
-		if(Globals.IsChatOpen)
+		if(Globals.Instance.IsChatOpen)
 		{
 			return ;
 		}
 
+
+		
 
 		// Hacer que la c�mara siga al cuerpo en ragdoll
 		if(RagdollEnabled)
@@ -870,61 +874,62 @@ public partial class Player : CharacterBody3D
 			// No procesar movimiento cuando el ragdoll est� activo
 
 		}// Add the gravity.
-		if(!Noclip)
+
+
+		
+
+		if (!Noclip)
 		{
-			if(!IsOnFloor())
+			if (!IsOnFloor())
 			{
-				if(IsInWater || IsInLava)
+				if (IsInWater || IsInLava)
 				{
-					Velocity.Y = Globals.Gravity * delta * SwimFactor;
+					// 2. Modificamos la variable local
+					velocity.Y = (float)((float)Globals.Instance.Gravity * delta * SwimFactor);
 				}
 				else
 				{
-
-					// Si est� cayendo, aplica m�s gravedad
-					if(Velocity.Y < 0)
-					{
-						Velocity.Y -= Globals.Gravity * delta;
-					}
-					else
-					{
-						Velocity.Y -= Globals.Gravity * delta;
-					}
-
-					FallStrength = Velocity.Y;
+					// Si está cayendo, aplica más gravedad
+					// Nota: Aquí ambos casos restan lo mismo según tu código original
+					velocity.Y -= (float)((float)Globals.Instance.Gravity * delta);
+					
+					FallStrength = velocity.Y;
 				}
 			}
 			else
 			{
-				if(!(IsInWater || IsInLava))
+				if (!(IsInWater || IsInLava))
 				{
-					if(FallStrength <=  - 90)
+					if (FallStrength <= -90)
 					{
-						damage.Rpc(50);
+						Rpc(nameof(Damage), 50);
 					}
 				}
 			}
 		}
 		else
 		{
-			Velocity.Y = 0;
+			velocity.Y = 0;
 		}
 
+		// 3. REASIGNAMOS el vector modificado de vuelta a la propiedad Velocity
+		
 
 		// Handle jump.
 		if(Input.IsActionJustPressed("Jump"))
 		{
 			if(IsOnFloor())
 			{
-				Velocity.Y = JUMP_VELOCITY;
+				velocity.Y = JUMP_VELOCITY;
 			}
 
 			if(IsInWater || IsInLava)
 			{
-				Velocity.Y += JUMP_VELOCITY;
+				velocity.Y += JUMP_VELOCITY;
 			}
 		}
 
+		Velocity = velocity;
 
 		if(Input.IsActionJustPressed("Flashligh"))
 		{
@@ -982,41 +987,42 @@ public partial class Player : CharacterBody3D
 			// L�gica normal cuando no es noclip
 			if(IsOnFloor())
 			{
-				if(direction)
+				if(direction != Vector3.Zero)
 				{
-					Velocity.X = direction.X * SPEED;
-					Velocity.Z = direction.Z * SPEED;
+					velocity.X = direction.X * SPEED;
+					velocity.Z = direction.Z * SPEED;
 				}
 				else
 				{
-					Velocity.X = Mathf.Lerp(Velocity.X, direction.X * SPEED, delta * 7.0);
-					Velocity.Z = Mathf.Lerp(Velocity.Z, direction.Z * SPEED, delta * 7.0);
+					velocity.X = (float)Mathf.Lerp(velocity.X, direction.X * SPEED, delta * 7.0);
+					velocity.Z = (float)Mathf.Lerp(velocity.Z, direction.Z * SPEED, delta * 7.0);
 				}
 			}
 			else
 			{
-				Velocity.X = Mathf.Lerp(Velocity.X, direction.X * SPEED, delta * 3.0);
-				Velocity.Z = Mathf.Lerp(Velocity.Z, direction.Z * SPEED, delta * 3.0);
+				velocity.X = (float)Mathf.Lerp(velocity.X, direction.X * SPEED, delta * 3.0);
+				velocity.Z = (float)Mathf.Lerp(velocity.Z, direction.Z * SPEED, delta * 3.0);
 			}
 		}
 
 
-		var horizontal_velocity = new Vector2(Velocity.X, Velocity.Z);
+		var horizontal_velocity = new Vector2(velocity.X, velocity.Z);
 
-		AnimationTreeNode.Set("parameters/conditions/is_falling", !IsOnFloor() && Velocity.Y < 0);
-		AnimationTreeNode.Set("parameters/conditions/is_jumping", Velocity.Y > 0);
+		AnimationTreeNode.Set("parameters/conditions/is_falling", !IsOnFloor() && velocity.Y < 0);
+		AnimationTreeNode.Set("parameters/conditions/is_jumping", velocity.Y > 0);
 		AnimationTreeNode.Set("parameters/conditions/is_swiming", IsInWater || IsInLava);
 		AnimationTreeNode.Set("parameters/conditions/is_idle", IsOnFloor() && horizontal_velocity.Length() < 0.1);
 		AnimationTreeNode.Set("parameters/conditions/is_walking", IsOnFloor() && horizontal_velocity.Length() > 0.1);
 
 		if(Interactor.IsColliding())
 		{
-			var target = Interactor.GetCollider();
-			if(target != null && target.HasMethod("Interact"))
+			Node3D target = (Node3D)Interactor.GetCollider();
+			if (target != null && target.HasMethod("Interact"))
 			{
-				if(Input.IsActionJustPressed("Interact"))
+				if (Input.IsActionJustPressed("Interact"))
 				{
-					target.Interact();
+					// En lugar de target.Interact();
+					target.Call("Interact"); 
 				}
 			}
 			else if(target != null && target.IsInGroup("Pickable"))
@@ -1027,13 +1033,13 @@ public partial class Player : CharacterBody3D
 					{
 
 						// Si somos el servidor/host, llamamos DIRECTO
-						Globals.RequestPickObject(GetPath(), target.GetPath());
+						Rpc(nameof(Globals.Instance.RequestPickObject), GetPath(), target.GetPath());
 					}
 					else
 					{
 
 						// Si somos cliente, usamos RPC hacia el servidor
-						Globals.RequestPickObject.Rpc(GetPath(), target.GetPath());
+						Rpc(nameof(Globals.Instance.RequestPickObject), GetPath(), target.GetPath());
 					}
 				}
 			}
@@ -1047,7 +1053,7 @@ public partial class Player : CharacterBody3D
 			}
 			else
 			{
-				Globals.PrintRole("You dont have perms");
+				Globals.Instance.PrintRole("You dont have perms");
 			}
 		}
 
@@ -1061,14 +1067,14 @@ public partial class Player : CharacterBody3D
 		if(Noclip)
 		{
 			Capsule.Disabled = true;
-			Velocity.Y = 0;
+			Velocity = Vector3.Zero;
 			FallStrength = 0;
-			Globals.PrintRole("Noclip activated");
+			Globals.Instance.PrintRole("Noclip activated");
 		}
 		else
 		{
 			Capsule.Disabled = false;
-			Globals.PrintRole("Noclip desactivated");
+			Globals.Instance.PrintRole("Noclip desactivated");
 		}
 	}
 
@@ -1085,14 +1091,14 @@ public partial class Player : CharacterBody3D
 		var chat_node = GetTree().GetRoot().FindChild("Chat", true, false);
 		if(chat_node != null)
 		{
-			var line_edit = chat_node.GetNodeOrNull("Panel/Panel2/LineEdit");
+			var line_edit = chat_node.GetNodeOrNull<LineEdit>("Panel/Panel2/LineEdit");
 			if(line_edit != null && line_edit.HasFocus())
 			{
 				return ;
 			}
 		}
 
-		if(Globals.IsChatOpen)
+		if(Globals.Instance.IsChatOpen)
 		{
 			return ;
 		}
@@ -1103,26 +1109,26 @@ public partial class Player : CharacterBody3D
 			return ;
 		}
 
-		if(Input.GetMouseMode() == Input.MouseMode.MouseModeCaptured)
+		if(Input.GetMouseMode() == Input.MouseModeEnum.Captured)
 		{
 			if(ev is InputEventMouseMotion mm)
 			{
-				CameraNode.Rotation.X -= mm.Relative.Y * SENSIBILITY;
-				CameraNode.RotationDegrees.X = Mathf.Clamp(CameraNode.RotationDegrees.X,  - 90, 90);
-				HeadNode.Rotation.Y -= mm.Relative.X * SENSIBILITY;
-				EsqueletoNode.RotationDegrees.Y = HeadNode.RotationDegrees.Y;
+				CameraNode.Rotation -=  new Vector3(CameraNode.Rotation.X, mm.Relative.Y * (float)SENSIBILITY, CameraNode.Rotation.Z);
+				CameraNode.RotationDegrees = new Vector3(Mathf.Clamp(CameraNode.RotationDegrees.X,  - 90, 90), CameraNode.RotationDegrees.Y, CameraNode.RotationDegrees.Z	);
+				HeadNode.Rotation -= new Vector3(mm.Relative.X * (float)SENSIBILITY, 0, 0);
+				EsqueletoNode.RotationDegrees = new Vector3(EsqueletoNode.RotationDegrees.X, HeadNode.RotationDegrees.Y, EsqueletoNode.RotationDegrees.Z);
 			}
 			else if(ev is InputEventJoypadMotion jm)
 			{
-				if(jm.Axis == 2)
+				if(jm.Axis.Equals(2))
 				{
-					HeadNode.Rotation.Y += jm.AxisValue * SENSIBILITY;
-					EsqueletoNode.RotationDegrees.Y = HeadNode.RotationDegrees.Y;
+					HeadNode.Rotation += new Vector3(jm.AxisValue * (float)SENSIBILITY, 0, 0) ;
+					EsqueletoNode.RotationDegrees = new Vector3(EsqueletoNode.RotationDegrees.X, HeadNode.RotationDegrees.Y, EsqueletoNode.RotationDegrees.Z);
 				}
-				else if(jm.Axis == 3)
+				else if(jm.Axis.Equals(3))
 				{
-					CameraNode.Rotation.X += jm.AxisValue * SENSIBILITY;
-					CameraNode.RotationDegrees.X = Mathf.Clamp(CameraNode.RotationDegrees.X,  - 90, 90);
+					CameraNode.Rotation +=  new Vector3(0, jm.AxisValue * (float)SENSIBILITY, 0) ;
+					CameraNode.RotationDegrees = new Vector3(Mathf.Clamp(CameraNode.RotationDegrees.X,  - 90, 90), CameraNode.RotationDegrees.Y, CameraNode.RotationDegrees.Z);
 				}
 			}
 		}
@@ -1133,7 +1139,7 @@ public partial class Player : CharacterBody3D
 	{
 		if(body.IsInGroup("Meteor"))
 		{
-			RpcMethod(nameof(Damage), 100);
+			Rpc(nameof(Damage), 100);
 		}
 	}
 
@@ -1150,52 +1156,56 @@ public partial class Player : CharacterBody3D
 
 	protected void _OnArea3dAreaEntered(Area3D area)
 	{
-		if(area.IsInGroup("Explosion"))
+		if (area.IsInGroup("Explosion"))
 		{
-			var area_parent = area.GetParent();
-			var distance = (area.GlobalPosition - GlobalPosition).Length();
-			var direction = (area.GlobalPosition - GlobalPosition).Normalized();
+			// 1. Obtenemos el padre y verificamos que no sea nulo
+			Explosion areaParent = area.GetParent<Explosion>();
+			if (areaParent == null) return;
 
+			// 2. CORRECCIÓN DE DIRECCIÓN: (Destino - Origen) 
+			// Para alejarte de la explosión: (Tu posición - Posición explosión)
+			float distance = (GlobalPosition - area.GlobalPosition).Length();
+			Vector3 direction = (GlobalPosition - area.GlobalPosition).Normalized();
 
-			// Comprobaciones seguras
-			if(!area_parent.HasMeta("explosion_force") && area_parent.Contains(!"explosion_force"))
-			{
-				return ;
-			}
+			// 3. Verificación de seguridad de variables
+			// Si ExplosionForce es una variable de la clase Explosion, no necesitas HasMeta
+			float force = areaParent.ExplosionForce * (1.0f - Mathf.Clamp(distance / areaParent.ExplosionRadius, 0, 1));
 
-			var force = area_parent.ExplosionForce * (1 - distance / area_parent.ExplosionRadius);
+			// 4. Aplicar velocidad (Recuerda que Velocity es Vector3)
 			Velocity = direction * force;
 
-
-			// Da�o seguro (si no existe, asigna 0)
-			var damag = 0;
-			if(area_parent.Contains("explosion_damage"))
+			// 5. Daño
+			int damag = 0;
+			// Si usas metadatos:
+			if (areaParent.HasMeta("explosion_damage"))
 			{
-				damag = area_parent.ExplosionDamage;
-			}
+				damag = areaParent.ExplosionDamage;
+			} 
+			// Si es una variable normal de la clase, simplemente:
+			// damag = areaParent.ExplosionDamage;
 
-			if(damag > 0)
+			if (damag > 0)
 			{
-				RpcMethod(nameof(Damage), damag);
+				// Nota: Asegúrate de que el método Damage tenga el atributo [Rpc]
+				Rpc(nameof(Damage), damag); 
 			}
 		}
-
 		else if(area.IsInGroup("Lava_Area"))
 		{
 			IsInLava = true;
 
 
 			// Obtener la altura de la lava desde el collider del volc�n
-			var collider = area.GetNodeOrNull("CollisionShape3D");
-			if(collider && collider.Shape)
+			var collider = area.GetNodeOrNull<CollisionShape3D>("CollisionShape3D");
+			if(collider != null && collider.Shape != null)
 			{
 				var shape = collider.Shape;
 
 				// Si es una caja (BoxShape3D)
-				if(shape is BoxShape3D)
+				if(shape is BoxShape3D boxShape3D)
 				{
-					var lava_surface = area.GlobalPosition.Y + (shape.Size.Y / 2);
-					if(CameraNode && CameraNode.GlobalPosition.Y < lava_surface)
+					var lava_surface = area.GlobalPosition.Y + (boxShape3D.Size.Y / 2);
+					if(CameraNode != null && CameraNode.GlobalPosition.Y < lava_surface)
 					{
 						IsUnderLava = true;
 					}
@@ -1206,10 +1216,10 @@ public partial class Player : CharacterBody3D
 				}
 
 				// Si es un cilindro (CylinderShape3D)
-				else if(shape is CylinderShape3D)
+				else if(shape is CylinderShape3D cylinderShape3D)
 				{
-					var lava_surface = area.GlobalPosition.Y + (shape.Height / 2);
-					if(CameraNode && CameraNode.GlobalPosition.Y < lava_surface)
+					var lava_surface = area.GlobalPosition.Y + (cylinderShape3D.Height / 2);
+					if(CameraNode != null && CameraNode.GlobalPosition.Y < lava_surface)
 					{
 						IsUnderLava = true;
 					}
@@ -1220,10 +1230,10 @@ public partial class Player : CharacterBody3D
 				}
 
 				// Si es una esfera (SphereShape3D)
-				else if(shape is SphereShape3D)
+				else if(shape is SphereShape3D sphereShape3D)
 				{
-					var lava_surface = area.GlobalPosition.Y + shape.Radius;
-					if(CameraNode && CameraNode.GlobalPosition.Y < lava_surface)
+					var lava_surface = area.GlobalPosition.Y + sphereShape3D.Radius;
+					if(CameraNode != null && CameraNode.GlobalPosition.Y < lava_surface)
 					{
 						IsUnderLava = true;
 					}
@@ -1236,7 +1246,7 @@ public partial class Player : CharacterBody3D
 				{
 
 					// Fallback para otras formas
-					if(CameraNode)
+					if(CameraNode != null)
 					{
 						IsUnderLava = true;
 					}
@@ -1246,7 +1256,7 @@ public partial class Player : CharacterBody3D
 			{
 
 				// Sin collider, asumir que est�s bajo la lava
-				if(CameraNode)
+				if(CameraNode != null)
 				{
 					IsUnderLava = true;
 				}
@@ -1259,16 +1269,16 @@ public partial class Player : CharacterBody3D
 
 
 			// Obtener la altura del agua desde el collider del tsunami
-			var collider = area.GetNodeOrNull("CollisionShape3D");
-			if(collider && collider.Shape)
+			var collider = area.GetNodeOrNull<CollisionShape3D>("CollisionShape3D");
+			if(collider != null && collider.Shape != null)
 			{
 				var shape = collider.Shape;
 
 				// Si es una caja (BoxShape3D)
-				if(shape is BoxShape3D)
+				if(shape is BoxShape3D boxShape3D)
 				{
-					var water_surface = area.GlobalPosition.Y + (shape.Size.Y / 2);
-					if(CameraNode && CameraNode.GlobalPosition.Y < water_surface)
+					var water_surface = area.GlobalPosition.Y + (boxShape3D.Size.Y / 2);
+					if(CameraNode != null && CameraNode.GlobalPosition.Y < water_surface)
 					{
 						IsUnderWater = true;
 					}
@@ -1277,12 +1287,11 @@ public partial class Player : CharacterBody3D
 						IsUnderWater = false;
 					}
 				}
-
 				// Si es un cilindro (CylinderShape3D)
-				else if(shape is CylinderShape3D)
+				else if(shape is CylinderShape3D cylinderShape3D)
 				{
-					var water_surface = area.GlobalPosition.Y + (shape.Height / 2);
-					if(CameraNode && CameraNode.GlobalPosition.Y < water_surface)
+					var water_surface = area.GlobalPosition.Y + (cylinderShape3D.Height / 2);
+					if(CameraNode != null && CameraNode.GlobalPosition.Y < water_surface)
 					{
 						IsUnderWater = true;
 					}
@@ -1293,10 +1302,10 @@ public partial class Player : CharacterBody3D
 				}
 
 				// Si es una esfera (SphereShape3D)
-				else if(shape is SphereShape3D)
+				else if(shape is SphereShape3D sphereShape3D)
 				{
-					var water_surface = area.GlobalPosition.Y + shape.Radius;
-					if(CameraNode && CameraNode.GlobalPosition.Y < water_surface)
+					var water_surface = area.GlobalPosition.Y + sphereShape3D.Radius;
+					if(CameraNode != null && CameraNode.GlobalPosition.Y < water_surface)
 					{
 						IsUnderWater = true;
 					}
@@ -1309,7 +1318,7 @@ public partial class Player : CharacterBody3D
 				{
 
 					// Fallback para otras formas
-					if(CameraNode)
+					if(CameraNode != null)
 					{
 						IsUnderWater = true;
 					}
@@ -1319,7 +1328,7 @@ public partial class Player : CharacterBody3D
 			{
 
 				// Sin collider, asumir que est�s bajo el agua
-				if(CameraNode)
+				if(CameraNode != null)
 				{
 					IsUnderWater = true;
 				}
@@ -1343,7 +1352,7 @@ public partial class Player : CharacterBody3D
 	}
 
 
-	protected void _ResetPlayer()
+	public void _ResetPlayer()
 	{
 		Hearth = MaxHearth;
 		BodyTemperature = 37;
@@ -1358,7 +1367,7 @@ public partial class Player : CharacterBody3D
 
 		if(IsMultiplayerAuthority())
 		{
-			RpcMethod(nameof(_SetRagdollState), false);
+			Rpc(nameof(_SetRagdollState), false);
 			Position = Spawn.Position;
 			Velocity = Vector3.Zero;
 		}

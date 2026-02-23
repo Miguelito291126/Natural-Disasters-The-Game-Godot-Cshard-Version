@@ -1,6 +1,6 @@
 [gd_scene format=3 uid="uid://qf81iinh5hke"]
 
-[ext_resource type="Script" uid="uid://v1omqd38x1jy" path="res://Scripts/volcano.gd" id="1_3fq1s"]
+[ext_resource type="Script" uid="uid://d3a8mtvayw1do" path="res://CShard_Scripts/volcano.cs" id="1_m887n"]
 [ext_resource type="Material" uid="uid://jeft7exqnaro" path="res://Materials/Models/Volcano/lava.tres" id="3_m887n"]
 [ext_resource type="PackedScene" uid="uid://q6hkv3yre3tn" path="res://Models/Blend Format/volcano.blend" id="3_t7vbc"]
 [ext_resource type="Material" uid="uid://diohginyx0ebc" path="res://Materials/Models/Volcano/volcano_model.tres" id="4_3fq1s"]
@@ -254,7 +254,11 @@ radius = 53.759
 [node name="volcano" type="StaticBody3D" unique_id=155383846 groups=["Volcano"]]
 collision_layer = 16
 collision_mask = 385
-script = ExtResource("1_3fq1s")
+script = ExtResource("1_m887n")
+Lava_Level = 125
+Pressure = 0
+IsGoingToErupt = false
+IsPressureLeaking = false
 
 [node name="launch_marker" type="Marker3D" parent="." unique_id=1547638632]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 3.2641163, 372.7893, -15.118576)
@@ -295,7 +299,7 @@ draw_pass_1 = SubResource("SphereMesh_exwvd")
 
 [node name="Volcano" parent="." unique_id=1395059966 instance=ExtResource("3_t7vbc")]
 
-[node name="volcano2" parent="Volcano" index="0" unique_id=1952238046]
+[node name="volcano2" parent="Volcano" index="0" unique_id=1678731696]
 surface_material_override/0 = ExtResource("3_m887n")
 surface_material_override/1 = ExtResource("4_3fq1s")
 

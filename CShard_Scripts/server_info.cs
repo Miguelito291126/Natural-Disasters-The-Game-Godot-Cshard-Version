@@ -6,13 +6,13 @@ public partial class ServerInfo : HBoxContainer
 {
 	public string ServerIp = "";
 	public string ServerPort = "";
-	public int LastSeen;
+	public float LastSeen;
 
 	protected void _OnButtonPressed()
 	{
-		Globals.Ip = ServerIp;
-		Globals.Port = ServerPort.ToInt() + 1;
-		Globals.PlayMultiplayerClient();
+		Globals.Instance.Ip = ServerIp;
+		Globals.Instance.Port = ServerPort.ToInt() + 1;
+		Globals.Instance.PlayMultiplayerClient();
 	}
 
 

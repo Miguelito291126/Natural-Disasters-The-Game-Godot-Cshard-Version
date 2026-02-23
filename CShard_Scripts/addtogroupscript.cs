@@ -1,39 +1,37 @@
 using Godot;
 using Godot.Collections;
 
-
 [Tool]
-[GlobalClass]
 public partial class AddToGroupScript : EditorScript
 {
 	public override void _Run()
 	{
-		var group_name = "movable_objects";
-		var group_name2 = "wind_effected_objects";
-		var nodes = new Array{};
+		var groupName1 = "movable_objects";
+		var groupName2 = "wind_effected_objects";
 
+		// 1. Usar GetEditorInterface() para obtener la instancia
+		var selection = EditorInterface.Singleton.GetSelection().GetSelectedNodes();
 
-		// Obtener la selecci�n del editor
-		var selection = EditorInterface.GetSelection().GetSelectedNodes();
-
-
-		// Filtrar solo los nodos que se pueden agregar a grupos
-		foreach(Node node in selection)
+		if (selection.Count == 0)
 		{
-			if(node is Node)
-			{
-				nodes.Append(node);
-			}
+			GD.Print("No hay nodos seleccionados.");
+			return;
 		}
 
-
-		// Agregar los nodos al grupo
-		foreach(Variant node in nodes)
+		foreach (Node node in selection)
 		{
-			node.AddToGroup(group_name);
-			node.AddToGroup(group_name2);
+			// 2. Comprobar que no esté ya en el grupo para no duplicar
+			if (!node.IsInGroup(groupName1))
+			{
+				node.AddToGroup(groupName1, true); // El true lo hace persistente en la escena
+			}
+			
+			if (!node.IsInGroup(groupName2))
+			{
+				node.AddToGroup(groupName2, true);
+			}
+
+			GD.Print($"Nodo '{node.Name}' agregado a los grupos.");
 		}
 	}
-
-
 }

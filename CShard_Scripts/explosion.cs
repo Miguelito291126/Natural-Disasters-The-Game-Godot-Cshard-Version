@@ -6,21 +6,21 @@ public partial class Explosion : Node3D
 {
 	public int ExplosionForce = 100;
 	public int ExplosionDamage = 100;
-	public Variant ExplosionRadius;
-	public Node Smoke;
-	public Node SmokeShockwaveExplosion;
-	public Node Sparks;
-	public Node SparksShock;
+	public float ExplosionRadius;
+	public GpuParticles3D Smoke;
+	public GpuParticles3D SmokeShockwaveExplosion;
+	public GpuParticles3D Sparks;
+	public GpuParticles3D SparksShock;
 
 
 	// Called when the node enters the scene tree for the first time.
 	public override void _Ready()
 	{
-		ExplosionRadius = GetNode<Area3D>("Area3D/CollisionShape3D").Shape.Radius;
-		Smoke = GetNode("Smoke");
-		SmokeShockwaveExplosion = GetNode("Smoke shock");
-		Sparks = GetNode("Sparks");
-		SparksShock = GetNode("Sparks shock");
+		ExplosionRadius = ((SphereShape3D)GetNode<CollisionShape3D>("Area3D/CollisionShape3D").Shape).Radius;
+		Smoke = GetNode<GpuParticles3D>("Smoke");
+		SmokeShockwaveExplosion = GetNode<GpuParticles3D>("Smoke shock");
+		Sparks = GetNode<GpuParticles3D>("Sparks");
+		SparksShock = GetNode<GpuParticles3D>("Sparks shock");
 		Sparks.Emitting = true;
 		SmokeShockwaveExplosion.Emitting = true;
 		Smoke.Emitting = true;
@@ -38,21 +38,21 @@ public partial class Explosion : Node3D
 	{
 
 		// Aplicar fuerza de explosi�n a objetos RigidBody3D
-		if(body is RigidBody3D)
+		if(body is RigidBody3D rigidBody3D)
 		{
-			var distance = (GlobalPosition - body.GlobalPosition).Length();
+			float distance = (GlobalPosition - body.GlobalPosition).Length();
 
-			// Calcular direcci�n desde la explosi�n hacia el objeto
-			var direction = (body.GlobalPosition - GlobalPosition).Normalized();
+			// Calcular direccin desde la explosin hacia el objeto
+			Vector3 direction = (body.GlobalPosition - GlobalPosition).Normalized();
 
 
 			// Calcular fuerza basada en la distancia (m�s cerca = m�s fuerza)
-			var force_multiplier = 1.0 - Mathf.Clamp(distance / ExplosionRadius, 0.0, 1.0);
-			var force = ExplosionForce * force_multiplier;
+			float force_multiplier = 1.0f - Mathf.Clamp(distance / ExplosionRadius, 0.0f, 1.0f);
+			float force = ExplosionForce * force_multiplier;
 
 
 			// Aplicar impulso al RigidBody3D
-			body.ApplyImpulse(direction * force, Vector3.Zero);
+			rigidBody3D.ApplyImpulse(direction * force, Vector3.Zero);
 		}
 	}
 

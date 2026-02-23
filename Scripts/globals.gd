@@ -162,7 +162,7 @@ func get_node_by_id_recursive(node: Node, node_id: int) -> Node:
 		return node
 
 	for child in node.get_children():
-		var result := get_node_by_id_recursive(child, node_id)
+		var result = get_node_by_id_recursive(child, node_id)
 		if result != null:
 			return result
 

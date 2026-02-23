@@ -8,25 +8,25 @@ public partial class Tsunami : Area3D
 	[Export] public int Speed = 100;
 	[Export] public int TsunamiStrength = 100;
 	[Export] public Vector3 Direction = new Vector3(0, 0, 1);
-	[Export] public double DistanceTraveled = 0.0;
-	[Export] public double TotalDistance = 4097.0;
+	[Export] public float DistanceTraveled = 0.0f;
+	[Export] public float TotalDistance = 4097.0f;
 
 	// Adjust this value based on your scene
 	public override void _PhysicsProcess(double delta)
 	{
-		GlobalPosition += Direction * Speed * delta;
+		GlobalPosition += Direction * Speed * (float)delta;
 
 		foreach(Node3D body in GetOverlappingBodies())
 		{
-			if(body.IsInGroup("movable_objects") && body.IsClass("RigidBody3D"))
+			if(body.IsInGroup("movable_objects") && body is RigidBody3D rigidBody3D)
 			{
-				var force = Direction.Normalized() * TsunamiStrength * delta;
-				body.ApplyCentralImpulse(force);
-				body.Freeze = false;
+				var force = Direction.Normalized() * TsunamiStrength * (float)delta;
+				rigidBody3D.ApplyCentralImpulse(force);
+				rigidBody3D.Freeze = false;
 			}
-			else if(body.IsInGroup("player"))
+			else if(body.IsInGroup("player") && body is Player playerBody)
 			{
-				body.Velocity = Direction * Speed * 100 * delta;
+				playerBody.Velocity = Direction * Speed * 100 * (float)delta;
 			}
 		}
 	}

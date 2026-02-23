@@ -38,20 +38,20 @@ public partial class WarningHud : CanvasLayer
 			return ;
 		}
 
-		if(Globals.Started)
+		if(Globals.Instance.Started)
 		{
-			if(Globals.Gamemode != "survival")
+			if(Globals.Instance.Gamemode != "survival")
 			{
-				Label.Text = "Current Disasters/Weather is: \n" + Globals.CurrentWeatherAndDisaster + "\nTime:\n" + Str(Globals.Hour) + ":" + Str(Globals.Minute);
+				Label.Text = "Current Disasters/Weather is: \n" + Globals.Instance.CurrentWeatherAndDisaster + "\nTime:\n" + Globals.Instance.Hour.ToString("D2") + ":" + Globals.Instance.Minute.ToString("D2");
 			}
 			else
 			{
-				Label.Text = "Current Disasters/Weather is: \n" + Globals.CurrentWeatherAndDisaster + "\nTime Left for the next disasters: \n" + Str(Int(Globals.Timer.TimeLeft)) + "\nTime:\n" + Str(Globals.Hour) + ":" + Str(Globals.Minute);
+				Label.Text = "Current Disasters/Weather is: \n" + Globals.Instance.CurrentWeatherAndDisaster + "\nTime Left for the next disasters: \n" + Globals.Instance.Timer.TimeLeft.ToString("F2") + "\nTime:\n" + Globals.Instance.Hour.ToString("D2") + ":" + Globals.Instance.Minute.ToString("D2");
 			}
 		}
 		else
 		{
-			Label.Text = "Waiting for players... Time remain: \n" + Str(Int(Globals.TimeLeft));
+			Label.Text = "Waiting for players... Time remain: \n" + Globals.Instance.TimeLeft.ToString("F2");
 		}
 	}
 

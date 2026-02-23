@@ -6,13 +6,13 @@ using Godot.Collections;
 [GlobalClass]
 public partial class Camera3d : Camera3D
 {
-	public double ShakeDuration = 0.5;
-	public double ShakeAmplitude = 0.1;
-	public double ShakeFrequency = 30.0;
+	public float ShakeDuration = 0.5f;
+	public float ShakeAmplitude = 0.1f;
+	public float ShakeFrequency = 30.0f;
 
 
 	// Variables internas para controlar el efecto de sacudida
-	public double ShakeTimer = 0.0;
+	public float ShakeTimer = 0.0f;
 	public Vector3 OriginalPosition = Vector3.Zero;
 	public Vector3 ShakeOffset = Vector3.Zero;
 
@@ -39,18 +39,18 @@ public partial class Camera3d : Camera3D
 
 
 			// Reducir el temporizador de sacudida
-			ShakeTimer -= delta;
+			ShakeTimer -= (float)delta;
 
 
-			// Si el temporizador llega a cero, restaurar la posici�n original
-			if(ShakeTimer <= 0.0)
+			// Si el temporizador llega a cero, restaurar la posicin original
+			if(ShakeTimer <= 0.0f)
 			{
 				Position = OriginalPosition;
 			}
 		}
 	}
 
-	public void StartScreenShake(double duration, double amplitude, double frequency)
+	public void StartScreenShake(float duration, float amplitude, float frequency)
 	{
 
 		// Iniciar la sacudida de pantalla

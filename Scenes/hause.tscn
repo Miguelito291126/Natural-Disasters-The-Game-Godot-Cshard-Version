@@ -1,6 +1,6 @@
 [gd_scene format=3 uid="uid://ddlqooa2yb6y4"]
 
-[ext_resource type="Script" uid="uid://dyv5tm53gs2fg" path="res://Scripts/hause.gd" id="1_m3vm1"]
+[ext_resource type="Script" uid="uid://cy6epvahl1dip" path="res://CShard_Scripts/breakable_hause.cs" id="1_gw74x"]
 [ext_resource type="AudioStream" uid="uid://c4r72cwbqtbdx" path="res://Sounds/Door Open.mp3" id="2_51njh"]
 [ext_resource type="PackedScene" uid="uid://tnp2kd6nh30i" path="res://Models/Blend Format/hause.blend" id="2_f6ooy"]
 
@@ -57,13 +57,10 @@ properties/5/path = NodePath("hause:scale")
 properties/5/spawn = true
 properties/5/replication_mode = 1
 
-[node name="hause" type="StaticBody3D" unique_id=1707887295 node_paths=PackedStringArray("door_open_sound", "door_close_sound") groups=["Destrollable", "Hause"]]
+[node name="hause" type="StaticBody3D" unique_id=1707887295 groups=["Destrollable", "Hause"]]
 collision_layer = 128
 collision_mask = 1021
-script = ExtResource("1_m3vm1")
-door_open_sound = NodePath("Open_door_sound")
-door_close_sound = NodePath("Close_door_sound")
-breakable_scale_factor = 3.5
+script = ExtResource("1_gw74x")
 
 [node name="hause" parent="." unique_id=1057886774 instance=ExtResource("2_f6ooy")]
 

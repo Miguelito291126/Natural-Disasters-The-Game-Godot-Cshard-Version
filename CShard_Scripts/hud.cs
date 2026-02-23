@@ -4,28 +4,28 @@ using Godot.Collections;
 [GlobalClass]
 public partial class HUD : CanvasLayer
 {
-	public Node Player;
+	public Player Player;
 	public double NextHeartSoundTime = Time.GetUnixTimeFromSystem();
 
-	public Variant Hearth;
+	public TextureRect Hearth;
 	public Label Label;
-	public Node Fps;
-	public Node HearthbeatSound;
+	public Label Fps;
+	public AudioStreamPlayer HearthbeatSound;
 	public AnimationPlayer AnimationPlayer;
 
 
 	public override void _EnterTree()
 	{
-		SetMultiplayerAuthority(GetParent().Name.ToInt());
+		SetMultiplayerAuthority(int.Parse(GetParent().Name));
 	}
 
 	public override void _Ready()
 	{
-		Player = GetParent();
-		Hearth = GetNode<Control>("Panel/Panel2/Heart");
+		Player = GetParent<Player>();
+		Hearth = GetNode<TextureRect>("Panel/Panel2/Heart");
 		Label = GetNode<Label>("Panel/Label");
-		Fps = GetNode("FPS");
-		HearthbeatSound = GetNode("Heartbeat");
+		Fps = GetNode<Label>("FPS");
+		HearthbeatSound = GetNode<AudioStreamPlayer>("Heartbeat");
 		AnimationPlayer = GetNode<AnimationPlayer>("Panel/Panel2/Heart/AnimationPlayer");
 
 		if(!IsMultiplayerAuthority())
@@ -52,16 +52,16 @@ public partial class HUD : CanvasLayer
 
 		this.Visible = true;
 
-		var freq = Mathf.Clamp((1 - Float((44 - Mathf.Round(GetParent().BodyTemperature)) / 20)) * (180 / 60), 0.5, 20);
+		float freq = (float)Mathf.Clamp((1 - (44 - Mathf.Round(GetParent<Player>().BodyTemperature)) / 20) * (180 / 60), 0.5, 20);
 
-		if(GetParent().Hearth <= 0)
+		if(GetParent<Player>().Hearth <= 0)
 		{
-			freq = 0.05;
+			freq = 0.05f;
 		}
 
 		AnimationPlayer.SpeedScale = freq;
 
-		if(Globals.GlobalsData.FPS)
+		if(Globals.Instance.GlobalsData.FPS)
 		{
 			Fps.Visible = true;
 		}
@@ -70,13 +70,13 @@ public partial class HUD : CanvasLayer
 			Fps.Visible = false;
 		}
 
-		Label.Text = "Temperature: " + Str(Mathf.Snapped(Globals.Temperature, 0.1)) + "�C\n" + "Humidity: " + Str(Mathf.Round(Globals.Humidity)) + "%\n" + "Wind Direction: " + Str(Mathf.Round(Globals.ConvertVectorToAngle(Globals.WindDirection))) + "�\n" + "Wind Speed: " + Str(Mathf.Round(Globals.WindSpeed)) + "km/s\n" + "Body Hearth: " + Str(Mathf.Round(Player.Hearth)) + "%\n" + "Body Temperature: " + Str(Mathf.Snapped(Player.BodyTemperature, 0.1)) + "�C\n" + "Body Oxygen: " + Str(Mathf.Round(Player.BodyOxygen)) + "%\n" + "Local Wind Speed: " + Str(Mathf.Round(Player.BodyWind)) + "km/s\n";
-		Fps.Text = "FPS: " + Str(Engine.GetFramesPerSecond());
+		Label.Text = "Temperature: " + Mathf.Snapped(Globals.Instance.Temperature, 0.1) + "C\n" + "Humidity: " + Mathf.Round(Globals.Instance.Humidity) + "%\n" + "Wind Direction: " + Mathf.Round(Globals.Instance.ConvertVectorToAngle(Globals.Instance.WindDirection)) + "\n" + "Wind Speed: " + Mathf.Round(Globals.Instance.WindSpeed) + "km/s\n" + "Body Hearth: " + Mathf.Round(Player.Hearth) + "%\n" + "Body Temperature: " + Mathf.Snapped(Player.BodyTemperature, 0.1) + "C\n" + "Body Oxygen: " + Mathf.Round(Player.BodyOxygen) + "%\n" + "Local Wind Speed: " + Mathf.Round(Player.BodyWind) + "km/s\n";
+		Fps.Text = "FPS: " + Engine.GetFramesPerSecond();
 
 		if(Time.GetUnixTimeFromSystem() >= NextHeartSoundTime)
 		{
 			HearthbeatSound.Play();
-			NextHeartSoundTime = Time.GetUnixTimeFromSystem() + freq / 1;
+			NextHeartSoundTime = (float)Time.GetUnixTimeFromSystem() + freq / 1;
 		}
 	}
 

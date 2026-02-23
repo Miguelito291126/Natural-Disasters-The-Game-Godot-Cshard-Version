@@ -2,27 +2,36 @@ using Godot;
 using Godot.Collections;
 
 [GlobalClass]
-public partial class loadscene : Node
+public partial class LoadScene : Node
 {
+
+	internal static LoadScene Instance;
+
+	public LoadScene()
+	{
+		Instance = this;
+	}
+
 	[Signal]
-	public delegate void ProgressChangedEventHandler(Variant progress);
+	public delegate void ProgressChangedEventHandler(float progress);
+
 	[Signal]
 	public delegate void LoadDoneEventHandler();
 
-	public Dictionary GAME_SCENE = new() {
+	public Dictionary<string, string> GAME_SCENE = new() {
 			{"map", "res://Scenes/map.tscn"},
 			};
 
-	public string LoadingScreenPath = "res://Scenes/loading_screen.tscn";
-	public Resource LoadingScreen = Load(LoadingScreenPath);
+	public static string LoadingScreenPath = "res://Scenes/loading_screen.tscn";
+	public PackedScene LoadingScreen = ResourceLoader.Load<PackedScene>(LoadingScreenPath);
 	public PackedScene LoaderResource;
 	public string ScenePath;
-	public Godot.Collections.Array Progress = new();
+	public Array Progress = new Array();
 
 	public bool UseSubTheads = false;
 
 
-	public void LoadScene(Variant current_scene, Variant next_scene)
+	public async void loadscene(Node current_scene, string next_scene)
 	{
 
 		if(next_scene != null)
@@ -30,21 +39,21 @@ public partial class loadscene : Node
 			ScenePath = next_scene;
 		}
 
-		var loading_screen_intance = LoadingScreen.Instantiate();
-		Globals.Main.AddChild(loading_screen_intance);
+		LoadingScreen loading_screen_intance = LoadingScreen.Instantiate<LoadingScreen>();
+		Globals.Instance.Main.AddChild(loading_screen_intance);
 
-		this.ProgressChanged += loading_screen_intance.UpdateProgressBar;
-		this.LoadDone += loading_screen_intance.FadeOutLoadingScreen;
+		ProgressChanged += loading_screen_intance.UpdateProgressBar;
+		LoadDone += loading_screen_intance.FadeOutLoadingScreen;
 
 		await ToSignal(loading_screen_intance, "safe_to_load");
 
-		if(current_scene != null && GodotObject.IsInstanceValid(current_scene))
+		if(current_scene != null && IsInstanceValid(current_scene))
 		{
 			current_scene.QueueFree();
 		}
 		else
 		{
-			Globals.PrintRole("No current scene to free");
+			Globals.Instance.PrintRole("No current scene to free");
 		}
 
 
@@ -52,15 +61,11 @@ public partial class loadscene : Node
 		{
 			ScenePath = GAME_SCENE[ScenePath];
 		}
-		else
-		{
-			ScenePath = ScenePath;
-		}
 
 		var loader_next_scene = ResourceLoader.LoadThreadedRequest(ScenePath, "", UseSubTheads);
-		if(loader_next_scene == OK)
+		if(loader_next_scene == Error.Ok)
 		{
-			Globals.PrintRole("loading...");
+			Globals.Instance.PrintRole("loading...");
 			SetProcess(true);
 		}
 	}
@@ -68,28 +73,27 @@ public partial class loadscene : Node
 
 	public override void _Process(double _delta)
 	{
-		var load_status = ResourceLoader.LoadThreadedGetStatus(ScenePath, Progress);
+		ResourceLoader.ThreadLoadStatus load_status = ResourceLoader.LoadThreadedGetStatus(ScenePath, Progress);
 		switch(load_status)
 		{
-			case 0:
-			{
-				Globals.PrintRole("failed to load: invalid resource");
+			case ResourceLoader.ThreadLoadStatus.InvalidResource:
+				Globals.Instance.PrintRole("failed to load: invalid resource");
 				SetProcess(false);
 				return ;
-				break; }
-			case 2:
-			{
-				Globals.PrintRole("failed to load");
+
+			case ResourceLoader.ThreadLoadStatus.Failed:
+			
+				Globals.Instance.PrintRole("failed to load");
 				SetProcess(false);
 				return ;
-				break; }
-			case 1:
+
+			case ResourceLoader.ThreadLoadStatus.InProgress:
 			{
 				EmitSignal("progress_changed", Progress[0]);
 				break; }
-			case 3:
+			case ResourceLoader.ThreadLoadStatus.Loaded:
 			{
-				Globals.PrintRole("Completed");
+				Globals.Instance.PrintRole("Completed");
 
 				if(ScenePath == "res://Scenes/main.tscn")
 				{
@@ -97,10 +101,10 @@ public partial class loadscene : Node
 				}
 				else
 				{
-					var new_scene = ResourceLoader.LoadThreadedGet(ScenePath).Instantiate();
-					if(GodotObject.IsInstanceValid(new_scene))
+					Node new_scene = ((PackedScene)ResourceLoader.LoadThreadedGet(ScenePath)).Instantiate();
+					if(IsInstanceValid(new_scene))
 					{
-						Globals.Main.AddChild(new_scene);
+						Globals.Instance.Main.AddChild(new_scene);
 					}
 				}
 

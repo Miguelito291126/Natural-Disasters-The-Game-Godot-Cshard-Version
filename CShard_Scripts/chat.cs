@@ -1,3 +1,4 @@
+using System.Linq;
 using Godot;
 using Godot.Collections;
 
@@ -10,64 +11,64 @@ public partial class Chat : CanvasLayer
 	public Button Button;
 
 
-	public Array<string> AutocompleteMatches = new();
+	public Array<string> AutocompleteMatches = new Array<string>();
 	public int AutocompleteIndex = 0;
-	public Array AutocompleteMethods = new();
-	public Array<string> History = new();
+	public Array<string> AutocompleteMethods = new Array<string>();
+	public Array<string> History = new Array<string>();
 	public int HistoryIndex =  - 1;
 	public bool UserIsScrolling = false;
 	public int ScrollRetries = 0;
 	public const int MAX_SCROLL_RETRIES = 5;
 
 
-	public Dictionary DevCommands = new Dictionary{
-			{"god_mode", new Dictionary{
+	public Dictionary<string, Dictionary<string, Variant>> DevCommands = new Dictionary<string, Dictionary<string, Variant>>{
+			{"god_mode", new Dictionary<string, Variant>{
 						{"desc", "Muestra todos los comandos."},
 						{"method", "_cmd_god_mode_player"},
 						{"args", 0},
 						}},
-			{"ungod_mode", new Dictionary{
+			{"ungod_mode", new Dictionary<string, Variant>{
 						{"desc", "Muestra todos los comandos."},
 						{"method", "_cmd_ungod_mode_player"},
 						{"args", 0},
 						}},
-			{"kill_player", new Dictionary{
+			{"kill_player", new Dictionary<string, Variant>{
 						{"desc", "Cambia la velocidad del jugador. Uso: /set_speed 10"},
 						{"method", "_cmd_kill_player"},
 						{"args", 1},
 						}},
-			{"teleport_player", new Dictionary{
+			{"teleport_player", new Dictionary<string, Variant>{
 						{"desc", "Teletransporta al jugador a otro jugador. Uso: /teleport_player PlayerName"},
 						{"method", "_cmd_teleport_player"},
 						{"args", 1},
 						}},
-			{"teleport_position", new Dictionary{
+			{"teleport_position", new Dictionary<string, Variant>{
 						{"desc", "Teletransporta al jugador a una posici�n. Uso: /teleport_position Vector3(x,y,z)"},
 						{"method", "_cmd_teleport_position"},
 						{"args", 1},
 						}},
-			{"kick_player", new Dictionary{
+			{"kick_player", new Dictionary<string, Variant>{
 						{"desc", "Expulsa a un jugador del servidor. Uso: /kick_player PlayerName"},
 						{"method", "_cmd_kick_player"},
 						{"args", 1},
 						}},
-			{"damage_player", new Dictionary{
+			{"damage_player", new Dictionary<string, Variant>{
 						{"desc", "Inflige da�o a un jugador. Uso: /damage_player PlayerName damage_amount"},
 						{"method", "_cmd_damage_player"},
 						{"args", 2},
 						}},
-			{"spawn_disaster", new Dictionary{
+			{"spawn_disaster", new Dictionary<string, Variant>{
 						{"desc", "Genera un desastre o clima. Uso: /spawn_disaster disaster_name"},
 						{"method", "_cmd_spawn_disaster_weather"},
 						{"args", 1},
 						}},
-			{"admin", new Dictionary{
+			{"admin", new Dictionary<string, Variant>{
 						{"desc", "Genera un desastre o clima. Uso: /spawn_disaster disaster_name"},
 						{"method", "_cmd_admin_mode_player"},
 						{"args", 1},
 						}},
 
-			{"unadmin", new Dictionary{
+			{"unadmin", new Dictionary<string, Variant>{
 						{"desc", "Genera un desastre o clima. Uso: /spawn_disaster disaster_name"},
 						{"method", "_cmd_unadmin_mode_player"},
 						{"args", 1},
@@ -77,7 +78,7 @@ public partial class Chat : CanvasLayer
 
 	protected Player _GetLocalPlayer()
 	{
-		foreach(Node p in GetTree().GetNodesInGroup("player"))
+		foreach(Player p in GetTree().GetNodesInGroup("player"))
 		{
 			if(p is Player player && player.IsMultiplayerAuthority())
 				{
@@ -112,7 +113,7 @@ public partial class Chat : CanvasLayer
 	}
 
 
-	protected string _CmdAdminModePlayer(Variant player_name)
+	protected string _CmdAdminModePlayer(string player_name)
 	{
 		var local = _GetLocalPlayer() as Player;
 		if(local == null || !local.AdminMode)
@@ -129,8 +130,8 @@ public partial class Chat : CanvasLayer
 
 
 		// Buscar el jugador por nombre
-		var jugador_encontrado = null;
-		foreach(Node p in GetTree().GetNodesInGroup("player"))
+		Player jugador_encontrado = null;
+		foreach(Player p in GetTree().GetNodesInGroup("player"))
 		{
 			if(GodotObject.IsInstanceValid(p) && p.Username == player_name)
 			{
@@ -141,17 +142,18 @@ public partial class Chat : CanvasLayer
 
 		if(jugador_encontrado == null)
 		{
-			return "Jugador no encontrado: %s" % player_name;
+			return $"Jugador no encontrado: {player_name}";
 
 
 			// Usar RPC para sincronizar el cambio en todos los clientes
 
-		}// call_local ya ejecuta la funci�n localmente en el servidor
-		jugador_encontrado._SetAdminMode.Rpc(true);
+		}
+		// call_local ya ejecuta la funcin localmente en el servidor
+		Rpc(nameof(Player._SetAdminMode), true);
 		return $"Ahora {player_name} es admin";
 	}
 
-	protected string _CmdUnadminModePlayer(Variant player_name)
+	protected string _CmdUnadminModePlayer(string player_name)
 	{
 		var local = _GetLocalPlayer() as Player;
 		if(local == null || !local.AdminMode)
@@ -168,8 +170,8 @@ public partial class Chat : CanvasLayer
 
 
 		// Buscar el jugador por nombre
-		var jugador_encontrado = null;
-		foreach(Node p in GetTree().GetNodesInGroup("player"))
+		Player jugador_encontrado = null;
+		foreach(Player p in GetTree().GetNodesInGroup("player"))
 		{
 			if(GodotObject.IsInstanceValid(p) && p.Username == player_name)
 			{
@@ -180,18 +182,18 @@ public partial class Chat : CanvasLayer
 
 		if(jugador_encontrado == null)
 		{
-			return "Jugador no encontrado: %s" % player_name;
+			return $"Jugador no encontrado: {player_name}";
 
 
 			// Usar RPC para sincronizar el cambio en todos los clientes
 
-		}// call_local ya ejecuta la funci�n localmente en el servidor
-		jugador_encontrado._SetAdminMode.Rpc(false);
+		}// call_local ya ejecuta la funcin localmente en el servidor
+		Rpc(nameof(Player._SetAdminMode), false);
 		return $"Ahora {player_name} ya no es admin";
 	}
 
 
-	protected string _CmdKillPlayer(Variant player_name)
+	protected string _CmdKillPlayer(string player_name)
 	{
 		var local = _GetLocalPlayer();
 		if(local == null || !local.AdminMode)
@@ -210,7 +212,7 @@ public partial class Chat : CanvasLayer
 	}
 
 
-	protected string _CmdKickPlayer(Variant player_name)
+	protected string _CmdKickPlayer(string player_name)
 	{
 		var local = _GetLocalPlayer() as Player;
 		if(local == null || !local.AdminMode)
@@ -221,7 +223,7 @@ public partial class Chat : CanvasLayer
 		{
 			if(p is Player player && player.Username == player_name)
 			{
-				Multiplayer.MultiplayerPeer.DisconnectPeer(player.Id, true);
+				Multiplayer.MultiplayerPeer.DisconnectPeer(player.PlayerId, true);
 				return $"{player_name} expulsado";
 			}
 		}
@@ -229,61 +231,49 @@ public partial class Chat : CanvasLayer
 	}
 
 
-	protected string _CmdDamagePlayer(Variant player_name, Variant damage)
+	protected string _CmdTeleportPlayer(string player_name, string target_name)
 	{
-		var local = _GetLocalPlayer() as Player;
-		if(local == null || !local.AdminMode)
+		var local = _GetLocalPlayer();
+		if (local == null || !local.AdminMode) return "No tienes permisos";
+
+		Player playerToMove = null; // Cambiado de 'player' para evitar conflictos
+		Player targetPlayer = null;
+
+		foreach (Node p in GetTree().GetNodesInGroup("player"))
 		{
-			return "No tienes permisos";
-		}
-		foreach(Node p in GetTree().GetNodesInGroup("player"))
-		{
-			if(p is Player player && player.Username == player_name)
+			if (p is Player playerNode)
 			{
-				player.Damage(Int(damage));
-				return $"{player_name} recibió {damage} de daño";
+				if (playerNode.Username == player_name) playerToMove = playerNode;
+				if (playerNode.Username == target_name) targetPlayer = playerNode;
+			}
+		}
+
+		if (playerToMove == null || targetPlayer == null) return "Jugador no encontrado";
+
+		playerToMove.GlobalPosition = targetPlayer.GlobalPosition;
+		return $"Teletransportado {player_name} a {target_name}";
+	}
+
+	protected string _CmdDamagePlayer(string player_name, Variant damage)
+	{
+		var local = _GetLocalPlayer();
+		if (local == null || !local.AdminMode) return "No tienes permisos";
+		
+		// Los comandos suelen recibir Variant desde el sistema de chat, convertimos a int
+		int damageAmount = damage.AsInt32();
+
+		foreach (Node p in GetTree().GetNodesInGroup("player"))
+		{
+			if (p is Player player && player.Username == player_name)
+			{
+				player.Damage(damageAmount);
+				return $"{player_name} recibió {damageAmount} de daño";
 			}
 		}
 		return "Jugador no encontrado";
 	}
 
-
-	protected string _CmdTeleportPlayer(Variant player_name, Variant target_name)
-	{
-		var local = _GetLocalPlayer() as Player;
-		if(local == null || !local.AdminMode)
-		{
-			return "No tienes permisos";
-		}
-
-		var player = null as Player;
-		var target = null as Player;
-
-		foreach(Node p in GetTree().GetNodesInGroup("player"))
-		{
-				if(p is Player playerNode)
-				{
-					if(playerNode.Username == player_name)
-					{
-						player = playerNode;
-					}
-					if(playerNode.Username == target_name)
-					{
-						target = playerNode;
-					}
-				}
-		}
-
-		if(player == null || target == null)
-		{
-			return "Jugador no encontrado";
-		}
-
-		player.GlobalPosition = target.GlobalPosition;
-		return $"Teletransportado {player_name} a {target_name}";
-	}
-
-	protected string _CmdSpawnDisasterWeather(Variant disaster_name)
+	protected string _CmdSpawnDisasterWeather(string disaster_name)
 	{
 		var local = _GetLocalPlayer();
 		if(local == null || !local.AdminMode)
@@ -291,7 +281,7 @@ public partial class Chat : CanvasLayer
 			return "No tienes permisos";
 		}
 
-		Globals.SetWeatherAndDisaster(disaster_name);
+		Globals.Instance.SetWeatherAndDisaster(disaster_name);
 		return $"Clima/Desastre activado: {disaster_name}";
 	}
 
@@ -315,103 +305,27 @@ public partial class Chat : CanvasLayer
 
 		this.Visible = true;
 
-		AutocompleteMethods = DevCommands.Keys.ToArray();
+		AutocompleteMethods = new Array<string>(DevCommands.Keys);
 	}
 
-	public override void _Input(InputEvent _event)
+	public override void _Input(InputEvent @event)
 	{
+		if (!IsMultiplayerAuthority()) return;
 
-		// Solo procesar input si este chat tiene autoridad
-		if(!IsMultiplayerAuthority())
+		if (@event.IsActionPressed("ui_accept")) // Tecla Enter
 		{
-			return ;
-		}
-
-		if(LineEdit.HasFocus())
-		{
-
-			// Autocompletado con Tab
-			if(Input.IsActionJustPressed("dev_console_autocomplete"))
+			if (LineEdit.HasFocus())
 			{
-				var current = LineEdit.Text.Remove(0, 1);
-
-				if(AutocompleteMatches.Count == 0)
-				{
-					foreach(Variant cmd in AutocompleteMethods)
-					{
-						if(cmd.BeginsWith(current))
-						{
-							AutocompleteMatches.Add(cmd);
-						}
-					}
-				}
-
-				if(AutocompleteMatches.Count > 0)
-				{
-					LineEdit.Text = "/" + AutocompleteMatches[AutocompleteIndex];
-					LineEdit.CaretColumn = LineEdit.Text.Length();
-					AutocompleteIndex = (AutocompleteIndex + 1) % AutocompleteMatches.Count;
-				}
-			}
-
-
-			// Reset autocompletado si se escribe algo distinto
-			if(Input.IsActionJustPressed("ui_text_indent"))
-			{
-				AutocompleteMatches.Clear();
-				AutocompleteIndex = 0;
-			}
-
-
-			// Recorrer historial con flechas
-			if(Input.IsActionJustPressed("dev_console_up"))
-			{
-				if(History.Size() > 0)
-				{
-					HistoryIndex = Mathf.Clamp(HistoryIndex + 1, 0, History.Count - 1);
-					LineEdit.Text = "/" + History[HistoryIndex];
-					LineEdit.CaretColumn = LineEdit.Text.Length();
-				}
-			}
-
-			else if(Input.IsActionJustPressed("dev_console_down"))
-			{
-				if(History.Size() > 0)
-				{
-					HistoryIndex = Mathf.Clamp(HistoryIndex - 1, 0, History.Count - 1);
-					LineEdit.Text = "/" + History[HistoryIndex];
-					LineEdit.CaretColumn = LineEdit.Text.Length();
-				}
-			}
-
-
-			// Ejecutar comando con Enter
-			if(Input.IsActionJustPressed("Enter"))
-			{
-				History.PushFront(LineEdit.Text.Remove(0, 1));
-
-				msg_rpc.Rpc(Globals.Username, LineEdit.Text);
-
-				HistoryIndex =  - 1;
-				LineEdit.Text = "";
+				// Aquí procesarías el texto: _OnSendButtonPressed();
 				LineEdit.ReleaseFocus();
-				Button.ReleaseFocus();
-
-				// Asegurar que is_chat_open se establece en false cuando se cierra el chat
-				Globals.IsChatOpen = false;
 			}
-		}
-
-
-		// Seleccionar el LineEdit al presionar T
-		if(Input.IsActionJustPressed("Chat"))
-		{
-			LineEdit.GrabFocus();
-
-			// Asegurar que is_chat_open se establece cuando se abre el chat
-			Globals.IsChatOpen = true;
+			else
+			{
+				LineEdit.GrabFocus();
+			}
 		}
 	}
+
 
 
 	protected bool _IsAtBottom()
@@ -498,59 +412,68 @@ public partial class Chat : CanvasLayer
 
 	protected void _RunCommand(string cmd)
 	{
-		if(!IsMultiplayerAuthority())
+		if (!IsMultiplayerAuthority()) return;
+
+		// 1. Limpiamos y dividimos el comando
+		string[] parts = cmd.StripEdges().Split(" ");
+		if (parts.Length == 0) return;
+
+		string command_name = parts[0];
+
+		// 2. Creamos un Array de Godot con los argumentos (saltando el primero)
+		var args = new Godot.Collections.Array();
+		for (int i = 1; i < parts.Length; i++)
 		{
-			return ;
+			args.Add(parts[i]);
 		}
 
-		var parts = cmd.StripEdges().Split(" ");
-		var command_name = parts[0];
-		var args = parts.Slice(1, parts.Size());
-
-		if(DevCommands.ContainsKey(command_name))
+		if (DevCommands.ContainsKey(command_name))
 		{
 			var cmd_info = DevCommands[command_name];
 
-			if(args.Size() < cmd_info["args"])
+			// 3. Verificamos cantidad de argumentos usando .Count
+			if (args.Count < cmd_info["args"].AsInt32())
 			{
-				_ConsolePrint($"Faltan argumentos. Uso: /{command_name}");
-				return ;
+				_ConsolePrint($"Faltan argumentos. Uso: /{command_name} {cmd_info["desc"]}");
+				return;
 			}
 
-			var method_name = cmd_info["method"];
-			if(HasMethod(method_name))
+			string method_name = cmd_info["method"].AsString();
+			
+			// 4. Ejecutamos el método
+			if (HasMethod(method_name))
 			{
+				// Callv requiere un Godot.Collections.Array
 				var result = Callv(method_name, args);
-				if(result != null)
+				if (result.VariantType != Variant.Type.Nil)
 				{
-					_ConsolePrint(Str(result));
+					_ConsolePrint(result.ToString());
 				}
-				return ;
 			}
 			else
 			{
-				_ConsolePrint("Error interno: m�todo no encontrado.");
-				return ;
+				_ConsolePrint("Error interno: método no encontrado.");
 			}
+			return;
 		}
-
 
 		_ConsolePrint($"Comando desconocido: {command_name}");
 	}
 
 
-	public void MsgRpc(Variant username, Variant data)
+	[Rpc(MultiplayerApi.RpcMode.AnyPeer, CallLocal = true)]
+	public void MsgRpc(string username, string data)
 	{
 
-		// Esta funci�n se ejecuta en todos los clientes (call_local)
+		// Esta funcin se ejecuta en todos los clientes (call_local)
 
 		// Asegurar que el scroll funcione incluso si este chat no tiene autoridad
-		if(data.BeginsWith("/"))
+		if(data.StartsWith("/"))
 		{
 
-			// Buscar el jugador que envi� el comando
-			var jugador_encontrado = null;
-			foreach(Node player in GetTree().GetNodesInGroup("player"))
+			// Buscar el jugador que envi el comando
+			Player jugador_encontrado = null;
+			foreach(Player player in GetTree().GetNodesInGroup("player"))
 			{
 				if(GodotObject.IsInstanceValid(player) && player is CharacterBody3D)
 				{
@@ -593,9 +516,9 @@ public partial class Chat : CanvasLayer
 			var was_at_bottom = _IsAtBottom();
 
 			// Mostrar el comando en el chat
-			TextEdit.Text += Str(username, ": ", data, "\n");
+			TextEdit.Text += username + ": " + data + "\n";
 
-			// Solo hacer scroll si estaba al final antes de a�adir el texto
+			// Solo hacer scroll si estaba al final antes de aadir el texto
 			if(was_at_bottom)
 			{
 				_ScrollToBottom();
@@ -608,7 +531,7 @@ public partial class Chat : CanvasLayer
 
 				// Ejecutar el comando (quitar el "/" del inicio)
 				data = data.Remove(0, 1);
-				Globals.PrintRole(data);
+				Globals.Instance.PrintRole(data);
 				_RunCommand(data);
 			}
 		}
@@ -622,9 +545,9 @@ public partial class Chat : CanvasLayer
 
 				// Verificar si estaba al final ANTES de a�adir el texto
 				var was_at_bottom = _IsAtBottom();
-				TextEdit.Text += Str(username, ": ", data, "\n");
+				TextEdit.Text += username + ": " + data + "\n";
 
-				// Solo hacer scroll si estaba al final antes de a�adir el texto
+				// Solo hacer scroll si estaba al final antes de aadir el texto
 				if(was_at_bottom)
 				{
 					_ScrollToBottom();
@@ -641,25 +564,25 @@ public partial class Chat : CanvasLayer
 			return ;
 		}
 
-		msg_rpc.Rpc(Globals.Username, LineEdit.Text);
+		Rpc(nameof(MsgRpc), Globals.Instance.Username, LineEdit.Text);
 
 		LineEdit.Text = "";
 		LineEdit.ReleaseFocus();
 		Button.ReleaseFocus();
 
 		// Asegurar que is_chat_open se establece en false cuando se cierra el chat
-		Globals.IsChatOpen = false;
+		Globals.Instance.IsChatOpen = false;
 	}
 
 
 	protected void _OnLineEditFocusEntered()
 	{
-		Globals.IsChatOpen = true;
+		Globals.Instance.IsChatOpen = true;
 	}
 
 	protected void _OnLineEditFocusExited()
 	{
-		Globals.IsChatOpen = false;
+		Globals.Instance.IsChatOpen = false;
 	}
 
 

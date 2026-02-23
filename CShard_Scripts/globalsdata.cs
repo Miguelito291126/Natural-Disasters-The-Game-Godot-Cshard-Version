@@ -4,6 +4,13 @@ using Godot.Collections;
 [GlobalClass]
 public partial class DataResource : Resource
 {
+	public DataResource Data;
+
+	public DataResource()
+	{
+		Data = this;
+	}
+
 	public static string Path = "user://GlobalsData.tres";
 
 
@@ -19,23 +26,26 @@ public partial class DataResource : Resource
 	[Export] public int Resolution = 0;
 	[Export] public int Quality = 0;
 
+
+
 	public void SaveFile()
 	{
-		resourceSaver.Save(Path, this);
+		ResourceSaver.Save(this, Path);
 
 	}
 
-	public static void LoadFile()
+	public static DataResource LoadFile()
 	{
-		// TODO: Implement load logic
+		DataResource data = ResourceLoader.Load(Path) as DataResource;
+		if(data == null)
+		{
+			data = new DataResource();
+		}
+
+		return data;
 	}
 
-	public DataResource Data;
 
-	public DataResource()
-	{
-		Data = DataResource.New();
-	}
 
 
 }

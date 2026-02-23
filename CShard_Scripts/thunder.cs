@@ -4,21 +4,21 @@ using Godot.Collections;
 [GlobalClass]
 public partial class Thunder : Node3D
 {
-	public Resource ExplosionScene = /* preload has no equivalent, add a 'ResourcePreloader' Node in your scene */("res://Scenes/thunder_explosion.tscn");
-	public Node Spark;
-	public Node Light;
-	public Node Star;
+public PackedScene ExplosionScene = ResourceLoader.Load<PackedScene>("res://Scenes/thunder_explosion.tscn");
+	public GpuParticles3D Spark;
+	public GpuParticles3D Light;
+	public GpuParticles3D Star;
 
 
 	// Called when the node enters the scene tree for the first time.
 	public override void _Ready()
 	{
-		Spark = GetNode("spark");
-		Light = GetNode("light");
-		Star = GetNode("star");
+		Spark = GetNode<GpuParticles3D>("spark");
+		Light = GetNode<GpuParticles3D>("light");
+		Star = GetNode<GpuParticles3D>("star");
 
 		// Configurar la posici�n de la explosi�n en la posici�n del suelo
-		var explosion = ExplosionScene.Instantiate();
+		var explosion = ExplosionScene.Instantiate<Explosion>();
 		explosion.Position = this.Position;
 		GetParent().AddChild(explosion);
 

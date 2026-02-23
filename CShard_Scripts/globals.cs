@@ -1,3 +1,5 @@
+using System.Data.Common;
+using System.Linq;
 using Godot;
 using Godot.Collections;
 
@@ -8,6 +10,16 @@ public partial class Globals : Node
 	[Signal]
 	public delegate void CurrentWeatherAndDisasterChangedEventHandler(string new_disaster);
 
+	public static Globals Instance { get; private set; }
+
+	public Globals()
+	{
+		if(Instance != null)
+		{
+			GD.PrintErr("Ya existe una instancia de Globals. Esto no deber�a pasar, pero si est� pasando, se est� creando una nueva instancia de Globals para evitar errores fatales. Si este mensaje aparece m�s de una vez, por favor reporta este error a los desarrolladores.");
+		}
+		Instance = this;
+	}
 
 	//Editor
 	public Variant Version = ProjectSettings.GetSetting("application/config/version");
@@ -20,62 +32,61 @@ public partial class Globals : Node
 	[Export] public int Port = 5555;
 	[Export] public int Points;
 	[Export] public string Username = "Player";
-	[Export] public Array<Node> PlayersConected;
-	public Variant Multiplayerpeer;
+	[Export] public Array<Player> PlayersConected;
+	MultiplayerPeer Multiplayerpeer;
 
 
 	//Globals Weather
-	[Export] public double Temperature = 23;
-	[Export] public double Pressure = 10000;
-	[Export] public double Oxygen = 100;
-	[Export] public double Bradiation = 0;
-	[Export] public double Humidity = 25;
+	[Export] public float Temperature = 23;
+	[Export] public float Pressure = 10000;
+	[Export] public float Oxygen = 100;
+	[Export] public float Bradiation = 0;
+	[Export] public float Humidity = 25;
 	[Export] public Vector3 WindDirection = new Vector3(1, 0, 0);
-	[Export] public double WindSpeed = 0;
+	[Export] public float WindSpeed = 0;
 	[Export] public bool IsRaining = false;
 	public Variant Gravity = ProjectSettings.GetSetting("physics/3d/default_gravity");
 
 
 	//Globals Time
-	[Export] public double Time = 0.0;
-	[Export] public double TimeLeft = 0.0;
+	[Export] public float Time = 0.0f;
+	[Export] public float TimeLeft = 0.0f;
 	[Export] public int Day = 0;
 	[Export] public int Hour = 0;
 	[Export] public int Minute = 00;
 
 
 	//Globals Weather target
-	[Export] public double TemperatureTarget = 23;
-	[Export] public double PressureTarget = 10000;
-	[Export] public double OxygenTarget = 100;
-	[Export] public double BradiationTarget = 0;
-	[Export] public double HumidityTarget = 25;
+	[Export] public float TemperatureTarget = 23;
+	[Export] public float PressureTarget = 10000;
+	[Export] public float OxygenTarget = 100;
+	[Export] public float BradiationTarget = 0;
+	[Export] public float HumidityTarget = 25;
 	[Export] public Vector3 WindDirectionTarget = new Vector3(1, 0, 0);
-	[Export] public double WindSpeedTarget = 0;
+	[Export] public float WindSpeedTarget = 0;
 
 
 	//Globals Weather original
-	[Export] public double TemperatureOriginal = 23;
-	[Export] public double PressureOriginal = 10000;
-	[Export] public double OxygenOriginal = 100;
-	[Export] public double BradiationOriginal = 0;
-	[Export] public double HumidityOriginal = 25;
+	[Export] public float TemperatureOriginal = 23;
+	[Export] public float PressureOriginal = 10000;
+	[Export] public float OxygenOriginal = 100;
+	[Export] public float BradiationOriginal = 0;
+	[Export] public float HumidityOriginal = 25;
 	[Export] public Vector3 WindDirectionOriginal = new Vector3(1, 0, 0);
-	[Export] public double WindSpeedOriginal = 0;
+	[Export] public float WindSpeedOriginal = 0;
 
-	[Export] public double Seconds = Time.GetUnixTimeFromSystem();
+	[Export] public float Seconds = 0;
 
-	[Export] public Node3D Main;
-	[Export] public Control MainMenu;
-	[Export] public Node3D Map;
-	[Export] public Control ServerBrowser;
-	[Export] public CharacterBody3D LocalPlayer;
+	[Export] public Main Main;
+	[Export] public MainMenu MainMenu;
+	[Export] public Map Map;
+	[Export] public ServerBrowser ServerBrowser;
+	[Export] public Player LocalPlayer;
 
 	[Export] public Dictionary BoundingRadiusAreas = new Dictionary{};
 
 	[Export] public string NodeGroup = "Destrollable";
-	[Export] public Array DestrolledNode;
-
+	[Export] public Array<string> DestrolledNode;
 	[Export] public bool Started = false;
 	[Export] public string Gamemode = "survival";
 	[Export] public DataResource GlobalsData;
@@ -97,21 +108,21 @@ public partial class Globals : Node
 
 	[Export] public int CurrentWeatherAndDisasterInt = 0;
 
-	public Resource PlayerScene = /* preload has no equivalent, add a 'ResourcePreloader' Node in your scene */("res://Scenes/player.tscn");
-	public Resource ThunderstormScene = /* preload has no equivalent, add a 'ResourcePreloader' Node in your scene */("res://Scenes/thunder.tscn");
-	public Resource MeteorScene = /* preload has no equivalent, add a 'ResourcePreloader' Node in your scene */("res://Scenes/meteor.tscn");
-	public Resource TornadoScene = /* preload has no equivalent, add a 'ResourcePreloader' Node in your scene */("res://Scenes/tornado.tscn");
-	public Resource TsunamiScene = /* preload has no equivalent, add a 'ResourcePreloader' Node in your scene */("res://Scenes/tsunami.tscn");
-	public Resource VolcanoScene = /* preload has no equivalent, add a 'ResourcePreloader' Node in your scene */("res://Scenes/volcano.tscn");
-	public Resource EarthquakeScene = /* preload has no equivalent, add a 'ResourcePreloader' Node in your scene */("res://Scenes/earthquake.tscn");
+	public PackedScene PlayerScene = ResourceLoader.Load<PackedScene>("res://Scenes/player.tscn");
+	public PackedScene ThunderstormScene = ResourceLoader.Load<PackedScene>("res://Scenes/thunder.tscn");
+	public PackedScene MeteorScene = ResourceLoader.Load<PackedScene>("res://Scenes/meteor.tscn");
+	public PackedScene TornadoScene = ResourceLoader.Load<PackedScene>("res://Scenes/tornado.tscn");
+	public PackedScene TsunamiScene = ResourceLoader.Load<PackedScene>("res://Scenes/tsunami.tscn");
+	public PackedScene VolcanoScene = ResourceLoader.Load<PackedScene>("res://Scenes/volcano.tscn");
+	public PackedScene EarthquakeScene = ResourceLoader.Load<PackedScene>("res://Scenes/earthquake.tscn");
 
-	public Node Timer;
-	public Node BroadcastTimer;
+	public Timer Timer;
+	public Timer BroadcastTimer;
 
-	[Export] public Dictionary RoomList = new Dictionary{{"name", "name"},{"players", Int(0)},};
+	[Export] public Dictionary<string, Variant> RoomList = new Dictionary<string, Variant>{{"name", "name"},{"players", 0}};
 	[Export] public string BroadcasterIp = "192.168.1.255";
-	[Export] public int LisenerPort = Port + 1;
-	[Export] public int BroadcasterPort = Port - 1;
+	[Export] public int LisenerPort = 5556;
+	[Export] public int BroadcasterPort = 5554;
 	public PacketPeerUdp Broadcaster;
 	public PacketPeerUdp Lisener;
 
@@ -121,19 +132,19 @@ public partial class Globals : Node
 
 	[Export] public string Character = "blue";
 	[Export] public Array<string> AvalibleCharacters = new Array<string>{"blue", "red", "green", "yellow"};
-	[Export] public Dictionary AssignedCharacter;
+	[Export] public Dictionary<int, string> AssignedCharacter;
 
-	public double ConvertMetoSU(Variant metres)
+	public float ConvertMetoSU(float metres)
 	{
-		return (int)(metres * 39.37) / 0.75;
+		return (int)(metres * 39.37f) / 0.75f;
 	}
 
-	public int ConvertKMPHtoMe(double kmph)
+	public int ConvertKMPHtoMe(float kmph)
 	{
 		return (int)((kmph * 1000) / 3600);
 	}
 
-	public int ConvertVectorToAngle(Variant vector)
+	public int ConvertVectorToAngle(Vector3 vector)
 	{
 		var x = vector.X;
 		var y = vector.Z;
@@ -146,14 +157,14 @@ public partial class Globals : Node
 
 		// Intenta obtener el World3D a partir del nodo; si falla, intenta la escena actual.
 		World3D world = null;
-		if(node != null && GodotObject.IsInstanceValid(node) && node is Node3D node3D)
+		if(node != null && IsInstanceValid(node) && node is Node3D node3D)
 		{
 			world = node3D.GetWorld3D();
 		}
 		if(world == null)
 		{
 			var scene = GetTree().GetCurrentScene();
-			if(GodotObject.IsInstanceValid(scene) && scene is Node3D scene3D)
+			if(IsInstanceValid(scene) && scene is Node3D scene3D)
 			{
 				world = scene3D.GetWorld3D();
 			}
@@ -165,37 +176,45 @@ public partial class Globals : Node
 		return world.DirectSpaceState;
 	}
 
-	public bool PerformTraceCollision(Variant ply, Variant direction)
+	public bool PerformTraceCollision(Node3D ply, Vector3 direction)
 	{
-		var start_pos = ((Node3D)ply).GlobalPosition;
-		var end_pos = start_pos + ((Vector3)direction) * 1000;
+		var start_pos = ply.GlobalPosition;
+		var end_pos = start_pos + direction * 1000;
 		var space_state = _GetDirectSpaceState(ply);
 		if(space_state == null)
 		{
 			return false;
 		}
 		var ray = PhysicsRayQueryParameters3D.Create(start_pos, end_pos);
-		ray.Exclude = new Array{((GodotObject)ply).GetRid(), };
+		if (ply is CollisionObject3D collisionEntity)
+		{
+			ray.Exclude = new Godot.Collections.Array<Rid> { collisionEntity.GetRid() };
+		}
 		var result = space_state.IntersectRay(ray);
 		return result != new Dictionary{};
 	}
 
 
-	public int PerformTraceWind(Variant ply, Variant direction)
+	public Vector3 PerformTraceWind(Node3D ply,Vector3 direction)
 	{
-		var start_pos = ((Node3D)ply).GlobalPosition;
-		var end_pos = start_pos + ((Vector3)direction) * 60000;
-		var space_state = _GetDirectSpaceState(ply);
+		Vector3 start_pos = ply.GlobalPosition;
+		Vector3 end_pos = start_pos + direction * 60000;
+		PhysicsDirectSpaceState3D space_state = _GetDirectSpaceState(ply);
 		if(space_state == null)
 		{
 			return end_pos;
 		}
-		var ray = PhysicsRayQueryParameters3D.Create(start_pos, end_pos);
-		ray.Exclude = new Array{((GodotObject)ply).GetRid(), };
-		var result = space_state.IntersectRay(ray);
-		if(result != new Dictionary{} && result.Contains("position"))
+		PhysicsRayQueryParameters3D ray = PhysicsRayQueryParameters3D.Create(start_pos, end_pos);
+
+		if (ply is CollisionObject3D collisionEntity)
 		{
-			return result.Position;
+			ray.Exclude = new Godot.Collections.Array<Rid> { collisionEntity.GetRid() };
+		}
+		
+		Dictionary result = space_state.IntersectRay(ray);
+		if(result != new Dictionary{} && result.ContainsKey("position"))
+		{
+			return (Vector3)result["position"];
 		}
 		else
 		{
@@ -203,16 +222,16 @@ public partial class Globals : Node
 		}
 	}
 
-	public Node GetNodeByIdRecursive(Node node, int node_id)
+	public Dictionary<Node, int> GetNodeByIdRecursive(Node node, int node_id)
 	{
-		if(node.GetInstanceId() == node_id)
+		if(node.GetInstanceId().Equals(node_id))
 		{
-			return node;
+			return new Dictionary<Node, int>{{node, node_id}};
 		}
 
 		foreach(Node child in node.GetChildren())
 		{
-			var result = GetNodeByIdRecursive(child, node_id);
+			Dictionary<Node, int> result = GetNodeByIdRecursive(child, node_id);
 			if(result != null)
 			{
 				return result;
@@ -222,86 +241,88 @@ public partial class Globals : Node
 		return null;
 	}
 
-	public bool IsBelowSky(Variant ply)
+	public bool IsBelowSky(Node3D ply)
 	{
-		var start_pos = ((Node3D)ply).GlobalPosition;
-		var end_pos = start_pos + new Vector3(0, 48000, 0);
-		var space_state = _GetDirectSpaceState((Node3D)ply);
+		// Hacemos el cast a Node3D una sola vez
+		if (ply is not Node3D) return true;
 
-		// Si no hay espacio de f�sicas disponible, asumimos "al aire libre" (true)
-		if(space_state == null)
+		Vector3 start_pos = ply.GlobalPosition;
+		Vector3 end_pos = start_pos + new Vector3(0, 48000, 0);
+		PhysicsDirectSpaceState3D space_state = ply.GetWorld3D().DirectSpaceState; // Forma estándar de obtenerlo en Godot 4
+
+		if (space_state == null) return true;
+
+		PhysicsRayQueryParameters3D ray = PhysicsRayQueryParameters3D.Create(start_pos, end_pos);
+		
+		// Solo CollisionObject3D (PhysicsBody3D, Area3D) tiene GetRid()
+		if (ply is CollisionObject3D collisionEntity)
 		{
-			return true;
+			ray.Exclude = new Godot.Collections.Array<Rid> { collisionEntity.GetRid() };
 		}
-		var ray = PhysicsRayQueryParameters3D.Create(start_pos, end_pos);
-		ray.Exclude = new Array{ply.GetRid(), };
-		var result = space_state.IntersectRay(ray);
-		return !result;
+
+		Dictionary result = space_state.IntersectRay(ray);
+		return !result.ContainsKey("position");
 	}
 
 
-	public bool IsOutdoor(Variant ply)
+
+	public bool IsOutdoor(Node3D ply)
 	{
-		var hit_sky = IsBelowSky(ply);
+		bool hitSky = IsBelowSky(ply);
 
-		if(ply.IsInGroup("player"))
+		// Si es un Player, actualizamos su propiedad Outdoor
+		if (ply is Player player && ply.IsInGroup("player"))
 		{
-			if(hit_sky)
-			{
-				ply.Outdoor = true;
-			}
-			else
-			{
-				ply.Outdoor = false;
-			}
+			player.Outdoor = hitSky;
+		}
 
-			return hit_sky;
-		}
-		else
-		{
-			return hit_sky;
-		}
-	}
-
-	public void IsInwater(Variant ply)
-	{
-		if(ply.IsInGroup("player"))
-		{
-			return ply.IsInWater;
-		}
-	}
-
-	public void IsUnderwater(Variant ply)
-	{
-		if(ply.IsInGroup("player"))
-		{
-			return ply.IsUnderWater;
-		}
-	}
-
-	public void IsInlava(Variant ply)
-	{
-		if(ply.IsInGroup("player"))
-		{
-			return ply.IsInLava;
-		}
-	}
-
-	public void IsUnderlava(Variant ply)
-	{
-		if(ply.IsInGroup("player"))
-		{
-			return ply.IsUnderLava;
-		}
+		return hitSky;
 	}
 
 
-	public Vector3 Vec2ToVec3(Variant vector)
+	public bool IsInwater(Node ply)
+	{
+		if(ply.IsInGroup("player")&& ply is Player player)
+		{
+			return player.IsInWater;
+		}
+		return false;
+	}
+
+	public bool IsUnderwater(Node ply)
+	{
+		if(ply.IsInGroup("player") && ply is Player player)
+		{
+			return player.IsUnderWater;
+		}
+		return false;
+	}
+
+	public bool IsInlava(Node ply)
+	{
+		if(ply.IsInGroup("player") && ply is Player player)
+		{
+			return player.IsInLava;
+		}
+		return false;
+	}
+
+	public bool IsUnderlava(Node ply)
+	{
+		if(ply.IsInGroup("player") && ply is Player player)
+		{
+			return player.IsUnderLava;
+		}
+		return false;
+	}
+
+
+	public Vector3 Vec2ToVec3(Vector3 vector)
 	{
 		return new Vector3(vector.X, 0, vector.Y);
 	}
 
-	public bool IsSomethingBlockingWind(Variant entity)
+	public bool IsSomethingBlockingWind(Node3D entity)
 	{
 		var start_pos = entity.GlobalPosition;
 		var end_pos = start_pos - (WindDirection * 300);
@@ -313,80 +334,80 @@ public partial class Globals : Node
 			return false;
 		}
 		var ray = PhysicsRayQueryParameters3D.Create(start_pos, end_pos);
-		ray.Exclude = new Array{entity.GetRid(), };
+
+		if (entity is CollisionObject3D collisionEntity)
+		{
+			ray.Exclude = new Godot.Collections.Array<Rid> { collisionEntity.GetRid() };
+		}
+
 		var result = space_state.IntersectRay(ray);
 		return result != new Dictionary{};
 	}
 
-	public double CalculeBoundingRadius(Variant entity)
+	public float CalculeBoundingRadius(Node3D entity)
 	{
-		var max_radius = 0.0;
+		float max_radius = 0.0f;
 
-		foreach(Node child in entity.GetChildren())
+		foreach (Node child in entity.GetChildren())
 		{
-			if(child.GetChildCount() > 0)
+			// Recursividad: Si tiene hijos, acumulamos el radio máximo
+			if (child.GetChildCount() > 0 && child is Node3D childNode)
 			{
-				return CalculeBoundingRadius(child);
+				max_radius = Mathf.Max(max_radius, CalculeBoundingRadius(childNode));
 			}
 
-			if(child.IsClass("MeshInstance3D") && child != null)
+			if (child is MeshInstance3D meshInstance)
 			{
-				var mesh = child.Mesh;
-				var aabb = mesh.GetAabb();
+				Mesh mesh = meshInstance.Mesh;
+				if (mesh == null) continue;
 
+				Aabb aabb = mesh.GetAabb();
+				
+				// 1. Definir los 8 vértices locales de la AABB
+				Vector3[] vertices = new Vector3[] {
+					aabb.Position,
+					aabb.Position + new Vector3(aabb.Size.X, 0, 0),
+					aabb.Position + new Vector3(0, aabb.Size.Y, 0),
+					aabb.Position + new Vector3(0, 0, aabb.Size.Z),
+					aabb.Position + new Vector3(aabb.Size.X, aabb.Size.Y, 0),
+					aabb.Position + new Vector3(aabb.Size.X, 0, aabb.Size.Z),
+					aabb.Position + new Vector3(0, aabb.Size.Y, aabb.Size.Z),
+					aabb.Position + aabb.Size,
+				};
 
-				// Obtener los 8 v�rtices de la AABB original
-				var vertices = new Array{
-									aabb.Position, 
-									aabb.Position + new Vector3(aabb.Size.X, 0, 0), 
-									aabb.Position + new Vector3(0, aabb.Size.Y, 0), 
-									aabb.Position + new Vector3(0, 0, aabb.Size.Z), 
-									aabb.Position + new Vector3(aabb.Size.X, aabb.Size.Y, 0), 
-									aabb.Position + new Vector3(aabb.Size.X, 0, aabb.Size.Z), 
-									aabb.Position + new Vector3(0, aabb.Size.Y, aabb.Size.Z), 
-									aabb.Position + aabb.Size, 
-									};
-
-
-				// Transformar los v�rtices con la matriz de transformaci�n del MeshInstance3D
-				var transformed_vertices = new Array{};
-				foreach(Variant vertex in vertices)
+				// 2. Transformar vértices y calcular radio en un solo paso
+				foreach (Vector3 v in vertices)
 				{
-					transformed_vertices.Append(child.Transform * vertex);
-
-
-					// Calcular el nuevo AABB a partir de los v�rtices transformados
-
-				}// Calcular el radio de contorno a partir de los v�rtices transformados
-				foreach(Variant vertex in transformed_vertices)
-				{
-					var distance = vertex.Length();
+					// Transformamos el vértice al espacio global o del padre
+					Vector3 globalVertex = meshInstance.Transform * v;
+					
+					// Calculamos la distancia al origen del objeto original
+					float distance = globalVertex.Length();
 					max_radius = Mathf.Max(max_radius, distance);
 				}
 			}
 		}
-
-
 		return max_radius;
 	}
 
 
-	public Array SearchInNode(Variant node, Vector3 origin, double radius, Array result)
+
+	public Array SearchInNode(Node node, Vector3 origin, float radius, Array result)
 	{
 		foreach(int i in GD.Range(node.GetChildCount()))
 		{
-			var child = node.GetChild(i);
-			if(child.IsClass("Spatial"))
+			Node child = node.GetChild(i);
+			if(child is Node3D child3D && IsInstanceValid(child3D))
 			{
-				// Solo considerar nodos Spatial (puedes ajustar esto seg�n tus necesidades)
-				var distance = origin.DistanceTo(child.GlobalPosition);
+				// Solo considerar nodos Spatial (puedes ajustar esto segn tus necesidades)
+				var distance = origin.DistanceTo(child3D.GlobalPosition);
 				if(distance <= radius)
 				{
-					result.Append(child);
+					result.Add(child3D);
 				}
 			}
 
-			// Recursi�n si el nodo tiene hijos
+			// Recursin si el nodo tiene hijos
 			if(child.GetChildCount() > 0)
 			{
 				SearchInNode(child, origin, radius, result);
@@ -396,9 +417,9 @@ public partial class Globals : Node
 		return result;
 	}
 
-	public Array FindInSphere(Vector3 origin, double radius)
+	public Array FindInSphere(Vector3 origin, float radius)
 	{
-		var result = new Array{};
+		var result = new Array();
 		var scene_root = GetTree().GetRoot();
 
 		result = SearchInNode(scene_root, origin, radius, result);
@@ -406,13 +427,13 @@ public partial class Globals : Node
 		return result;
 	}
 
-	public void Wind(Variant obj)
+	public void Wind(Node3D obj)
 	{
 
 		// Verificar si el objeto es un jugador
-		if(obj.IsInGroup("player"))
+		if(obj.IsInGroup("player") && obj is Player player)
 		{
-			if(!GodotObject.IsInstanceValid(obj))
+			if(!IsInstanceValid(obj))
 			{
 				return ;
 			}
@@ -425,42 +446,42 @@ public partial class Globals : Node
 				local_wind = 0;
 			}
 
-			obj.BodyWind = local_wind;
+			player.BodyWind = local_wind;
 
 
-			// Calcular la velocidad del viento y la fricci�n
-			var wind_vel = WindDirection * local_wind;
+			// Calcular la velocidad del viento y la friccin
+			Vector3 wind_vel = WindDirection * (float)local_wind;
 
-			// Verificar si est� al aire libre y no hay obst�culos que bloqueen el viento
+			// Verificar si est al aire libre y no hay obstculos que bloqueen el viento
 			if(IsOutdoor(obj) && !IsSomethingBlockingWind(obj) && local_wind >= 30)
 			{
-				var delta_velocity = wind_vel - obj.Velocity;
-				obj.Velocity += delta_velocity * 0.3;
+				var delta_velocity = wind_vel - player.Velocity;
+				player.Velocity += delta_velocity * (float)0.3;
 			}
 		}
 
-		else if(obj.IsInGroup("movable_objects") && obj.IsClass("RigidBody3D"))
+		else if(obj.IsInGroup("movable_objects") && obj is RigidBody3D body)
 		{
-			if(GodotObject.IsInstanceValid(obj) && IsOutdoor(obj) && !IsSomethingBlockingWind(obj))
+			if(GodotObject.IsInstanceValid(body) && IsOutdoor(body) && !IsSomethingBlockingWind(body))
 			{
-				var wind_vel = WindDirection * WindSpeed;
-				var delta_velocity = wind_vel - obj.LinearVelocity;
+				var wind_vel = WindDirection * (float)WindSpeed;
+				var delta_velocity = wind_vel - body.LinearVelocity;
 
 
 				// Aplica fuerza en vez de modificar directamente la velocidad
-				obj.ApplyCentralForce(delta_velocity * 0.3);
+				body.ApplyCentralForce(delta_velocity * 0.3f * body.Mass);
 			}
 		}
 
-		else if(obj.IsInGroup("movable_objects") && obj.IsClass("StaticBody3D"))
+		else if(obj.IsInGroup("movable_objects") && obj is StaticBody3D staticBody)
 		{
-			if(GodotObject.IsInstanceValid(obj))
+			if(GodotObject.IsInstanceValid(staticBody))
 			{
-				if(obj.IsInGroup("Destrollable") || obj.IsInGroup("Hause"))
+				if((staticBody.IsInGroup("Destrollable") || staticBody.IsInGroup("Hause")) && staticBody is House house)
 				{
 					if(WindSpeed > 100)
 					{
-						obj.Destroy.Rpc();
+						house.Destroy();
 					}
 				}
 			}
@@ -468,39 +489,44 @@ public partial class Globals : Node
 	}
 
 
-	public double Area(Variant entity)
+	public float GetArea(Node3D entity)
 	{
-		if(entity || entity.BoundingRadiusArea == null.Contains(!"bounding_radius_area"))
-		{
-			var bounding_radius = CalculeBoundingRadius(entity);
-			var bounding_radius_area = (2 * Mathf.Pi) * (bounding_radius * bounding_radius);
-			BoundingRadiusAreas[entity] = bounding_radius_area;
+		// Intentamos obtener el valor desde el objeto (funciona si existe la propiedad en un script)
+		Variant value = entity.Get("BoundingRadiusArea");
 
-			return bounding_radius_area;
-		}
-		else
+		if (value.VariantType == Variant.Type.Nil) 
 		{
-			return entity.BoundingRadiusArea;
+			// No existe la propiedad, calculamos y guardamos (opcionalmente)
+			float area = Mathf.Pi * Mathf.Pow(CalculeBoundingRadius(entity), 2);
+			
+			// Si quieres intentar guardarlo en el objeto mismo:
+			// entity.Set("BoundingRadiusArea", area); 
+			
+			return area;
 		}
+
+		return value.AsSingle();
 	}
 
-	public int GetFrameMultiplier()
+
+
+	public float GetFrameMultiplier()
 	{
-		var frame_time = Engine.GetFramesPerSecond();
+		var frame_time = (float)Engine.GetFramesPerSecond();
 		if(frame_time == 0)
 		{
 			return 0;
 		}
 		else
 		{
-			return 60 / frame_time;
+			return (float)60 / frame_time;
 		}
 	}
 
-	public double GetPhysicsMultiplier()
+	public float GetPhysicsMultiplier()
 	{
-		var physics_interval = GetPhysicsProcessDeltaTime();
-		return (200.0 / 3.0) / physics_interval;
+		var physics_interval = (float)GetPhysicsProcessDeltaTime();
+		return (200.0f / 3.0f) / physics_interval;
 	}
 
 	public bool HitChance(int chance)
@@ -519,16 +545,16 @@ public partial class Globals : Node
 		}
 	}
 
-
+	[Rpc(MultiplayerApi.RpcMode.AnyPeer)]
 	public void SyncPlayerList()
 	{
 		PlayersConected.Clear();
 
-		foreach(Node p in GetTree().GetNodesInGroup("player"))
+		foreach(Player p in GetTree().GetNodesInGroup("player"))
 		{
-			if(GodotObject.IsInstanceValid(p))
+			if(IsInstanceValid(p))
 			{
-				PlayersConected.Append(p);
+				PlayersConected.Add(p);
 			}
 		}
 	}
@@ -538,18 +564,18 @@ public partial class Globals : Node
 	public bool HayJugadoresConMismoNombre(string nombre_a_verificar, Node excluir_jugador = null)
 	{
 		var contador = 0;
-		foreach(Node player in GetTree().GetNodesInGroup("player"))
+		foreach(Player player in GetTree().GetNodesInGroup("player"))
 		{
 
-			// Si se debe excluir un jugador espec�fico, saltarlo
+			// Si se debe excluir un jugador especfico, saltarlo
 			if(excluir_jugador != null && player == excluir_jugador)
 			{
 				continue;
 			}
 
-
+			Variant username = player.Get("username");
 			// Verificar si el nombre coincide
-			if(GodotObject.IsInstanceValid(player) && player.Has("username") && player.Username == nombre_a_verificar)
+			if(IsInstanceValid(player) && username.VariantType != Variant.Type.Nil  && username.AsString() == nombre_a_verificar)
 			{
 				contador += 1;
 
@@ -568,9 +594,9 @@ public partial class Globals : Node
 	// Funci�n para obtener todos los jugadores que tienen el mismo nombre
 	public Array ObtenerJugadoresConMismoNombre(string nombre_a_verificar, Node excluir_jugador = null)
 	{
-		var jugadores_duplicados = new Array{};
+		var jugadores_duplicados = new Array();
 
-		foreach(Node player in GetTree().GetNodesInGroup("player"))
+		foreach(Player player in GetTree().GetNodesInGroup("player"))
 		{
 
 			// Si se debe excluir un jugador espec�fico, saltarlo
@@ -581,9 +607,9 @@ public partial class Globals : Node
 
 
 			// Verificar si el nombre coincide
-			if(GodotObject.IsInstanceValid(player) && player.Has("username") && player.Username == nombre_a_verificar)
+			if(GodotObject.IsInstanceValid(player) && player.Username == nombre_a_verificar)
 			{
-				jugadores_duplicados.Append(player);
+				jugadores_duplicados.Add(player);
 			}
 		}
 
@@ -604,9 +630,9 @@ public partial class Globals : Node
 				continue;
 			}
 
-
+			var username = player.Get("username");
 			// Verificar si el nombre coincide
-			if(GodotObject.IsInstanceValid(player) && player.Has("username") && player.Username == nombre_a_verificar)
+			if(GodotObject.IsInstanceValid(player) && username.VariantType != Variant.Type.Nil && username.AsString() == nombre_a_verificar)
 			{
 				contador += 1;
 			}
@@ -640,530 +666,425 @@ public partial class Globals : Node
 	}
 
 
-		public async void PlayMultiplayerServer()
+	public async void PlayMultiplayerServer()
+	{
+		var peer = new ENetMultiplayerPeer();
+		Error error = peer.CreateServer(Port);
+		if(error == Error.Ok)
 		{
-			Multiplayerpeer = ENetMultiplayerPeer.New();
-			var error = Multiplayerpeer.CreateServer(Port);
-			if(error == OK)
-			{
-				Multiplayer.MultiplayerPeer = Multiplayerpeer;
-				if(Multiplayer.IsServer())
-				{
-					if(OS.HasFeature("dedicated_server") || OS.GetCmdlineUserArgs() || OS.GetCmdlineUserArgs().Contains("server").Contains("s"))
-					{
-						PrintRole("Dedicated server init");
-	
-						await ToSignal(GetTree().CreateTimer(2), "Timeout");
-	
-						SetUpBroadcast(Username);
-						LoadScene.LoadScene(MainMenu, "map");
-					}
-					else
-					{
-						PrintRole("Server init");
-						SetUpBroadcast(Username);
-						LoadScene.LoadScene(MainMenu, "map");
-					}
-				}
-			}
-			else
-			{
-				PrintRole("Fatal Error in server");
-			}
-		}
-
-		public void RequestPickObject(NodePath player_path, NodePath target_path)
-		{
-
-			// Solo el servidor debe ejecutar esta l�gica
-			if(!Multiplayer.IsServer())
-			{
-				return ;
-			}
-
-			var root = GetTree().GetRoot();
-
-			var player = root.GetNodeOrNull(player_path);
-			var target = root.GetNodeOrNull(target_path);
-
-			if(player == null || target == null)
-			{
-				return ;
-			}
-
-			if(!target.IsInGroup("Pickable"))
-			{
-				return ;
-			}
-
-
-			// Colocar el objeto en la mano del jugador
-			target.GlobalPosition = player.HandNode.GlobalPosition;
-			target.GlobalRotation = player.HandNode.GlobalRotation;
-			target.CollisionLayer = 2;
-
-			if(target is RigidBody3D)
-			{
-				target.LinearVelocity = new Vector3(0.1, 3, 0.1);
-			}
-		}
-
-		public void PlayMultiplayerClient()
-		{
-			Multiplayerpeer = ENetMultiplayerPeer.New();
-			var error = Multiplayerpeer.CreateClient(Ip, Port);
-			if(error == OK)
-			{
-				Multiplayer.MultiplayerPeer = Multiplayerpeer;
-				if(!Multiplayer.IsServer())
-				{
-					PrintRole("Client Init");
-				}
-			}
-			else
-			{
-				PrintRole("Fatal Error in client");
-			}
-		}
-
-		public void MultiplayerConnectionFailed()
-		{
-			PrintRole("Client disconected");
-
-			PlayersConected.Clear();
-			AssignedCharacter.Clear();
-			DestrolledNode.Clear();
-
-			CloseUp();
-
-			Multiplayerpeer = OfflineMultiplayerPeer.New();
+			Multiplayerpeer = peer;
 			Multiplayer.MultiplayerPeer = Multiplayerpeer;
-
-			LoadScene.LoadScene(Map, "res://Scenes/main_menu.tscn");
-		}
-
-		public void AssingCharacter(string charac)
-		{
-			foreach(Variant c in AvalibleCharacters)
+			if(Multiplayer.IsServer())
 			{
-				if(c == charac)
+				if(OS.HasFeature("dedicated_server") || OS.GetCmdlineUserArgs() != null ||  OS.GetCmdlineUserArgs().Contains("server"))
 				{
-					Character = charac;
-					break;
-				}
-			}
+					PrintRole("Dedicated server init");
 
-			if(LocalPlayer && GodotObject.IsInstanceValid(LocalPlayer))
-			{
-				LocalPlayer.Character = charac;
-			}
+					await ToSignal(GetTree().CreateTimer(2), "Timeout");
 
-			PrintRole("Asignado el personaje: " + charac);
-		}
-
-		public bool AssingCharacterToPlayer(int id, string charac)
-		{
-			var chosen_char = charac;
-
-
-			// Si el char recibido no es v�lido o ya est� ocupado, buscamos el siguiente disponible.
-			if(chosen_char == null || chosen_char == "" || !IsCharacterAvalible(chosen_char))
-			{
-				chosen_char = GetNextAvalibleCharacter();
-			}
-
-			if(chosen_char == null || chosen_char == "" || !IsCharacterAvalible(chosen_char))
-			{
-				PrintRole("No hay personaje disponible para el id " + Str(id));
-				return false;
-			}
-
-			AssignedCharacter[id] = chosen_char;
-			assing_character.RpcId(id, chosen_char);
-			PrintRole("Asignado al id " + Str(id) + " el personaje " + chosen_char);
-			return true;
-		}
-
-		public void SyncAssignedCharacter(Dictionary data)
-		{
-			AssignedCharacter = data.Duplicate(true);
-		}
-
-		public bool IsCharacterAvalible(string charac)
-		{
-			foreach(Dictionary id in AssignedCharacter)
-			{
-				if(AssignedCharacter[id] == charac)
-				{
-					return false;
-				}
-			}
-
-			return true;
-		}
-
-
-		public Variant GetNextAvalibleCharacter()
-		{
-			foreach(Variant charac in AvalibleCharacters)
-			{
-				if(IsCharacterAvalible(charac))
-				{
-					return charac;
-				}
-			}
-
-			return null;
-		}
-
-
-		public void MultiplayerServerDisconnected()
-		{
-			PrintRole("Client disconected");
-
-			PlayersConected.Clear();
-			AssignedCharacter.Clear();
-			DestrolledNode.Clear();
-
-			CloseUp();
-
-			Multiplayerpeer = OfflineMultiplayerPeer.New();
-			Multiplayer.MultiplayerPeer = Multiplayerpeer;
-
-			LoadScene.LoadScene(Map, "res://Scenes/main_menu.tscn");
-		}
-
-
-		public void MultiplayerConnectionServerSucess()
-		{
-			PrintRole("connected to server");
-			UnloadScene.UnloadScene(MainMenu);
-		}
-
-		public override void _ExitTree()
-		{
-			Multiplayer.PeerConnected -= MultiplayerPlayerSpawner;
-			Multiplayer.PeerDisconnected -= MultiplayerPlayerRemover;
-			Multiplayer.ServerDisconnected -= MultiplayerServerDisconnected;
-			Multiplayer.ConnectedToServer -= MultiplayerConnectionServerSucess;
-			Multiplayer.ConnectionFailed -= MultiplayerConnectionFailed;
-
-			Globals.TemperatureTarget = Globals.TemperatureOriginal;
-			Globals.HumidityTarget = Globals.HumidityOriginal;
-			Globals.PressureTarget = Globals.PressureOriginal;
-			Globals.WindDirectionTarget = Globals.WindDirectionOriginal;
-			Globals.WindSpeedTarget = Globals.WindSpeedOriginal;
-
-			CloseUp();
-		}
-
-
-		public override void _Process(double _delta)
-		{
-			if(!Multiplayer.HasMultiplayerPeer())
-			{
-				return ;
-			}
-
-			if(!Multiplayer.IsServer())
-			{
-				return ;
-			}
-
-			TimeLeft = Timer.TimeLeft;
-			Temperature = Mathf.Clamp(Temperature,  - 275.5, 275.5);
-			Humidity = Mathf.Clamp(Humidity, 0, 100);
-			Bradiation = Mathf.Clamp(Bradiation, 0, 100);
-			Pressure = Mathf.Clamp(Pressure, 0, 100000);
-			Oxygen = Mathf.Clamp(Oxygen, 0, 100);
-
-			Temperature = Mathf.Lerp(Temperature, TemperatureTarget, 0.005);
-			Humidity = Mathf.Lerp(Humidity, HumidityTarget, 0.005);
-			Bradiation = Mathf.Lerp(Bradiation, BradiationTarget, 0.005);
-			Pressure = Mathf.Lerp(Pressure, PressureTarget, 0.005);
-			Oxygen = Mathf.Lerp(Oxygen, OxygenTarget, 0.005);
-			WindDirection = Mathf.Lerp(WindDirection, WindDirectionTarget, 0.005);
-			WindSpeed = Mathf.Lerp(WindSpeed, WindSpeedTarget, 0.005);
-		}
-
-
-		public override void _Ready()
-		{
-			Timer = GetNode("Timer");
-			BroadcastTimer = GetNode("Broadcast_Timer");
-			Multiplayer.PeerConnected += MultiplayerPlayerSpawner;
-			Multiplayer.PeerDisconnected += MultiplayerPlayerRemover;
-			Multiplayer.ServerDisconnected += MultiplayerServerDisconnected;
-			Multiplayer.ConnectedToServer += MultiplayerConnectionServerSucess;
-			Multiplayer.ConnectionFailed += MultiplayerConnectionFailed;
-	
-			Multiplayerpeer = OfflineMultiplayerPeer.New();
-			Multiplayer.MultiplayerPeer = Multiplayerpeer;
-			
-			GlobalsData = DataResource.LoadFile();
-		}
-
-
-		public void MultiplayerPlayerSpawner(int peer_id = 1)
-		{
-			if(!Multiplayer.IsServer())
-			{
-				return ;
-			}
-
-			if(Map && GodotObject.IsInstanceValid(Map))
-			{
-				PrintRole("Joined player id: " + Str(peer_id));
-				var player = PlayerScene.Instantiate();
-				player.Name = Str(peer_id);
-				Map.AddChild(player, true);
-
-
-				var assigned_ok = true;
-
-				if(AssignedCharacter.Contains(!peer_id))
-				{
-					var next_character = GetNextAvalibleCharacter();
-					assigned_ok = AssingCharacterToPlayer(peer_id, next_character);
-				}
-
-				if(assigned_ok)
-				{
-					sync_assigned_character.Rpc(AssignedCharacter);
-					SyncAssignedCharacter(AssignedCharacter);
-					sync_player_list.Rpc();
-					sync_destrolled_nodes.RpcId(peer_id, DestrolledNode);
-					// envia al cliente
-					set_weather_and_disaster.RpcId(peer_id, CurrentWeatherAndDisasterInt);
+					SetUpBroadcast(Username);
+					LoadScene.Instance.loadscene(MainMenu, "map");
 				}
 				else
 				{
-					PrintRole("No se pudo asignar personaje al jugador con id: " + Str(peer_id));
+					PrintRole("Server init");
+					SetUpBroadcast(Username);
+					LoadScene.Instance.loadscene(MainMenu, "map");
 				}
 			}
-
-			else
-			{
-				sync_assigned_character.Rpc(AssignedCharacter);
-				SyncAssignedCharacter(AssignedCharacter);
-				sync_player_list.Rpc();
-				sync_destrolled_nodes.RpcId(peer_id, DestrolledNode);
-				// broadcast
-				PrintRole("No se pudo a�adir al jugador con el id: " + Str(peer_id));
-			}
 		}
-
-
-		public void MultiplayerPlayerRemover(int peer_id = 1)
+		else
 		{
-			if(!Multiplayer.IsServer())
-			{
-				return ;
-			}
-
-
-			// Intentar obtener el jugador de forma segura
-			var player_node = Map.GetNodeOrNull(Str(peer_id));
-			if(player_node && GodotObject.IsInstanceValid(player_node))
-			{
-				PrintRole("Disconected player id: " + Str(peer_id));
-				player_node.QueueFree();
-
-				await ToSignal(player_node, "TreeExited");
-
-				if(AssignedCharacter.Contains(peer_id))
-				{
-					AssignedCharacter.Erase(peer_id);
-				}
-
-
-				sync_assigned_character.Rpc(AssignedCharacter);
-				SyncAssignedCharacter(AssignedCharacter);
-				sync_player_list.Rpc();
-			}
-
-
-			else
-			{
-				if(AssignedCharacter.Contains(peer_id))
-				{
-					AssignedCharacter.Erase(peer_id);
-				}
-
-				sync_assigned_character.Rpc(AssignedCharacter);
-				SyncAssignedCharacter(AssignedCharacter);
-				sync_player_list.Rpc();
-				PrintRole("player no found: " + Str(peer_id));
-			}
+			PrintRole("Fatal Error in server");
 		}
-
-
-		public void SyncWeatherAndDisaster()
-		{
-			if(Multiplayer.IsServer())
-			{
-				var random_weather_and_disaster = GD.RandRange(0, 13);
-				set_weather_and_disaster.Rpc(random_weather_and_disaster);
-			}
-		}
-
-		public void SetWeatherAndDisaster(Variant weather_and_disaster_index)
-		{
-
-			if(weather_and_disaster_index == 0)
-			{
-				CurrentWeatherAndDisaster = "Sun";
-				CurrentWeatherAndDisasterInt = weather_and_disaster_index;
-			}
-			if(weather_and_disaster_index == 1)
-			{
-				CurrentWeatherAndDisaster = "Cloud";
-				CurrentWeatherAndDisasterInt = weather_and_disaster_index;
-			}
-			if(weather_and_disaster_index == 2)
-			{
-				CurrentWeatherAndDisaster = "Raining";
-				CurrentWeatherAndDisasterInt = weather_and_disaster_index;
-			}
-			if(weather_and_disaster_index == 3)
-			{
-				CurrentWeatherAndDisaster = "Storm";
-				CurrentWeatherAndDisasterInt = weather_and_disaster_index;
-			}
-			if(weather_and_disaster_index == 4)
-			{
-				CurrentWeatherAndDisaster = "Thunderstorm";
-				CurrentWeatherAndDisasterInt = weather_and_disaster_index;
-			}
-			if(weather_and_disaster_index == 5)
-			{
-				CurrentWeatherAndDisaster = "Tsunami";
-				CurrentWeatherAndDisasterInt = weather_and_disaster_index;
-			}
-			if(weather_and_disaster_index == 6)
-			{
-				CurrentWeatherAndDisaster = "Meteors shower";
-				CurrentWeatherAndDisasterInt = weather_and_disaster_index;
-			}
-			if(weather_and_disaster_index == 7)
-			{
-				CurrentWeatherAndDisaster = "Volcano";
-				CurrentWeatherAndDisasterInt = weather_and_disaster_index;
-			}
-			if(weather_and_disaster_index == 8)
-			{
-				CurrentWeatherAndDisaster = "Tornado";
-				CurrentWeatherAndDisasterInt = weather_and_disaster_index;
-			}
-			if(weather_and_disaster_index == 9)
-			{
-				CurrentWeatherAndDisaster = "Acid rain";
-				CurrentWeatherAndDisasterInt = weather_and_disaster_index;
-			}
-			if(weather_and_disaster_index == 10)
-			{
-				CurrentWeatherAndDisaster = "Earthquake";
-				CurrentWeatherAndDisasterInt = weather_and_disaster_index;
-			}
-			if(weather_and_disaster_index == 11)
-			{
-				CurrentWeatherAndDisaster = "Sand Storm";
-				CurrentWeatherAndDisasterInt = weather_and_disaster_index;
-			}
-			if(weather_and_disaster_index == 12)
-			{
-				CurrentWeatherAndDisaster = "blizzard";
-				CurrentWeatherAndDisasterInt = weather_and_disaster_index;
-			}
-			if(weather_and_disaster_index == 13)
-			{
-				CurrentWeatherAndDisaster = "Dust Storm";
-				CurrentWeatherAndDisasterInt = weather_and_disaster_index;
-			}
-			if(weather_and_disaster_index == "Sun")
-			{
-				CurrentWeatherAndDisaster = weather_and_disaster_index;
-				CurrentWeatherAndDisasterInt = 0;
-			}
-			if(weather_and_disaster_index == "Cloud")
-			{
-				CurrentWeatherAndDisaster = weather_and_disaster_index;
-				CurrentWeatherAndDisasterInt = 1;
-			}
-			if(weather_and_disaster_index == "Raining")
-			{
-				CurrentWeatherAndDisaster = weather_and_disaster_index;
-				CurrentWeatherAndDisasterInt = 2;
-			}
-			if(weather_and_disaster_index == "Storm")
-			{
-				CurrentWeatherAndDisaster = weather_and_disaster_index;
-				CurrentWeatherAndDisasterInt = 3;
-			}
-			if(weather_and_disaster_index == "Thunderstorm")
-			{
-				CurrentWeatherAndDisaster = weather_and_disaster_index;
-				CurrentWeatherAndDisasterInt = 4;
-			}
-			if(weather_and_disaster_index == "Tsunami")
-			{
-				CurrentWeatherAndDisaster = weather_and_disaster_index;
-				CurrentWeatherAndDisasterInt = 5;
-			}
-			if(weather_and_disaster_index == "Meteors shower")
-			{
-				CurrentWeatherAndDisaster = weather_and_disaster_index;
-				CurrentWeatherAndDisasterInt = 6;
-			}
-			if(weather_and_disaster_index == "Volcano")
-			{
-				CurrentWeatherAndDisaster = weather_and_disaster_index;
-				CurrentWeatherAndDisasterInt = 7;
-			}
-			if(weather_and_disaster_index == "Tornado")
-			{
-				CurrentWeatherAndDisaster = weather_and_disaster_index;
-				CurrentWeatherAndDisasterInt = 8;
-			}
-			if(weather_and_disaster_index == "Acid rain")
-			{
-				CurrentWeatherAndDisaster = weather_and_disaster_index;
-				CurrentWeatherAndDisasterInt = 9;
-			}
-			if(weather_and_disaster_index == "Earthquake")
-			{
-				CurrentWeatherAndDisaster = weather_and_disaster_index;
-				CurrentWeatherAndDisasterInt = 10;
-			}
-
-			if(weather_and_disaster_index == "Sand Storm")
-			{
-				CurrentWeatherAndDisaster = weather_and_disaster_index;
-				CurrentWeatherAndDisasterInt = 11;
-			}
-			if(weather_and_disaster_index == "blizzard")
-			{
-				CurrentWeatherAndDisaster = weather_and_disaster_index;
-				CurrentWeatherAndDisasterInt = 12;
-			}
-			if(weather_and_disaster_index == "Dust Storm")
-			{
-				CurrentWeatherAndDisaster = weather_and_disaster_index;
-				CurrentWeatherAndDisasterInt = 13;
-			}
-			else 
-			{
-				CurrentWeatherAndDisaster = "Original";
-				CurrentWeatherAndDisasterInt =  - 1;
-			}
 	}
 
+	[Rpc(MultiplayerApi.RpcMode.AnyPeer)]
+	public void RequestPickObject(NodePath player_path, NodePath target_path)
+	{
+
+		// Solo el servidor debe ejecutar esta lgica
+		if(!Multiplayer.IsServer())
+		{
+			return ;
+		}
+
+		var root = GetTree().GetRoot();
+
+		var player = root.GetNodeOrNull<Player>(player_path);
+		var target = root.GetNodeOrNull<CollisionObject3D>(target_path);
+
+		if(player == null || target == null)
+		{
+			return ;
+		}
+
+		if(!target.IsInGroup("Pickable"))
+		{
+			return ;
+		}
+
+
+		// Colocar el objeto en la mano del jugador
+		target.GlobalPosition = player.HandNode.GlobalPosition;
+		target.GlobalRotation = player.HandNode.GlobalRotation;
+		target.CollisionLayer = 2;
+
+		if(target is RigidBody3D rigidBody3)
+		{
+			rigidBody3.LinearVelocity = new Vector3(0.1f, 3, 0.1f);
+		}
+	}
+
+	public void PlayMultiplayerClient()
+	{
+		ENetMultiplayerPeer peer = new ENetMultiplayerPeer();
+		var error = peer.CreateClient(Ip, Port);
+		if(error == Error.Ok)
+		{
+			Multiplayerpeer = peer;
+			Multiplayer.MultiplayerPeer = Multiplayerpeer;
+			if(!Multiplayer.IsServer())
+			{
+				PrintRole("Client Init");
+			}
+		}
+		else
+		{
+			PrintRole("Fatal Error in client");
+		}
+	}
+
+	public void MultiplayerConnectionFailed()
+	{
+		PrintRole("Client disconected");
+
+		PlayersConected.Clear();
+		AssignedCharacter.Clear();
+		DestrolledNode.Clear();
+
+		CloseUp();
+
+		Multiplayerpeer = new OfflineMultiplayerPeer();
+		Multiplayer.MultiplayerPeer = Multiplayerpeer;
+
+		LoadScene.Instance.loadscene(Map, "res://Scenes/main_menu.tscn");
+	}
+
+	[Rpc(MultiplayerApi.RpcMode.AnyPeer, CallLocal = true)]
+	public void AssingCharacter(string charac)
+	{
+		foreach(string c in AvalibleCharacters)
+		{
+			if(c == charac)
+			{
+				Character = charac;
+				break;
+			}
+		}
+
+		if(LocalPlayer != null && GodotObject.IsInstanceValid(LocalPlayer))
+		{
+			LocalPlayer.Character = charac;
+		}
+
+		PrintRole("Asignado el personaje: " + charac);
+	}
+
+	[Rpc(MultiplayerApi.RpcMode.AnyPeer, CallLocal = true)]
+	public bool AssingCharacterToPlayer(long id, string charac)
+	{
+		var chosen_char = charac;
+
+
+		// Si el char recibido no es v�lido o ya est� ocupado, buscamos el siguiente disponible.
+		if(chosen_char == null || chosen_char == "" || !IsCharacterAvalible(chosen_char))
+		{
+			chosen_char = GetNextAvalibleCharacter();
+		}
+
+		if(chosen_char == null || chosen_char == "" || !IsCharacterAvalible(chosen_char))
+		{
+			PrintRole("No hay personaje disponible para el id " + id.ToString());
+			return false;
+		}
+
+		AssignedCharacter[(int)id] = chosen_char;
+		AssingCharacter(chosen_char);
+		PrintRole("Asignado al id " + id.ToString() + " el personaje " + chosen_char);
+		return true;
+	}
+
+	[Rpc(MultiplayerApi.RpcMode.AnyPeer)]
+	public void SyncAssignedCharacter(Dictionary<int, string> data)
+	{
+		AssignedCharacter = data.Duplicate(true);
+	}
+
+	public bool IsCharacterAvalible(string charac)
+	{
+		foreach(int id in AssignedCharacter.Keys)
+		{
+			if(AssignedCharacter[id] == charac)
+			{
+				return false;
+			}
+		}
+
+		return true;
+	}
+
+
+	public string GetNextAvalibleCharacter()
+	{
+		foreach(string charac in AvalibleCharacters)
+		{
+			if(IsCharacterAvalible(charac))
+			{
+				return charac;
+			}
+		}
+
+		return null;
+	}
+
+
+	public void MultiplayerServerDisconnected()
+	{
+		PrintRole("Client disconected");
+
+		PlayersConected.Clear();
+		AssignedCharacter.Clear();
+		DestrolledNode.Clear();
+
+		CloseUp();
+
+		Multiplayerpeer = new OfflineMultiplayerPeer();
+		Multiplayer.MultiplayerPeer = Multiplayerpeer;
+
+		LoadScene.Instance.loadscene(Map, "res://Scenes/main_menu.tscn");
+	}
+
+
+	public void MultiplayerConnectionServerSucess()
+	{
+		PrintRole("connected to server");
+		UnloadScene.Instance.unloadscene(MainMenu);
+	}
+
+	public override void _ExitTree()
+	{
+		Multiplayer.PeerConnected -= MultiplayerPlayerSpawner;
+		Multiplayer.PeerDisconnected -= MultiplayerPlayerRemover;
+		Multiplayer.ServerDisconnected -= MultiplayerServerDisconnected;
+		Multiplayer.ConnectedToServer -= MultiplayerConnectionServerSucess;
+		Multiplayer.ConnectionFailed -= MultiplayerConnectionFailed;
+
+		TemperatureTarget = Globals.Instance.TemperatureOriginal;
+		HumidityTarget = HumidityOriginal;
+		PressureTarget = PressureOriginal;
+		WindDirectionTarget = WindDirectionOriginal;
+		WindSpeedTarget = WindSpeedOriginal;
+
+		CloseUp();
+	}
+
+
+	public override void _Process(double _delta)
+	{
+		if(!Multiplayer.HasMultiplayerPeer())
+		{
+			return ;
+		}
+
+		if(!Multiplayer.IsServer())
+		{
+			return ;
+		}
+
+		TimeLeft = (float)Timer.TimeLeft;
+		Temperature = Mathf.Clamp(Temperature,  - 275.5f, 275.5f);
+		Humidity = Mathf.Clamp(Humidity, 0, 100);
+		Bradiation = Mathf.Clamp(Bradiation, 0, 100);
+		Pressure = Mathf.Clamp(Pressure, 0, 100000);
+		Oxygen = Mathf.Clamp(Oxygen, 0, 100);
+
+		Temperature = Mathf.Lerp(Temperature, TemperatureTarget, 0.005f);
+		Humidity = Mathf.Lerp(Humidity, HumidityTarget, 0.005f);
+		Bradiation = Mathf.Lerp(Bradiation, BradiationTarget, 0.005f);
+		Pressure = Mathf.Lerp(Pressure, PressureTarget, 0.005f);
+		Oxygen = Mathf.Lerp(Oxygen, OxygenTarget, 0.005f);
+		WindDirection = WindDirection.Lerp(WindDirectionTarget, 0.005f).Normalized();
+		WindSpeed = Mathf.Lerp(WindSpeed, WindSpeedTarget, 0.005f);
+	}
+
+
+	public override void _Ready()
+	{
+		Timer = GetNode<Timer>("Timer");
+		BroadcastTimer = GetNode<Timer>("Broadcast_Timer");
+
+		Multiplayer.PeerConnected += MultiplayerPlayerSpawner;
+		Multiplayer.PeerDisconnected += MultiplayerPlayerRemover;
+		Multiplayer.ServerDisconnected += MultiplayerServerDisconnected;
+		Multiplayer.ConnectedToServer += MultiplayerConnectionServerSucess;
+		Multiplayer.ConnectionFailed += MultiplayerConnectionFailed;
+
+		Multiplayerpeer = new OfflineMultiplayerPeer();
+		Multiplayer.MultiplayerPeer = Multiplayerpeer;
+		
+		GlobalsData = DataResource.LoadFile();
+	}
+
+
+	public void MultiplayerPlayerSpawner(long peer_id = 1)
+	{
+		if(!Multiplayer.IsServer())
+		{
+			return ;
+		}
+
+		if(Map != null && IsInstanceValid(Map))
+		{
+			PrintRole("Joined player id: " + peer_id.ToString());
+			var player = PlayerScene.Instantiate();
+			player.Name = peer_id.ToString();
+			Map.AddChild(player, true);
+
+
+			var assigned_ok = true;
+
+			if(!AssignedCharacter.ContainsKey((int)peer_id))
+			{
+				var next_character = GetNextAvalibleCharacter();
+				assigned_ok = AssingCharacterToPlayer(peer_id, next_character);
+			}
+
+			if(assigned_ok)
+			{
+				Rpc(MethodName.SyncAssignedCharacter, AssignedCharacter);
+				SyncAssignedCharacter(AssignedCharacter);
+				Rpc(MethodName.SyncPlayerList);
+				RpcId(peer_id, MethodName.SyncDestrolledNodes, DestrolledNode);
+				// envia al cliente
+				RpcId(peer_id, MethodName.SetWeatherAndDisaster, CurrentWeatherAndDisasterInt);
+			}
+			else
+			{
+				PrintRole("No se pudo asignar personaje al jugador con id: " + peer_id.ToString());
+			}
+		}
+
+		else
+		{
+			Rpc(MethodName.SyncAssignedCharacter, AssignedCharacter);
+			SyncAssignedCharacter(AssignedCharacter);
+			Rpc(MethodName.SyncPlayerList);
+			RpcId(peer_id, MethodName.SyncDestrolledNodes, DestrolledNode);
+			// broadcast
+			PrintRole("No se pudo aadir al jugador con el id: " + peer_id.ToString());
+		}
+	}
+
+
+	public async void MultiplayerPlayerRemover(long peer_id = 1)
+	{
+		if(!Multiplayer.IsServer())
+		{
+			return ;
+		}
+
+
+		// Intentar obtener el jugador de forma segura
+		Player player_node = Map.GetNodeOrNull<Player>(peer_id.ToString());
+		if(player_node != null && IsInstanceValid(player_node))
+		{
+			PrintRole("Disconected player id: " + peer_id.ToString());
+			player_node.QueueFree();
+
+			await ToSignal(player_node, "TreeExited");
+
+			if(AssignedCharacter.ContainsKey((int)peer_id))
+			{
+				AssignedCharacter.Remove((int)peer_id);
+			}
+
+
+			
+			Rpc(MethodName.SyncAssignedCharacter);
+			SyncAssignedCharacter(AssignedCharacter);
+			Rpc(MethodName.SyncPlayerList);
+		}
+
+
+		else
+		{
+			if(AssignedCharacter.ContainsKey((int)peer_id))
+			{
+				AssignedCharacter.Remove((int)peer_id);
+			}
+			Rpc(MethodName.SyncAssignedCharacter, AssignedCharacter);
+			SyncAssignedCharacter(AssignedCharacter);
+			Rpc(MethodName.SyncPlayerList);
+			PrintRole("player no found: " + peer_id.ToString());
+		}
+	}
+
+
+	public void SyncWeatherAndDisaster()
+	{
+		if(Multiplayer.IsServer())
+		{
+			var random_weather_and_disaster = GD.RandRange(0, 13);
+			Rpc(MethodName.SetWeatherAndDisaster, random_weather_and_disaster);
+		}
+	}
+
+	// 1. Define la lista de nombres fuera del método (como variable de clase)
+	private string[] _weatherNames = {
+		"Sun", "Cloud", "Raining", "Storm", "Thunderstorm", 
+		"Tsunami", "Meteors shower", "Volcano", "Tornado", 
+		"Acid rain", "Earthquake", "Sand Storm", "blizzard", "Dust Storm"
+	};
+
+	[Rpc(MultiplayerApi.RpcMode.AnyPeer)]
+	public void SetWeatherAndDisaster(Variant weather_and_disaster_index)
+	{
+		// Por defecto, asumimos que no se encontró
+		CurrentWeatherAndDisaster = "Original";
+		CurrentWeatherAndDisasterInt = -1;
+
+		// Caso A: Si recibimos un número (int)
+		if (weather_and_disaster_index.VariantType == Variant.Type.Int)
+		{
+			int idx = (int)weather_and_disaster_index;
+			if (idx >= 0 && idx < _weatherNames.Length)
+			{
+				CurrentWeatherAndDisaster = _weatherNames[idx];
+				CurrentWeatherAndDisasterInt = idx;
+			}
+		}
+		// Caso B: Si recibimos un texto (string)
+		else if (weather_and_disaster_index.VariantType == Variant.Type.String)
+		{
+			string name = weather_and_disaster_index.AsString();
+			int idx = System.Array.IndexOf(_weatherNames, name);
+			
+			if (idx != -1)
+			{
+				CurrentWeatherAndDisaster = name;
+				CurrentWeatherAndDisasterInt = idx;
+			}
+		}
+	}
+
+	[Rpc(MultiplayerApi.RpcMode.AnyPeer)]
 	public void AddPoints()
 	{
 		Points += 1;
 	}
 
-
+	[Rpc(MultiplayerApi.RpcMode.AnyPeer)]
 	public void RemovePoints()
 	{
 		Points -= 1;
@@ -1180,7 +1101,7 @@ public partial class Globals : Node
 		var peer = Multiplayer.MultiplayerPeer;
 
 		// Si no hay peer o est� desconectado o es offline volver al men�
-		if(peer == null || peer is OfflineMultiplayerPeer || peer.GetConnectionStatus() != MultiplayerPeer.ConnectionStatus.ConnectionConnected)
+		if(peer == null || peer is OfflineMultiplayerPeer || peer.GetConnectionStatus() != MultiplayerPeer.ConnectionStatus.Connected)
 		{
 			MultiplayerServerDisconnected();
 			return;
@@ -1205,12 +1126,12 @@ public partial class Globals : Node
 		}
 	}
 
-	public void SyncDestrolledNodes(Array Hauses)
+	public void SyncDestrolledNodes(Array<string> Hauses)
 	{
-		foreach(Variant house_name in Hauses)
+		foreach(string house_name in Hauses)
 		{
 			var house = GetTree().GetCurrentScene().GetNodeOrNull(house_name);
-			if(house)
+			if(house != null && IsInstanceValid(house))
 			{
 				house.QueueFree();
 			}
@@ -1226,7 +1147,7 @@ public partial class Globals : Node
 
 		if(!DestrolledNode.Contains(Name))
 		{
-			DestrolledNode.Append(Name);
+			DestrolledNode.Add(Name);
 		}
 	}
 
@@ -1239,7 +1160,7 @@ public partial class Globals : Node
 
 		if(DestrolledNode.Contains(Name))
 		{
-			DestrolledNode.Erase(Name);
+			DestrolledNode.Remove(Name);
 		}
 	}
 
@@ -1250,7 +1171,7 @@ public partial class Globals : Node
 			return;
 		}
 
-		foreach(Variant i in DestrolledNode)
+		foreach(string i in DestrolledNode)
 		{
 			RemoveDestrolledNodes(i);
 		}
@@ -1258,22 +1179,22 @@ public partial class Globals : Node
 
 	public void SetUpLisener()
 	{
-		Lisener = PacketPeerUDP.New();
+		Lisener = new PacketPeerUdp();
 		var ok = Lisener.Bind(LisenerPort);
-		if(ok == OK)
+		if(ok == Error.Ok)
 		{
-			PrintRole("Lisener port %s binded!!" % LisenerPort);
+			PrintRole($"Lisener port {LisenerPort} binded!!");
 			if(ServerBrowser != null)
 			{
-				ServerBrowser.GetParent().GetNode("Label").Text = "Lisener port %s binded!!" % LisenerPort;
+				ServerBrowser.GetParent().GetNode<Label>("Label").Text = $"Lisener port {LisenerPort} binded!!";
 			}
 		}
 		else
 		{
-			PrintRole("Lisener port %s FAILED!!" % LisenerPort);
+			PrintRole($"Lisener port {LisenerPort} FAILED!!");
 			if(ServerBrowser != null)
 			{
-				ServerBrowser.GetParent().GetNode("Label").Text = "Lisener port %s FAILED!!" % LisenerPort;
+				ServerBrowser.GetParent().GetNode<Label>("Label").Text = $"Lisener port {LisenerPort} FAILED!!";
 			}
 		}
 	}
@@ -1296,23 +1217,24 @@ public partial class Globals : Node
 		}
 	}
 
-	public void SetUpBroadcast(Variant Name)
+	public void SetUpBroadcast(string Name)
 	{
-		RoomList.Name = Name;
-		RoomList.Players = PlayersConected.Size();
+		RoomList["name"] = Name;
+		RoomList["players"] = (int)PlayersConected.Count;
 
-		Broadcaster = PacketPeerUDP.New();
+		Broadcaster = new PacketPeerUdp();
 		Broadcaster.SetBroadcastEnabled(true);
 		Broadcaster.SetDestAddress(BroadcasterIp, LisenerPort);
 
 		var ok = Broadcaster.Bind(BroadcasterPort);
-		if(ok == OK)
+		if(ok == Error.Ok)
 		{
-			PrintRole("Broadcaster port %s binded!!" % BroadcasterPort);
+			// Usamos $ al principio y metemos la variable entre { }
+			PrintRole($"Broadcaster port {BroadcasterPort} binded!!");
 		}
 		else
 		{
-			PrintRole("Broadcaster port %s FAILED!!" % BroadcasterPort);
+			PrintRole($"Broadcaster port {BroadcasterPort} FAILED!!");
 		}
 
 		if(BroadcastTimer != null)
@@ -1323,8 +1245,8 @@ public partial class Globals : Node
 
 	protected void _OnBroadcastTimerTimeout()
 	{
-		RoomList.Players = PlayersConected.Size();
-		var data = JSON.stringify(RoomList);
+		RoomList["players"] = PlayersConected.Count;
+		var data = Json.Stringify(RoomList);
 		var packet = data.ToAsciiBuffer();
 		if(Broadcaster != null)
 		{

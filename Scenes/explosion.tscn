@@ -1,6 +1,6 @@
 [gd_scene format=3 uid="uid://doi73cvnxims6"]
 
-[ext_resource type="Script" uid="uid://bb8hbryyl1ty0" path="res://Scripts/explosion.gd" id="1_o7s6l"]
+[ext_resource type="Script" uid="uid://nhxy6cx6btq8" path="res://CShard_Scripts/explosion.cs" id="1_a801j"]
 [ext_resource type="AudioStream" uid="uid://51sjjqi43ypi" path="res://Sounds/disasters/atmospheric/explosion_light9.mp3" id="3_i7oed"]
 
 [sub_resource type="SphereShape3D" id="SphereShape3D_up542"]
@@ -127,7 +127,7 @@ properties/2/spawn = true
 properties/2/replication_mode = 1
 
 [node name="Explosion" type="Node3D" unique_id=1040130816 groups=["Explosion"]]
-script = ExtResource("1_o7s6l")
+script = ExtResource("1_a801j")
 
 [node name="Area3D" type="Area3D" parent="." unique_id=1903622450 groups=["Explosion"]]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.0103197, 0.0393953, -0.0188904)

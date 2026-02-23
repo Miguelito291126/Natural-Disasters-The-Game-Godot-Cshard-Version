@@ -4,25 +4,26 @@ using Godot.Collections;
 [GlobalClass]
 public partial class House : StaticBody3D
 {
-	public Variant Door;
-	public Node DoorCollisionShape;
-	public Node HauseModel;
+	public Node3D Door;
+	public CollisionShape3D DoorCollisionShape;
+	public MeshInstance3D HauseModel;
 	[Export] public AudioStreamPlayer3D DoorOpenSound;
 	[Export] public AudioStreamPlayer3D DoorCloseSound;
 
 	[Export] public bool DoorOpen = false;
 	[Export] public bool Destrolled = false;
 
-	[Export] public Resource Bokenhause = /* preload has no equivalent, add a 'ResourcePreloader' Node in your scene */("res://Scenes/breakable_hause.tscn");
+	[Export] public PackedScene Bokenhause = ResourceLoader.Load<PackedScene>("res://Scenes/Breakable_Hause.tscn");
 
 	//# Factor extra de escala para las piezas destruidas. Las mallas del Breakable
-	//# est�n en unidades m�s peque�as que la casa; aumenta si se ven diminutas.
-	[Export] public double BreakableScaleFactor = 2.6;
+	//# estn en unidades ms pequeas que la casa; aumenta si se ven diminutas.
+	[Export] public float BreakableScaleFactor = 2.6f;
 
+	[Rpc(MultiplayerApi.RpcMode.AnyPeer, CallLocal = true)]
 	public void OpenDoor()
 	{
-		Globals.PrintRole("Open the door");
-		Door.Rotation.Y = Mathf.DegToRad(145);
+		Globals.Instance.PrintRole("Open the door");
+		Door.Rotation = new Vector3(0, Mathf.DegToRad(145), 0);
 		DoorCollisionShape.Disabled = true;
 		if(!DoorOpenSound.Playing)
 		{
@@ -31,10 +32,11 @@ public partial class House : StaticBody3D
 		DoorOpen = true;
 	}
 
+	[Rpc(MultiplayerApi.RpcMode.AnyPeer, CallLocal = true)]
 	public void CloseDoor()
 	{
-		Globals.PrintRole("Close the door");
-		Door.Rotation.Y = Mathf.DegToRad(0);
+		Globals.Instance.PrintRole("Close the door");
+		Door.Rotation = new Vector3(0, Mathf.DegToRad(0), 0);
 		DoorCollisionShape.Disabled = false;
 		if(!DoorCloseSound.Playing)
 		{
@@ -49,15 +51,15 @@ public partial class House : StaticBody3D
 
 		if(!DoorOpen)
 		{
-			open_door.Rpc();
+			Rpc(MethodName.OpenDoor);
 		}
 		else
 		{
-			close_door.Rpc();
+			Rpc(MethodName.CloseDoor);
 		}
 	}
 
-
+	[Rpc(MultiplayerApi.RpcMode.AnyPeer, CallLocal = true)]
 	public void Destroy()
 	{
 		if(Destrolled)
@@ -65,13 +67,13 @@ public partial class House : StaticBody3D
 			return ;
 		}
 
-		var Broken_Hause = Bokenhause.Instantiate();
+		Node3D Broken_Hause = Bokenhause.Instantiate<Node3D>();
 		GetParent().AddChild(Broken_Hause);
 		Broken_Hause.GlobalTransform = HauseModel.GlobalTransform;
 		Destrolled = true;
 
 		// Guardar path en Globals
-		Globals.AddDestrolledNodes(this.GetPath());
+		Globals.Instance.AddDestrolledNodes(this.GetPath());
 		this.QueueFree();
 	}
 
@@ -79,7 +81,7 @@ public partial class House : StaticBody3D
 	{
 		if(body.IsInGroup("Meteor"))
 		{
-			destroy.Rpc();
+			Rpc(MethodName.Destroy);
 		}
 	}
 
@@ -87,14 +89,14 @@ public partial class House : StaticBody3D
 	{
 		if(area.IsInGroup("Tornado") || area.IsInGroup("Water_Area") || area.IsInGroup("Explosion") || area.IsInGroup("Lava_Area"))
 		{
-			destroy.Rpc();
+			Rpc(MethodName.Destroy);
 		}
 	}
 
 	public override void _Ready()
 	{
 		Door = GetNode<Node3D>("hause/pivot");
-		DoorCollisionShape = GetNode("DoorCollision");
-		HauseModel = GetNode("hause");
+		DoorCollisionShape = GetNode<CollisionShape3D>("DoorCollision");
+		HauseModel = GetNode<MeshInstance3D>("hause");
 	}
 }

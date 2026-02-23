@@ -4,8 +4,8 @@ using Godot.Collections;
 [GlobalClass]
 public partial class PlayersListMenu : CanvasLayer
 {
-	public Variant List;
-	public Resource PlayerInfo = /* preload has no equivalent, add a 'ResourcePreloader' Node in your scene */("res://Scenes/player_info.tscn");
+	public VBoxContainer List;
+	public PackedScene PlayerInfo = ResourceLoader.Load<PackedScene>("res://Scenes/player_info.tscn");
 
 	public override void _Ready()
 	{
@@ -15,12 +15,14 @@ public partial class PlayersListMenu : CanvasLayer
 
 
 	// --- RPC: recibir lista desde el servidor ---
-	public void SyncPlayers(Array players_array)
+	[Rpc(MultiplayerApi.RpcMode.AnyPeer, CallLocal = true)]
+	public void SyncPlayers(Array<Player> players_array)
 	{
+		UpdateList(players_array);
 	}
 	//PANIC! <update_list ( players_array )> unexpected at Token(type='TEXT', value='update_list', lineno=12, index=277, end=288)
 	
-	public void UpdateList(Array players_array)
+	public void UpdateList(Array<Player> players_array)
 	{
 		// Limpiar lista
 		foreach(Node child in List.GetChildren())
@@ -33,11 +35,11 @@ public partial class PlayersListMenu : CanvasLayer
 		}
 
 		// Rellenar UI
-		foreach(var p in players_array)
+		foreach(Player p in players_array)
 		{
 			var inst = PlayerInfo.Instantiate();
-			inst.GetNode("Username").Text = (string)p["username"];
-			inst.GetNode("Points").Text = Str(p["points"]);
+			inst.GetNode<Label>("Username").Text = p.Username;
+			inst.GetNode<Label>("Points").Text =  p.Points.ToString();
 			List.AddChild(inst);
 		}
 	}
@@ -51,9 +53,9 @@ public partial class PlayersListMenu : CanvasLayer
 
 		// Construir arreglo de datos
 		Array data = new();
-		foreach(var player_data in (Array)GD.GetGlobal("Globals.players_conected"))
+		foreach(Player player_data in Globals.Instance.PlayersConected)
 		{
-			if(GodotObject.IsInstanceValid(player_data))
+			if(IsInstanceValid(player_data))
 			{
 				data.Add(new Dictionary {
 					{"username", player_data},
@@ -63,13 +65,13 @@ public partial class PlayersListMenu : CanvasLayer
 		}
 
 		// Enviar a todos
-		RpcUnreliable(nameof(SyncPlayers), data);
+		Rpc(nameof(SyncPlayers), data);
 	}
 
 	public override void _Input(InputEvent _event)
 	{
 		// Check if chat is open - replace with your actual Globals implementation
-		if(Globals.IsChatOpen)
+		if(Globals.Instance.IsChatOpen)
 		{
 			return;
 		}
