@@ -78,11 +78,11 @@ public partial class Chat : CanvasLayer
 
 	protected Player _GetLocalPlayer()
 	{
-		foreach(Player p in GetTree().GetNodesInGroup("player"))
+		foreach(Node p in GetTree().GetNodesInGroup("player"))
 		{
 			if(p is Player player && player.IsMultiplayerAuthority())
 				{
-					return p;
+					return player;
 				}
 		}
 
@@ -281,8 +281,17 @@ public partial class Chat : CanvasLayer
 			return "No tienes permisos";
 		}
 
-		Globals.Instance.SetWeatherAndDisaster(disaster_name);
-		return $"Clima/Desastre activado: {disaster_name}";
+		// 1. Verificamos que el mapa sea accesible
+		if (Globals.Instance.Map != null)
+		{
+			// 2. Ejecutamos el RPC desde el mapa para que todos lo reciban
+			// Enviamos el nombre y -1 como índice (porque estamos usando el nombre)
+			Globals.Instance.Map.Rpc(nameof(Globals.SetWeatherAndDisaster), disaster_name, -1);
+			
+			return $"Clima/Desastre activado por red: {disaster_name}";
+		}
+
+		return "Error: No se encontró el nodo del Mapa para sincronizar.";
 	}
 
 

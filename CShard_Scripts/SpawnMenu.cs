@@ -5,9 +5,9 @@ using Godot.Collections;
 public partial class SpawnMenu : CanvasLayer
 {
 	public GridContainer Container;
-	[Export] public Array<Node3D> Spawnlist;
-	[Export] public Array<Button> Buttonlist;
-	[Export] public Array<Node3D> Spawnedobject;
+	[Export] public Array<Node3D> Spawnlist = new();
+	[Export] public Array<Button> Buttonlist = new();
+	[Export] public Array<Node3D> Spawnedobject = new();
 	public Camera3d Camera;
 
 	public PackedScene EntityScene = ResourceLoader.Load<PackedScene>("res://Scenes/entity.tscn");
@@ -149,11 +149,15 @@ public partial class SpawnMenu : CanvasLayer
 
 		if(Globals.Instance.IsSpawnMenuOpen)
 		{
-			Input.SetMouseMode(Input.MouseModeEnum.Visible);
+			Callable.From(() => {
+				Input.MouseMode = Input.MouseModeEnum.Visible;
+			}).CallDeferred();
 		}
 		else
 		{
-			Input.SetMouseMode(Input.MouseModeEnum.Captured);
+			Callable.From(() => {
+				Input.MouseMode = Input.MouseModeEnum.Captured;
+			}).CallDeferred();
 		}
 
 		this.Visible = Globals.Instance.IsSpawnMenuOpen;

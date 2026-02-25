@@ -7,8 +7,12 @@ public partial class LoadScene : Node
 
 	internal static LoadScene Instance;
 
-	public LoadScene()
+	public override void _EnterTree()
 	{
+		if(Instance != null)
+		{
+			GD.PrintErr("Ya existe una instancia de LoadScene. Esto no debera pasar, pero si est pasando, se est creando una nueva instancia de LoadScene para evitar errores fatales. Si este mensaje aparece ms de una vez, por favor reporta este error a los desarrolladores.");
+		}
 		Instance = this;
 	}
 

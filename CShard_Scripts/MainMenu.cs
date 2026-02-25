@@ -76,15 +76,15 @@ public partial class MainMenu : Control
 		Settings = GetNode<Control>("Panel/Settings");
 		PlayMenu = GetNode<Control>("Panel/Play");
 		Username = GetNode<LineEdit>("Panel/Multiplayer/Username");
-		IpText = GetNode<LineEdit>("Panel/Multiplayer/ip");
-		PortText = GetNode<LineEdit>("Panel/Multiplayer/port");
+		IpText = GetNode<LineEdit>("Panel/Multiplayer/Ip");
+		PortText = GetNode<LineEdit>("Panel/Multiplayer/Port");
 		Fullscreen = GetNode<CheckButton>("Panel/Settings/Fullscreen");
 		Vsync = GetNode<CheckButton>("Panel/Settings/Vsync");
 		Fps = GetNode<CheckButton>("Panel/Settings/Fps");
-		AntiAliasing = GetNode<OptionButton>("Panel/Settings/antialiasing");
-		AntiTropic = GetNode<OptionButton>("Panel/Settings/antitropic");
+		AntiAliasing = GetNode<OptionButton>("Panel/Settings/Antialiasing");
+		AntiTropic = GetNode<OptionButton>("Panel/Settings/Antitropic");
 		Volumen = GetNode<HSlider>("Panel/Settings/Volumen");
-		VolumenMusic = GetNode<HSlider>("Panel/Settings/Volumen Music");
+		VolumenMusic = GetNode<HSlider>("Panel/Settings/VolumenMusic");
 		Time = GetNode<HSlider>("Panel/Play/Time");
 		Quality = GetNode<OptionButton>("Panel/Settings/Quality");
 		Music = GetNode<AudioStreamPlayer>("Music");
@@ -139,7 +139,7 @@ public partial class MainMenu : Control
 				Globals.Instance.PrintRole("ip: " + IP.ResolveHostname(OS.GetEnvironment("COMPUTERNAME"), IP.Type.Ipv4));
 				Globals.Instance.PrintRole("Init dedicated server...");
 
-				await ToSignal(GetTree().CreateTimer(2), "Timeout");
+				await ToSignal(GetTree().CreateTimer(2), SceneTreeTimer.SignalName.Timeout);
 
 				Globals.Instance.PlayMultiplayerServer();
 			}
@@ -181,7 +181,7 @@ public partial class MainMenu : Control
 	{
 		if(this.Visible)
 		{
-			await ToSignal(Music, "Finished");
+			await ToSignal(Music, AudioStreamPlayer.SignalName.Finished);
 			Music.Play();
 		}
 		else
@@ -214,7 +214,7 @@ public partial class MainMenu : Control
 		else
 		{
 			ErrorText.Visible = true;
-			await ToSignal(GetTree().CreateTimer(2), "Timeout");
+			await ToSignal(GetTree().CreateTimer(2), SceneTreeTimer.SignalName.Timeout);
 			ErrorText.Visible = false;
 		}
 	}
@@ -324,14 +324,14 @@ public partial class MainMenu : Control
 	}
 
 
-	protected void _OnHSlider2ValueChanged(int value)
+	protected void _OnHSlider2ValueChanged(float value)
 	{
 		Globals.Instance.GlobalsData.TimerDisasters = value;
 		Globals.Instance.GlobalsData.SaveFile();
 	}
 
 
-	protected void _OnVolumenValueChanged(int value)
+	protected void _OnVolumenValueChanged(float value)
 	{
 		Globals.Instance.GlobalsData.Volumen = value;
 		AudioServer.SetBusVolumeDb(AudioServer.GetBusIndex("Master"), Mathf.LinearToDb(value));
@@ -374,7 +374,7 @@ public partial class MainMenu : Control
 	}
 
 
-	protected void _OnVolumenMusicValueChanged(int value)
+	protected void _OnVolumenMusicValueChanged(float value)
 	{
 		Globals.Instance.GlobalsData.VolumenMusic = value;
 		AudioServer.SetBusVolumeDb(AudioServer.GetBusIndex("Music"), Mathf.LinearToDb(value));
@@ -402,7 +402,7 @@ public partial class MainMenu : Control
 	protected void _OnBackMultiplayerPressed()
 	{
 		MainMenuPanel.Show();
-		Multiplayer.Show();
+		Multiplayer.Hide();
 		Settings.Hide();
 		MultiplayerList.Hide();
 		PlayMenu.Hide();

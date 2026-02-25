@@ -19,9 +19,9 @@ public partial class DataResource : Resource
 	[Export] public bool FPS = false;
 	[Export] public int Antialiasing = 0;
 	[Export] public int Antitropic = 0;
-	[Export] public int Volumen = 1;
-	[Export] public int VolumenMusic = 1;
-	[Export] public int TimerDisasters = 60;
+	[Export] public float Volumen = 1;
+	[Export] public float VolumenMusic = 1;
+	[Export] public float TimerDisasters = 60;
 	[Export] public bool Fullscreen = false;
 	[Export] public int Resolution = 0;
 	[Export] public int Quality = 0;

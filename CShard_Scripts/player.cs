@@ -29,7 +29,7 @@ public partial class Player : CharacterBody3D
 	public int MaxOxygen = 100;
 	public int MaxBradiation = 100;
 
-	[Export] public float FallStrength = 0;
+	[Export] public float FallStrength = 0f;
 
 
 	public int MinHearth = 0;
@@ -61,7 +61,7 @@ public partial class Player : CharacterBody3D
 	public GpuParticles3D DustNode;
 	public GpuParticles3D SandNode;
 	public GpuParticles3D SnowNode;
-	public Control PauseMenuNode;
+	public PauseMenu PauseMenuNode;
 	public AnimationPlayer AnimationplayerNode;
 	public AnimationTree AnimationTreeNode;
 	public Camera3d CameraNode;
@@ -69,7 +69,7 @@ public partial class Player : CharacterBody3D
 	public Node3D HandNode;
 	public Node3D EsqueletoNode;
 	public Label Label;
-	public ColorRect TempEffect;
+	public CanvasLayer TempEffect;
 	public Control DeathMenu;
 	public GpuParticles3D FireParticles;
 
@@ -79,8 +79,8 @@ public partial class Player : CharacterBody3D
 	public AudioStreamPlayer3D VomitAudio;
 	public GpuParticles3D Vomit;
 
-	public Control Underwatereffect;
-	public Control Underlavaeffect;
+	public CanvasLayer Underwatereffect;
+	public CanvasLayer Underlavaeffect;
 
 
 	public AudioStreamPlayer3D RainSound;
@@ -133,7 +133,9 @@ public partial class Player : CharacterBody3D
 
 	public override void _ExitTree()
 	{
-		Input.SetMouseMode(Input.MouseModeEnum.Visible);
+		Callable.From(() => {
+			Input.MouseMode = Input.MouseModeEnum.Visible;
+		}).CallDeferred();
 	}
 
 	[Rpc(MultiplayerApi.RpcMode.AnyPeer, CallLocal = true)]
@@ -151,30 +153,22 @@ public partial class Player : CharacterBody3D
 	{
 		RagdollEnabled = enable;
 
-
-		// Propiedades que afectan al servidor de fisica -> tambi�n deferidas por seguridad
+		// 1. CAMBIO INMEDIATO (No usar SetDeferred aquí)
 		if(SkeletonPhy != null)
 		{
-			SkeletonPhy.SetDeferred("active", enable);
+			// En lugar de SetDeferred, lo asignamos directamente
+			SkeletonPhy.PhysicalBonesStartSimulation(); // Si enable es true
+			if (!enable) SkeletonPhy.PhysicalBonesStopSimulation();
 		}
 
-		if(AnimationTreeNode != null)
-		{
-			AnimationTreeNode.SetDeferred("active", !enable);
-		}
+		// 2. Desactivar el procesamiento de animaciones inmediatamente
+		if(AnimationTreeNode != null) AnimationTreeNode.Active = !enable;
+		if(AnimationplayerNode != null) AnimationplayerNode.PlaybackActive = !enable;
 
-		if(AnimationplayerNode != null)
-		{
-			AnimationplayerNode.SetDeferred("active", !enable);
-		}
+		// 3. La colisión de la cápsula SÍ puede ser diferida si da problemas, 
+		// pero para el reset es mejor intentar directo:
+		if(Capsule != null) Capsule.Disabled = enable;
 
-		if(Capsule != null)
-		{
-			Capsule.SetDeferred("disabled", enable);
-		}
-
-
-		// Iniciar/parar la simulaci�n f�sica � tambi�n lo deferimos para evitar condiciones
 		if(enable)
 		{
 			_StartPhysicalBonesSim();
@@ -183,15 +177,9 @@ public partial class Player : CharacterBody3D
 		{
 			_StopPhysicalBonesSim();
 
-			// Al salir del ragdoll, restaurar la posici�n/rotaci�n de la cabeza y la c�mara
-			if(HeadNode != null)
-			{
-				HeadNode.Transform = HeadDefaultLocalTransform;
-			}
-			if(CameraNode != null)
-			{
-				CameraNode.Transform = CameraDefaultLocalTransform;
-			}
+			// Restaurar transforms inmediatamente
+			if(HeadNode != null) HeadNode.Transform = HeadDefaultLocalTransform;
+			if(CameraNode != null) CameraNode.Transform = CameraDefaultLocalTransform;
 		}
 	}
 
@@ -203,11 +191,21 @@ public partial class Player : CharacterBody3D
 		}
 	}
 
-	protected void _StopPhysicalBonesSim()
+	private void _StopPhysicalBonesSim()
 	{
-		if(SkeletonPhy != null)
+		if (SkeletonPhy != null)
 		{
 			SkeletonPhy.PhysicalBonesStopSimulation();
+			
+			foreach (var bone in SkeletonPhy.GetChildren())
+			{
+				if (bone is PhysicalBone3D b)
+				{
+					b.LinearVelocity = Vector3.Zero;
+					b.AngularVelocity = Vector3.Zero;
+					// Opcional: b.JointConstraints = false; si usas configuraciones complejas
+				}
+			}
 		}
 	}
 
@@ -291,7 +289,7 @@ public partial class Player : CharacterBody3D
 	public async void Ignite(int time)
 	{
 		IsOnFire = true;
-		await ToSignal(GetTree().CreateTimer(time), "Timeout");
+		await ToSignal(GetTree().CreateTimer(time), SceneTreeTimer.SignalName.Timeout);
 		IsOnFire = false;
 	}
 
@@ -366,87 +364,67 @@ public partial class Player : CharacterBody3D
 
 	public override void _Ready()
 	{
-		RainNode = GetNode<GpuParticles3D>("Rain");
-		SplashNode = GetNode<GpuParticles3D>("splash");
-		DustNode = GetNode<GpuParticles3D>("Dust");
-		SandNode = GetNode<GpuParticles3D>("Sand");
-		SnowNode = GetNode<GpuParticles3D>("Snow");
-		PauseMenuNode = GetNode<Control>("Pause menu");
-		AnimationplayerNode = GetNode<AnimationPlayer>("AnimationPlayer");
-		AnimationTreeNode = GetNode<AnimationTree>("AnimationTree");
-		CameraNode = GetNode<Camera3d>("head/Camera3D");
-		HeadNode = GetNode<Node3D>("head");
-		HandNode = GetNode<Node3D>("head/hand");
-		EsqueletoNode = GetNode<Node3D>("Esqueleto");
-		Label = GetNode<Label>("Name");
-		TempEffect = GetNode<ColorRect>("Temp_Effect");
-		DeathMenu = GetNode<Control>("Death Menu");
-		FireParticles = GetNode<GpuParticles3D>("Fire");
-		SneezeAudio = GetNode<AudioStreamPlayer3D>("head/Camera3D/sneeze audio");
-		Sneeze = GetNode<GpuParticles3D>("head/Camera3D/Sneeze");
-		VomitAudio = GetNode<AudioStreamPlayer3D>("head/Camera3D/VomitAudio");
-		Vomit = GetNode<GpuParticles3D>("head/Camera3D/Vomit");
-		Underwatereffect = GetNode<Control>("Underwater");
-		Underlavaeffect = GetNode<Control>("UnderLava");
-		RainSound = GetNode<AudioStreamPlayer3D>("Rain sound");
-		WindSound = GetNode<AudioStreamPlayer3D>("Wind sound");
-		WindModerateSound = GetNode<AudioStreamPlayer3D>("Wind Morerate sound");
-		WindExtremeSound = GetNode<AudioStreamPlayer3D>("Wind Extreme sound");
-		Interactor = GetNode<RayCast3D>("head/Camera3D/Interactor");
-		SpotLight3D = GetNode<SpotLight3D>("head/Camera3D/SpotLight3D");
-		Spawn = GetNode<Marker3D>("../Spawn");
-		Skeleton = GetNode<Skeleton3D>("Esqueleto/Skeleton3D");
-		SkeletonPhy = GetNode<PhysicalBoneSimulator3D>("Esqueleto/Skeleton3D/PhysicalBoneSimulator3D");
-		Capsule = GetNode<CollisionShape3D>("CollisionShape3D");
-		Mesh = GetNode<MeshInstance3D>("Esqueleto/Skeleton3D/human");
-		RagdollFollowBone = GetNode<Node3D>("Esqueleto/Skeleton3D/PhysicalBoneSimulator3D/Physical Bone clumna3");
-		RainNode.Emitting = false;
-		SandNode.Emitting = false;
-		SplashNode.Emitting = false;
-		DustNode.Emitting = false;
-		SnowNode.Emitting = false;
+		// 1. RUTAS CORREGIDAS (Basadas en tu .tscn)
+		// Usamos GetNodeOrNull para evitar que el juego muera si cambias un nombre en el editor
+		RainNode = GetNodeOrNull<GpuParticles3D>("Rain");
+		SplashNode = GetNodeOrNull<GpuParticles3D>("splash");
+		DustNode = GetNodeOrNull<GpuParticles3D>("Dust");
+		SandNode = GetNodeOrNull<GpuParticles3D>("Sand");
+		SnowNode = GetNodeOrNull<GpuParticles3D>("Snow");
+		
+		PauseMenuNode = GetNodeOrNull<PauseMenu>("Pause menu");
+		AnimationplayerNode = GetNodeOrNull<AnimationPlayer>("AnimationPlayer");
+		AnimationTreeNode = GetNodeOrNull<AnimationTree>("AnimationTree");
+		
+		// Nodos dentro de la jerarquía de la cabeza
+		HeadNode = GetNodeOrNull<Node3D>("head");
+		CameraNode = GetNodeOrNull<Camera3d>("head/Camera3D");
+		HandNode = GetNodeOrNull<Node3D>("head/hand");
+		
+		// Nodos dentro de la Camera3D (Rutas relativas completas)
+		Sneeze = GetNodeOrNull<GpuParticles3D>("head/Camera3D/Sneeze");
+		SneezeAudio = GetNodeOrNull<AudioStreamPlayer3D>("head/Camera3D/sneeze audio");
+		Vomit = GetNodeOrNull<GpuParticles3D>("head/Camera3D/Vomit");
+		VomitAudio = GetNodeOrNull<AudioStreamPlayer3D>("head/Camera3D/vomit audio"); 
+		Interactor = GetNodeOrNull<RayCast3D>("head/Camera3D/Interactor");
+		SpotLight3D = GetNodeOrNull<SpotLight3D>("head/Camera3D/SpotLight3D");
 
+		// Sonidos (Asegúrate que coincidan con los nombres del Inspector)
+		RainSound = GetNodeOrNull<AudioStreamPlayer3D>("Rain sound");
+		WindSound = GetNodeOrNull<AudioStreamPlayer3D>("Wind sound");
+		WindModerateSound = GetNodeOrNull<AudioStreamPlayer3D>("Wind Morerate sound");
+		WindExtremeSound = GetNodeOrNull<AudioStreamPlayer3D>("Wind Extreme sound");
 
-		Globals.Instance.PrintRole($"player name: {int.Parse(Name.ToString())}");
-		Globals.Instance.PrintRole($"is authority: {IsMultiplayerAuthority()}");
-		Globals.Instance.PrintRole($"get authority: {GetMultiplayerAuthority()}");
+		// Esqueleto y Física
+		EsqueletoNode = GetNodeOrNull<Node3D>("Esqueleto");
+		Skeleton = GetNodeOrNull<Skeleton3D>("Esqueleto/Skeleton3D");
+		SkeletonPhy = GetNodeOrNull<PhysicalBoneSimulator3D>("Esqueleto/Skeleton3D/PhysicalBoneSimulator3D");
+		Mesh = GetNodeOrNull<MeshInstance3D>("Esqueleto/Skeleton3D/human");
+		Capsule = GetNodeOrNull<CollisionShape3D>("CollisionShape3D");
 
-		CameraNode.Current = IsMultiplayerAuthority();
+		// 2. BLINDAJE INICIAL
+		// Si algún nodo crítico es nulo, detenemos el proceso para que no crashee la PC
+		if (RainNode != null) RainNode.Emitting = false;
+		if (SandNode != null) SandNode.Emitting = false;
+		if (SplashNode != null) SplashNode.Emitting = false;
+		if (DustNode != null) DustNode.Emitting = false;
+		if (SnowNode != null) SnowNode.Emitting = false;
 
-
-		// Guardar transform original de la cabeza y de la c�mara
-		if(HeadNode != null)
-		{
-			HeadDefaultTransform = HeadNode.GlobalTransform;
-			HeadDefaultLocalTransform = HeadNode.Transform;
-		}
-		if(CameraNode != null)
-		{
-			CameraDefaultTransform = CameraNode.GlobalTransform;
-			CameraDefaultLocalTransform = CameraNode.Transform;
-		}
-
-
-		// Obtener el �ndice del hueso "cuello" para seguir en ragdoll
-		if(Skeleton != null)
-		{
-			HeadBoneIndex = Skeleton.FindBone("cuello");
-
-			// Si por alguna raz�n no lo encuentra, usar un �ndice conocido del esqueleto (9 = cuello en la escena)
-			if(HeadBoneIndex ==  - 1 && Skeleton.GetBoneCount() > 9)
-			{
-				HeadBoneIndex = 9;
-			}
-		}
-
-		if(IsMultiplayerAuthority())
+		// 3. CAPTURA DEL RATÓN (CORREGIDA)
+		if (IsMultiplayerAuthority())
 		{
 			Globals.Instance.LocalPlayer = this;
-			Input.SetMouseMode(Input.MouseModeEnum.Captured);
+			
+			// El modo captura se llama DEFERRED para dar tiempo a la ventana a cargar
+			Callable.From(() => {
+				Input.MouseMode = Input.MouseModeEnum.Captured;
+			}).CallDeferred();
+
+			if (CameraNode != null) CameraNode.Current = true;
+
 			_ResetPlayer();
 			Rpc(nameof(_SetRagdollState), false);
-
-
+			
 			// Verificar si hay jugadores con el mismo nombre y aadir nmero si es necesario
 			var nombre_base = Globals.Instance.Username;
 			var contador = 0;
@@ -511,8 +489,20 @@ public partial class Player : CharacterBody3D
 		}
 
 		BodyTemperature = Mathf.Clamp(BodyTemperature + core_equilibrium + heatsource_equilibrium + coldsource_equilibrium + ambient_equilibrium, MinTemp, MaxTemp);
-		((ShaderMaterial)TempEffect.Material).SetShaderParameter("temp", BodyTemperature);
-		((ShaderMaterial)TempEffect.Material).SetShaderParameter("Temp", BodyTemperature);
+		
+		// 1. Verifica que la referencia principal exista
+		if (TempEffect != null)
+		{
+			// 2. Intenta obtener el nodo hijo de forma segura
+			var temp_effect_rect = TempEffect.GetNodeOrNull<ColorRect>("ColorRect");
+
+			// 3. Verifica que el nodo hijo exista y que tenga el material asignado
+			if (temp_effect_rect != null && temp_effect_rect.Material is ShaderMaterial sm)
+			{
+				sm.SetShaderParameter("temp", BodyTemperature);
+				sm.SetShaderParameter("Temp", BodyTemperature);
+			}
+		}
 
 		var alpha_hot = 1 - ((44 - Mathf.Clamp(BodyTemperature, 39, 44)) / 5);
 		var alpha_cold = ((35 - Mathf.Clamp(BodyTemperature, 24, 35)) / 11);
@@ -651,8 +641,11 @@ public partial class Player : CharacterBody3D
 
 	public void UnderwaterOrUnderlavaEffects()
 	{
-		Underwatereffect.Visible = IsUnderWater;
-		Underlavaeffect.Visible = IsUnderLava;
+		if (Underwatereffect != null && Underlavaeffect != null)
+		{
+			Underwatereffect.Visible = IsUnderWater;
+			Underlavaeffect.Visible = IsUnderLava;
+		}
 
 		if(IsInLava)
 		{
@@ -670,7 +663,11 @@ public partial class Player : CharacterBody3D
 
 	public void IsOnFireEffects()
 	{
-		FireParticles.Emitting = IsOnFire;
+		if(FireParticles != null)
+		{
+			FireParticles.Emitting = IsOnFire;
+		}
+
 		if(IsOnFire)
 		{
 			if(GD.RandRange(1, 5) == 5)
@@ -718,43 +715,43 @@ public partial class Player : CharacterBody3D
 
 			if(keyEvent.Keycode == Key.Key1)
 			{
-				Rpc(nameof(Globals.Instance.SetWeatherAndDisaster), 1);
+				Rpc(nameof(Globals.Instance.SetWeatherAndDisaster), "", 1);
 			}
 			if(keyEvent.Keycode == Key.Key2)
 			{
-				Rpc(nameof(Globals.Instance.SetWeatherAndDisaster), 2);
+				Rpc(nameof(Globals.Instance.SetWeatherAndDisaster), "", 2);
 			}
 			if(keyEvent.Keycode == Key.Key3)
 			{
-				Rpc(nameof(Globals.Instance.SetWeatherAndDisaster), 3);
+				Rpc(nameof(Globals.Instance.SetWeatherAndDisaster), "", 3);
 			}
 			if(keyEvent.Keycode == Key.Key4)
 			{
-				Rpc(nameof(Globals.Instance.SetWeatherAndDisaster), 4);
+				Rpc(nameof(Globals.Instance.SetWeatherAndDisaster), "", 4);
 			}
 			if(keyEvent.Keycode == Key.Key5)
 			{
-				Rpc(nameof(Globals.Instance.SetWeatherAndDisaster), 5);
+				Rpc(nameof(Globals.Instance.SetWeatherAndDisaster), "", 5);
 			}
 			if(keyEvent.Keycode == Key.Key6)
 			{
-				Rpc(nameof(Globals.Instance.SetWeatherAndDisaster), 6);
+				Rpc(nameof(Globals.Instance.SetWeatherAndDisaster), "", 6);
 			}
 			if(keyEvent.Keycode == Key.Key7)
 			{
-				Rpc(nameof(Globals.Instance.SetWeatherAndDisaster), 7);
+				Rpc(nameof(Globals.Instance.SetWeatherAndDisaster), "", 7);
 			}
 			if(keyEvent.Keycode == Key.Key8)
 			{
-				Rpc(nameof(Globals.Instance.SetWeatherAndDisaster), 8);
+				Rpc(nameof(Globals.Instance.SetWeatherAndDisaster), "", 8);
 			}
 			if(keyEvent.Keycode == Key.Key9)
 			{
-				Rpc(nameof(Globals.Instance.SetWeatherAndDisaster), 9);
+				Rpc(nameof(Globals.Instance.SetWeatherAndDisaster), "", 9);
 			}
 			if(keyEvent.Keycode == Key.Key0)
 			{
-				Rpc(nameof(Globals.Instance.SetWeatherAndDisaster), 0);
+				Rpc(nameof(Globals.Instance.SetWeatherAndDisaster), "", 0);
 			}
 		}
 	}
@@ -763,55 +760,62 @@ public partial class Player : CharacterBody3D
 	{
 		Globals.Instance.IsRaining = RainNode.Emitting && Globals.Instance.IsOutdoor(this) && Outdoor;
 		if(Globals.Instance.IsRaining)
-		{
-			if(!RainSound.Playing)
+{			if (RainSound != null)
 			{
-				RainSound.Play();
+				if(!RainSound.Playing)
+				{
+					RainSound.Play();
+				}
 			}
 		}
 		else
 		{
-			RainSound.Stop();
+			if (RainSound != null)
+			{
+				RainSound.Stop();
+			}
 		}
 	}
 
-	public void windsound()
-	{
-		if(BodyWind > 0 && BodyWind <= 50)
-		{
-			if(!WindSound.Playing)
-			{
-				WindSound.Play();
-				WindModerateSound.Stop();
-				WindModerateSound.Stop();
-			}
-		}
-		else if(BodyWind > 50 && BodyWind <= 100)
-		{
-			if(!WindModerateSound.Playing)
-			{
-				WindSound.Stop();
-				WindModerateSound.Play();
-				WindExtremeSound.Stop();
-			}
-		}
-		else if(BodyWind > 100)
-		{
-			if(!WindExtremeSound.Playing)
-			{
-				WindSound.Stop();
-				WindModerateSound.Stop();
-				WindExtremeSound.Play();
-			}
-		}
-		else
-		{
-			WindSound.Stop();
-			WindModerateSound.Stop();
-			WindExtremeSound.Stop();
-		}
-	}
+public void windsound()
+{
+    // 1. Verificación de seguridad (Blindaje)
+    // Si falta alguno de los nodos, salimos para evitar el crash.
+    if (WindSound == null || WindModerateSound == null || WindExtremeSound == null) 
+        return;
 
+    // 2. Determinamos qué sonido DEBERÍA estar sonando
+    AudioStreamPlayer3D targetSound = null;
+
+    if (BodyWind > 100)
+    {
+        targetSound = WindExtremeSound;
+    }
+    else if (BodyWind > 50)
+    {
+        targetSound = WindModerateSound;
+    }
+    else if (BodyWind > 0)
+    {
+        targetSound = WindSound;
+    }
+
+    // 3. Gestión de estados (Play / Stop)
+    // Lista de todos para iterar y apagar los que no necesitamos
+    AudioStreamPlayer3D[] allWinds = { WindSound, WindModerateSound, WindExtremeSound };
+
+    foreach (var v in allWinds)
+    {
+        if (v == targetSound)
+        {
+            if (!v.Playing) v.Play();
+        }
+        else
+        {
+            if (v.Playing) v.Stop();
+        }
+    }
+}
 
 	public override void _Process(double delta)
 	{
@@ -861,9 +865,6 @@ public partial class Player : CharacterBody3D
 		{
 			return ;
 		}
-
-
-		
 
 		// Hacer que la c�mara siga al cuerpo en ragdoll
 		if(RagdollEnabled)
@@ -929,7 +930,7 @@ public partial class Player : CharacterBody3D
 			}
 		}
 
-		Velocity = velocity;
+		
 
 		if(Input.IsActionJustPressed("Flashligh"))
 		{
@@ -943,14 +944,13 @@ public partial class Player : CharacterBody3D
 		else
 		{
 			SPEED = SPEED_WALK;
-
-
 			// Get the input direction and handle the movement/deceleration.
 
 		}// As good practice, you should replace UI actions with custom gameplay actions.
-		var input_dir = Input.GetVector("ui_left", "ui_right", "ui_up", "ui_down");
-		var input_vector = new Vector3(input_dir.X, 0, input_dir.Y);
-		var direction = (HeadNode.Transform.Basis * input_vector).Normalized();
+
+		Vector2 input_dir = Input.GetVector("ui_left", "ui_right", "ui_up", "ui_down");
+		Vector3 input_vector = new Vector3(input_dir.X, 0, input_dir.Y);
+		Vector3 direction = (HeadNode.Transform.Basis * input_vector).Normalized();
 
 		if(Noclip)
 		{
@@ -1008,13 +1008,16 @@ public partial class Player : CharacterBody3D
 
 		var horizontal_velocity = new Vector2(velocity.X, velocity.Z);
 
-		AnimationTreeNode.Set("parameters/conditions/is_falling", !IsOnFloor() && velocity.Y < 0);
-		AnimationTreeNode.Set("parameters/conditions/is_jumping", velocity.Y > 0);
-		AnimationTreeNode.Set("parameters/conditions/is_swiming", IsInWater || IsInLava);
-		AnimationTreeNode.Set("parameters/conditions/is_idle", IsOnFloor() && horizontal_velocity.Length() < 0.1);
-		AnimationTreeNode.Set("parameters/conditions/is_walking", IsOnFloor() && horizontal_velocity.Length() > 0.1);
-
-		if(Interactor.IsColliding())
+		if (AnimationTreeNode != null) 
+		{
+			AnimationTreeNode.Set("parameters/conditions/is_falling", !IsOnFloor() && velocity.Y < 0);
+			AnimationTreeNode.Set("parameters/conditions/is_jumping", velocity.Y > 0);
+			AnimationTreeNode.Set("parameters/conditions/is_swiming", IsInWater || IsInLava);
+			AnimationTreeNode.Set("parameters/conditions/is_idle", IsOnFloor() && horizontal_velocity.Length() < 0.1);
+			AnimationTreeNode.Set("parameters/conditions/is_walking", IsOnFloor() && horizontal_velocity.Length() > 0.1);
+		}
+		
+		if(IsInstanceValid(Interactor) && Interactor.IsColliding())
 		{
 			Node3D target = (Node3D)Interactor.GetCollider();
 			if (target != null && target.HasMethod("Interact"))
@@ -1057,6 +1060,7 @@ public partial class Player : CharacterBody3D
 			}
 		}
 
+		Velocity = velocity;
 
 		MoveAndSlide();
 	}
@@ -1068,7 +1072,7 @@ public partial class Player : CharacterBody3D
 		{
 			Capsule.Disabled = true;
 			Velocity = Vector3.Zero;
-			FallStrength = 0;
+			FallStrength = 0f;
 			Globals.Instance.PrintRole("Noclip activated");
 		}
 		else
@@ -1081,55 +1085,61 @@ public partial class Player : CharacterBody3D
 
 	public override void _UnhandledInput(InputEvent ev)
 	{
-		if(!IsMultiplayerAuthority())
-		{
-			return ;
-		}
+		if (!IsMultiplayerAuthority()) return;
 
-		// No permitir control de cmara cuando el chat est� abierto
-		// Verificar tanto la variable global como si algn LineEdit tiene foco
-		var chat_node = GetTree().GetRoot().FindChild("Chat", true, false);
-		if(chat_node != null)
+		// Bloqueos de UI y estado
+		if (Globals.Instance.IsChatOpen || RagdollEnabled) return;
+
+		// Verificación de foco en Chat
+		var chat_node = GetTree().Root.FindChild("Chat", true, false);
+		if (chat_node != null)
 		{
 			var line_edit = chat_node.GetNodeOrNull<LineEdit>("Panel/Panel2/LineEdit");
-			if(line_edit != null && line_edit.HasFocus())
+			if (line_edit != null && line_edit.HasFocus()) return;
+		}
+
+		if (Input.MouseMode == Input.MouseModeEnum.Captured)
+		{
+			if (ev is InputEventMouseMotion mm)
 			{
-				return ;
+				// 1. Rotación Vertical (Arriba/Abajo) -> Eje X
+				// Usamos -= porque en Godot el eje Y del ratón está invertido respecto al ángulo X
+				Vector3 camRot = CameraNode.RotationDegrees;
+				camRot.X -= mm.Relative.Y * (float)SENSIBILITY;
+				camRot.X = Mathf.Clamp(camRot.X, -90f, 90f);
+				CameraNode.RotationDegrees = camRot;
+
+				// 2. Rotación Horizontal (Izquierda/Derecha) -> Eje Y
+				Vector3 headRot = HeadNode.RotationDegrees;
+				headRot.Y -= mm.Relative.X * (float)SENSIBILITY;
+				HeadNode.RotationDegrees = headRot;
+
+				// 3. Sincronizar el esqueleto con la dirección de la cabeza
+				Vector3 esqRot = EsqueletoNode.RotationDegrees;
+				esqRot.Y = headRot.Y;
+				EsqueletoNode.RotationDegrees = esqRot;
 			}
-		}
-
-		if(Globals.Instance.IsChatOpen)
-		{
-			return ;
-		}
-
-		// No permitir control de cmara cuando el ragdoll est activo
-		if(RagdollEnabled)
-		{
-			return ;
-		}
-
-		if(Input.GetMouseMode() == Input.MouseModeEnum.Captured)
-		{
-			if(ev is InputEventMouseMotion mm)
+			else if (ev is InputEventJoypadMotion jm)
 			{
-				CameraNode.Rotation -=  new Vector3(CameraNode.Rotation.X, mm.Relative.Y * (float)SENSIBILITY, CameraNode.Rotation.Z);
-				CameraNode.RotationDegrees = new Vector3(Mathf.Clamp(CameraNode.RotationDegrees.X,  - 90, 90), CameraNode.RotationDegrees.Y, CameraNode.RotationDegrees.Z	);
-				HeadNode.Rotation -= new Vector3(mm.Relative.X * (float)SENSIBILITY, 0, 0);
+				// Joypad (Ejes 2 y 3 suelen ser el stick derecho)
+				float deadzone = 0.2f;
+				if (Mathf.Abs(jm.AxisValue) < deadzone) return;
+
+				if (jm.Axis == JoyAxis.RightX) // Eje 2 (Normalmente)
+				{
+					HeadNode.RotateY(-jm.AxisValue * (float)SENSIBILITY * 10f); // Multiplicador para compensar velocidad
+				}
+				else if (jm.Axis == JoyAxis.RightY) // Eje 3 (Normalmente)
+				{
+					CameraNode.RotateX(-jm.AxisValue * (float)SENSIBILITY * 10f);
+					// Clamp necesario después de rotar
+					Vector3 rot = CameraNode.RotationDegrees;
+					rot.X = Mathf.Clamp(rot.X, -90f, 90f);
+					CameraNode.RotationDegrees = rot;
+				}
+				
+				// Sincronizar esqueleto tras movimiento de joypad
 				EsqueletoNode.RotationDegrees = new Vector3(EsqueletoNode.RotationDegrees.X, HeadNode.RotationDegrees.Y, EsqueletoNode.RotationDegrees.Z);
-			}
-			else if(ev is InputEventJoypadMotion jm)
-			{
-				if(jm.Axis.Equals(2))
-				{
-					HeadNode.Rotation += new Vector3(jm.AxisValue * (float)SENSIBILITY, 0, 0) ;
-					EsqueletoNode.RotationDegrees = new Vector3(EsqueletoNode.RotationDegrees.X, HeadNode.RotationDegrees.Y, EsqueletoNode.RotationDegrees.Z);
-				}
-				else if(jm.Axis.Equals(3))
-				{
-					CameraNode.Rotation +=  new Vector3(0, jm.AxisValue * (float)SENSIBILITY, 0) ;
-					CameraNode.RotationDegrees = new Vector3(Mathf.Clamp(CameraNode.RotationDegrees.X,  - 90, 90), CameraNode.RotationDegrees.Y, CameraNode.RotationDegrees.Z);
-				}
 			}
 		}
 	}
@@ -1362,16 +1372,36 @@ public partial class Player : CharacterBody3D
 		IsInWater = false;
 		IsInLava = false;
 		IsOnFire = false;
-		FallStrength = 0;
+		FallStrength = 0f;
 
 
 		if(IsMultiplayerAuthority())
 		{
+			// 1. Apagamos el ragdoll PRIMERO
+			_SetRagdollState(false); 
 			Rpc(nameof(_SetRagdollState), false);
-			Position = Spawn.Position;
+
+			// 2. Teletransporte SEGURO
+			if (Spawn != null)
+			{
+				GlobalPosition = Spawn.GlobalPosition;
+			}
+			else 
+			{
+				GD.PrintErr("¡ERROR: No se encontró el nodo Spawn!");
+				GlobalPosition = Vector3.Zero; // Fallback para que no flote en el infinito
+			}
+
 			Velocity = Vector3.Zero;
+			velocity = Vector3.Zero; // Asegúrate de limpiar también tu variable local 'velocity'
+			
+			// 3. Forzar actualización de la cámara para que no se quede atrás
+			if (CameraNode != null)
+			{
+				CameraNode.Transform = CameraDefaultLocalTransform;
+			}
+
+			ForceUpdateTransform(); // Asegura que el motor actualice la posición antes de cualquier otra cosa
 		}
-	}
-
-
+	}	
 }

@@ -21,7 +21,7 @@ public partial class Map : Node3D
 	{
 		if(Multiplayer.IsServer())
 		{
-			Globals.Instance.SetWeatherAndDisaster("Original");
+			Rpc(Globals.MethodName.SetWeatherAndDisaster, "Original", -1);
 			Globals.Instance.Timer.Stop();
 			Globals.Instance.Started = false;
 		}
@@ -41,7 +41,7 @@ public partial class Map : Node3D
 
 		if(Multiplayer.IsServer())
 		{
-			Rpc(Globals.MethodName.SetWeatherAndDisaster, "Original");
+			Rpc(Globals.MethodName.SetWeatherAndDisaster, "Original", -1);
 
 			if(Globals.Instance.Gamemode == "survival")
 			{
@@ -78,9 +78,12 @@ public partial class Map : Node3D
 	// Llama a la función wind para cada objeto en la escena
 	public override void _PhysicsProcess(double _delta)
 	{
-		foreach(Node3D node in GetChildren())
+		foreach (var child in GetChildren())
 		{
-			Globals.Instance.Wind(node);
+			if (child is Node3D node3D)
+			{
+				Globals.Instance.Wind(node3D);
+			}
 		}
 	}
 
@@ -510,7 +513,7 @@ public partial class Map : Node3D
 		for (int i = 0; i < total; i++)
 		{
 			_SpawnDecals(scene, 1);
-			await ToSignal(GetTree().CreateTimer(delay), "Timeout");
+			await ToSignal(GetTree().CreateTimer(delay), SceneTreeTimer.SignalName.Timeout);
 		}
 	}
 
@@ -525,7 +528,7 @@ public partial class Map : Node3D
 			AddChild(meteor, true);
 			ActiveDisasterNodes.Append(meteor);
 
-			await ToSignal(GetTree().CreateTimer(1), "Timeout");
+			await ToSignal(GetTree().CreateTimer(1), SceneTreeTimer.SignalName.Timeout);
 		}
 	}
 
@@ -635,7 +638,7 @@ public partial class Map : Node3D
 				}
 			}
 
-			await ToSignal(GetTree().CreateTimer(0.5), "Timeout");
+			await ToSignal(GetTree().CreateTimer(0.5), SceneTreeTimer.SignalName.Timeout);
 		}
 
 		IsSpawningLightning = false;

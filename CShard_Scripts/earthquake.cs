@@ -38,7 +38,7 @@ public partial class Earthquake : Node3D
 		PlayInitialSounds();
 		DestroyAllHouses();
 
-		await ToSignal(GetTree().CreateTimer(GD.RandRange(Life[0], Life[1])), "Timeout");
+		await ToSignal(GetTree().CreateTimer(GD.RandRange(Life[0], Life[1])), SceneTreeTimer.SignalName.Timeout);
 		EarthquakeDecay();
 	}
 

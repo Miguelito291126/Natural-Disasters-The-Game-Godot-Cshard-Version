@@ -17,7 +17,11 @@ public partial class DeathMenu : CanvasLayer
 		}
 
 		GetParent<Player>()._ResetPlayer();
-		Input.SetMouseMode(Input.MouseModeEnum.Captured);
+		
+		Callable.From(() => {
+				Input.MouseMode = Input.MouseModeEnum.Visible;
+		}).CallDeferred();
+
 		this.Hide();
 	}
 

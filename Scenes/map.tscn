@@ -1,8 +1,10 @@
 [gd_scene format=3 uid="uid://csivk4bmioako"]
 
 [ext_resource type="Script" uid="uid://b7ly3pq863rpl" path="res://CShard_Scripts/Map.cs" id="1_6q3n4"]
+[ext_resource type="PackedScene" uid="uid://026kxaorsntg" path="res://Scenes/snow_decal.tscn" id="2_olcgw"]
 [ext_resource type="Shader" uid="uid://4lxdfdreyjat" path="res://clouds.gdshader" id="2_sc6k1"]
 [ext_resource type="Texture2D" uid="uid://p56xwtihxq22" path="res://Sprites/dark-black-texture-with-beautiful-stars-vector.jpg" id="3_bukha"]
+[ext_resource type="PackedScene" uid="uid://d1xsirclagru0" path="res://Scenes/sand_decal.tscn" id="3_dlo4w"]
 [ext_resource type="Script" uid="uid://bbliiv05grls2" path="res://CShard_Scripts/MapEnvironment.cs" id="4_4c2oa"]
 [ext_resource type="AudioStream" uid="uid://debjmlamr7n2y" path="res://Sounds/music/natural disasters the game song.wav" id="10_w1fny"]
 [ext_resource type="PackedScene" uid="uid://ddlqooa2yb6y4" path="res://Scenes/hause.tscn" id="11_8ni8s"]
@@ -134,6 +136,8 @@ size = Vector3(10000, 100, 1)
 
 [node name="map" type="Node3D" unique_id=927242502]
 script = ExtResource("1_6q3n4")
+SnowDecalScene = ExtResource("2_olcgw")
+SandDecalScene = ExtResource("3_dlo4w")
 
 [node name="MapSynchronizer" type="MultiplayerSynchronizer" parent="." unique_id=1127749826]
 replication_config = SubResource("SceneReplicationConfig_8u7l0")
@@ -194,7 +198,7 @@ transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 1184.2, -0.1644988, 1012.02)
 
 [node name="Chat" parent="." unique_id=298064630 instance=ExtResource("14_x5dfk")]
 
-[node name="Panel" parent="Chat" index="0"]
+[node name="Panel" parent="Chat" index="0" unique_id=1208603095]
 offset_right = 384.0
 offset_bottom = 288.0
 

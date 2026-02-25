@@ -69,10 +69,10 @@ public partial class PauseMenu : CanvasLayer
 		Fullscreen = GetNode<CheckButton>("Panel/Settings/Fullscreen");
 		Vsync = GetNode<CheckButton>("Panel/Settings/Vsync");
 		Fps = GetNode<CheckButton>("Panel/Settings/Fps");
-		AntiAliasing = GetNode<OptionButton>("Panel/Settings/antialiasing");
-		AntiTropic = GetNode<OptionButton>("Panel/Settings/antitropic");
+		AntiAliasing = GetNode<OptionButton>("Panel/Settings/Antialiasing");
+		AntiTropic = GetNode<OptionButton>("Panel/Settings/Antitropic");
 		Volumen = GetNode<HSlider>("Panel/Settings/Volumen");
-		VolumenMusic = GetNode<HSlider>("Panel/Settings/Volumen Music");
+		VolumenMusic = GetNode<HSlider>("Panel/Settings/VolumenMusic");
 		Time = GetNode<HSlider>("Panel/Settings/Time");
 		Quality = GetNode<OptionButton>("Panel/Settings/Quality");
 		Resolutions = GetNode<OptionButton>("Panel/Settings/Resolutions");
@@ -208,11 +208,15 @@ public partial class PauseMenu : CanvasLayer
 	{
 		if(MouseActionState)
 		{
-			Input.SetMouseMode(Input.MouseModeEnum.Captured);
+			Callable.From(() => {
+				Input.MouseMode = Input.MouseModeEnum.Captured;
+			}).CallDeferred();
 		}
 		else
 		{
-			Input.SetMouseMode(Input.MouseModeEnum.Visible);
+			Callable.From(() => {
+				Input.MouseMode = Input.MouseModeEnum.Visible;
+			}).CallDeferred();
 		}
 
 		MouseActionState = !MouseActionState;
@@ -229,11 +233,15 @@ public partial class PauseMenu : CanvasLayer
 
 		if(!Globals.Instance.IsPauseMenuOpen)
 		{
-			Input.SetMouseMode(Input.MouseModeEnum.Captured);
+			Callable.From(() => {
+				Input.MouseMode = Input.MouseModeEnum.Captured;
+			}).CallDeferred();
 		}
 		else
 		{
-			Input.SetMouseMode(Input.MouseModeEnum.Visible);
+			Callable.From(() => {
+				Input.MouseMode = Input.MouseModeEnum.Visible;
+			}).CallDeferred();
 		}
 
 		this.Visible = Globals.Instance.IsPauseMenuOpen;
@@ -259,7 +267,7 @@ public partial class PauseMenu : CanvasLayer
 	}
 
 
-	protected void _OnTimeValueChanged(int value)
+	protected void _OnTimeValueChanged(float value)
 	{
 		var player = _GetLocalPlayer();
 		if(player == null || !player.AdminMode)
@@ -279,7 +287,7 @@ public partial class PauseMenu : CanvasLayer
 	}
 
 
-	protected void _OnVolumenValueChanged(int value)
+	protected void _OnVolumenValueChanged(float value)
 	{
 		Globals.Instance.GlobalsData.Volumen = value;
 		AudioServer.SetBusVolumeDb(AudioServer.GetBusIndex("Master"), Mathf.LinearToDb(value));
@@ -313,6 +321,7 @@ public partial class PauseMenu : CanvasLayer
 
 	protected void _OnResetPlayerPressed()
 	{
+		Pause();
 		GetParent<Player>()._ResetPlayer();
 	}
 
@@ -321,7 +330,7 @@ public partial class PauseMenu : CanvasLayer
 		Pause();
 	}
 
-	protected void _OnVolumenMusicValueChanged(int value)
+	protected void _OnVolumenMusicValueChanged(float value)
 	{
 		Globals.Instance.GlobalsData.VolumenMusic = value;
 		AudioServer.SetBusVolumeDb(AudioServer.GetBusIndex("Music"), Mathf.LinearToDb(value));

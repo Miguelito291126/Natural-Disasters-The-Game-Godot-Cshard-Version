@@ -11,8 +11,12 @@ public partial class UnloadScene : Node
 
 	public static UnloadScene Instance;
 
-	public UnloadScene()
+	public override void _EnterTree()
 	{
+		if(Instance != null)
+		{
+			GD.PrintErr("Ya existe una instancia de Globals. Esto no debera pasar, pero si est pasando, se est creando una nueva instancia de Globals para evitar errores fatales. Si este mensaje aparece ms de una vez, por favor reporta este error a los desarrolladores.");
+		}
 		Instance = this;
 	}
 
@@ -34,13 +38,13 @@ public partial class UnloadScene : Node
 			Scene = current_scene;
 		}
 
-		LoadingScreen unloading_screen_scene = UnloadingScreenScene.Instantiate<LoadingScreen>();
-		Globals.Instance.Main.AddChild(unloading_screen_scene);
+		LoadingScreen UnloadingScreenInstance = UnloadingScreenScene.Instantiate<LoadingScreen>();
+		Globals.Instance.Main.AddChild(UnloadingScreenInstance);
 
-		this.ProgressChanged += unloading_screen_scene.UpdateProgressBar;
-		this.UnloadDone += unloading_screen_scene.FadeOutLoadingScreen;
+		this.ProgressChanged += UnloadingScreenInstance.UpdateProgressBar;
+		this.UnloadDone += UnloadingScreenInstance.FadeOutLoadingScreen;
 
-		await ToSignal(this, LoadingScreen.SignalName.SafeToLoad);
+		await ToSignal(UnloadingScreenInstance, LoadingScreen.SignalName.SafeToLoad);
 
 		if(current_scene != null)
 		{

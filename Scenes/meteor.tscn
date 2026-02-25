@@ -131,6 +131,6 @@ light_color = Color(1, 0.458824, 0, 1)
 light_energy = 1000.0
 shadow_enabled = true
 
-[connection signal="body_entered" from="." to="." method="_on_body_entered"]
+[connection signal="body_entered" from="." to="." method="_OnBodyEntered"]
 
 [editable path="Meteorite"]

@@ -12,11 +12,11 @@ public partial class Globals : Node
 
 	public static Globals Instance { get; private set; }
 
-	public Globals()
+	public override void _EnterTree()
 	{
 		if(Instance != null)
 		{
-			GD.PrintErr("Ya existe una instancia de Globals. Esto no deber�a pasar, pero si est� pasando, se est� creando una nueva instancia de Globals para evitar errores fatales. Si este mensaje aparece m�s de una vez, por favor reporta este error a los desarrolladores.");
+			GD.PrintErr("Ya existe una instancia de Globals. Esto no debera pasar, pero si est pasando, se est creando una nueva instancia de Globals para evitar errores fatales. Si este mensaje aparece ms de una vez, por favor reporta este error a los desarrolladores.");
 		}
 		Instance = this;
 	}
@@ -98,7 +98,7 @@ public partial class Globals : Node
 			if(_CurrentWeatherAndDisaster != value)
 			{
 				_CurrentWeatherAndDisaster = value;
-				EmitSignal("CurrentWeatherAndDisasterChanged", value);
+				EmitSignal(SignalName.CurrentWeatherAndDisasterChanged, value);
 			}
 		}
 		get { return _CurrentWeatherAndDisaster; }
@@ -680,7 +680,7 @@ public partial class Globals : Node
 				{
 					PrintRole("Dedicated server init");
 
-					await ToSignal(GetTree().CreateTimer(2), "Timeout");
+					await ToSignal(GetTree().CreateTimer(2), SceneTreeTimer.SignalName.Timeout);
 
 					SetUpBroadcast(Username);
 					LoadScene.Instance.loadscene(MainMenu, "map");
@@ -967,7 +967,7 @@ public partial class Globals : Node
 				Rpc(nameof(SyncPlayerList));
 				RpcId(peer_id, nameof(SyncDestrolledNodes), DestrolledNode);
 				// envia al cliente
-				RpcId(peer_id, nameof(SetWeatherAndDisaster), CurrentWeatherAndDisasterInt);
+				RpcId(peer_id, nameof(SetWeatherAndDisaster), "", CurrentWeatherAndDisasterInt);
 			}
 			else
 			{
@@ -1002,7 +1002,7 @@ public partial class Globals : Node
 			PrintRole("Disconected player id: " + peer_id.ToString());
 			player_node.QueueFree();
 
-			await ToSignal(player_node, "TreeExited");
+			await ToSignal(player_node, Player.SignalName.TreeExited);
 
 			if(AssignedCharacter.ContainsKey((int)peer_id))
 			{
@@ -1011,7 +1011,7 @@ public partial class Globals : Node
 
 
 			
-			Rpc(nameof(SyncAssignedCharacter));
+			Rpc(nameof(SyncAssignedCharacter), AssignedCharacter);
 			SyncAssignedCharacter(AssignedCharacter);
 			Rpc(nameof(SyncPlayerList));
 		}
@@ -1036,7 +1036,7 @@ public partial class Globals : Node
 		if(Multiplayer.IsServer())
 		{
 			var random_weather_and_disaster = GD.RandRange(0, 13);
-			Rpc(nameof(SetWeatherAndDisaster), random_weather_and_disaster);
+			Rpc(nameof(SetWeatherAndDisaster), "", random_weather_and_disaster);
 		}
 	}
 
@@ -1047,17 +1047,17 @@ public partial class Globals : Node
 		"Acid rain", "Earthquake", "Sand Storm", "blizzard", "Dust Storm"
 	};
 
-	[Rpc(MultiplayerApi.RpcMode.AnyPeer)]
-	public void SetWeatherAndDisaster(Variant weather_and_disaster_index)
+	[Rpc(MultiplayerApi.RpcMode.AnyPeer, CallLocal = true)]
+	public void SetWeatherAndDisaster(string name = "", int index = -1)
 	{
 		// Por defecto, asumimos que no se encontró
 		CurrentWeatherAndDisaster = "Original";
 		CurrentWeatherAndDisasterInt = -1;
 
 		// Caso A: Si recibimos un número (int)
-		if (weather_and_disaster_index.VariantType == Variant.Type.Int)
+		if (name == "" && index >= 0)
 		{
-			int idx = (int)weather_and_disaster_index;
+			int idx = index;
 			if (idx >= 0 && idx < _weatherNames.Length)
 			{
 				CurrentWeatherAndDisaster = _weatherNames[idx];
@@ -1065,9 +1065,8 @@ public partial class Globals : Node
 			}
 		}
 		// Caso B: Si recibimos un texto (string)
-		else if (weather_and_disaster_index.VariantType == Variant.Type.String)
+		else if (name != "" && index == -1)
 		{
-			string name = weather_and_disaster_index.AsString();
 			int idx = System.Array.IndexOf(_weatherNames, name);
 			
 			if (idx != -1)
@@ -1126,6 +1125,7 @@ public partial class Globals : Node
 		}
 	}
 
+	[Rpc(MultiplayerApi.RpcMode.AnyPeer, CallLocal = true)]
 	public void SyncDestrolledNodes(Array<string> Hauses)
 	{
 		foreach(string house_name in Hauses)

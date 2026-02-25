@@ -85,7 +85,7 @@ public partial class Volcano : Node3D
 
 
 				// Llama a la funcin Erupt despus de un tiempo aleatorio entre 10 y 20 segundos
-				await ToSignal(GetTree().CreateTimer(GD.RandRange(10, 20)), "Timeout");
+				await ToSignal(GetTree().CreateTimer(GD.RandRange(10, 20)), SceneTreeTimer.SignalName.Timeout);
 				if(IsInstanceValid(this))
 				{
 					Erupt();
@@ -94,7 +94,7 @@ public partial class Volcano : Node3D
 					IsPressureLeaking = true;
 				}
 
-				await ToSignal(GetTree().CreateTimer(GD.RandRange(10, 20)), "Timeout");
+				await ToSignal(GetTree().CreateTimer(GD.RandRange(10, 20)), SceneTreeTimer.SignalName.Timeout);
 
 				if(GodotObject.IsInstanceValid(earthquakeNode))
 				{
@@ -113,7 +113,7 @@ public partial class Volcano : Node3D
 		EruptSound.Play();
 		_LaunchFireball(LaunchAmount, LaunchInterval);
 
-		await ToSignal(GetTree().CreateTimer(10), "timeout");
+		await ToSignal(GetTree().CreateTimer(10), SceneTreeTimer.SignalName.Timeout);
 
 		IsVolcanoAsh = true;
 
@@ -129,7 +129,7 @@ public partial class Volcano : Node3D
 
 		if(IsVolcanoAsh)
 		{
-			Globals.Instance.SetWeatherAndDisaster("Dust Storm");
+			Rpc(Globals.MethodName.SetWeatherAndDisaster, "Dust Storm", 10);
 		}
 	}
 
@@ -153,7 +153,7 @@ public partial class Volcano : Node3D
 			fireball.IsVolcanoRock = true;
 			fireball.ApplyImpulse(launch_direction * LaunchForce, Vector3.Up);
 			// Aplicar fuerza para lanzar la bola de fuego
-			await ToSignal(GetTree().CreateTimer(time), "Timeout");
+			await ToSignal(GetTree().CreateTimer(time), SceneTreeTimer.SignalName.Timeout);
 		}
 	}
 
