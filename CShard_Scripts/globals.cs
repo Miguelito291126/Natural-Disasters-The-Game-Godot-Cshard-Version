@@ -12,15 +12,6 @@ public partial class Globals : Node
 
 	public static Globals Instance { get; private set; }
 
-	public override void _EnterTree()
-	{
-		if(Instance != null)
-		{
-			GD.PrintErr("Ya existe una instancia de Globals. Esto no debera pasar, pero si est pasando, se est creando una nueva instancia de Globals para evitar errores fatales. Si este mensaje aparece ms de una vez, por favor reporta este error a los desarrolladores.");
-		}
-		Instance = this;
-	}
-
 	//Editor
 	public Variant Version = ProjectSettings.GetSetting("application/config/version");
 	public Variant Gamename = ProjectSettings.GetSetting("application/config/name");
@@ -53,7 +44,7 @@ public partial class Globals : Node
 	[Export] public float TimeLeft = 0.0f;
 	[Export] public int Day = 0;
 	[Export] public int Hour = 0;
-	[Export] public int Minute = 00;
+	[Export] public int Minute = 0;
 
 
 	//Globals Weather target
@@ -75,7 +66,7 @@ public partial class Globals : Node
 	[Export] public Vector3 WindDirectionOriginal = new Vector3(1, 0, 0);
 	[Export] public float WindSpeedOriginal = 0;
 
-	[Export] public float Seconds = 0;
+	[Export] public float Seconds = 0.0f;
 
 	[Export] public Main Main;
 	[Export] public MainMenu MainMenu;
@@ -86,7 +77,7 @@ public partial class Globals : Node
 	[Export] public Dictionary BoundingRadiusAreas = new Dictionary{};
 
 	[Export] public string NodeGroup = "Destrollable";
-	[Export] public Array<string> DestrolledNode;
+	[Export] public Array<string> DestrolledNode = new Array<string>();
 	[Export] public bool Started = false;
 	[Export] public string Gamemode = "survival";
 	[Export] public DataResource GlobalsData;
@@ -132,7 +123,7 @@ public partial class Globals : Node
 
 	[Export] public string Character = "blue";
 	[Export] public Array<string> AvalibleCharacters = new Array<string>{"blue", "red", "green", "yellow"};
-	[Export] public Dictionary<int, string> AssignedCharacter;
+	[Export] public Dictionary<int, string> AssignedCharacter = new Dictionary<int, string>{};
 
 	public float ConvertMetoSU(float metres)
 	{
@@ -243,34 +234,45 @@ public partial class Globals : Node
 
 	public bool IsBelowSky(Node3D ply)
 	{
-		// Hacemos el cast a Node3D una sola vez
-		if (ply is not Node3D) return true;
+		if (ply == null)
+			return true;
+
+		if (!ply.IsInsideTree())
+			return true;
+
+		var world = ply.GetWorld3D();
+		if (world == null)
+			return true;
+
+		var space_state = world.DirectSpaceState;
+		if (space_state == null)
+			return true;
 
 		Vector3 start_pos = ply.GlobalPosition;
 		Vector3 end_pos = start_pos + new Vector3(0, 48000, 0);
-		PhysicsDirectSpaceState3D space_state = ply.GetWorld3D().DirectSpaceState; // Forma estándar de obtenerlo en Godot 4
 
-		if (space_state == null) return true;
+		var ray = PhysicsRayQueryParameters3D.Create(start_pos, end_pos);
 
-		PhysicsRayQueryParameters3D ray = PhysicsRayQueryParameters3D.Create(start_pos, end_pos);
-		
-		// Solo CollisionObject3D (PhysicsBody3D, Area3D) tiene GetRid()
 		if (ply is CollisionObject3D collisionEntity)
-		{
 			ray.Exclude = new Godot.Collections.Array<Rid> { collisionEntity.GetRid() };
-		}
 
-		Dictionary result = space_state.IntersectRay(ray);
-		return !result.ContainsKey("position");
+		var result = space_state.IntersectRay(ray);
+
+		return result.Count == 0;
 	}
 
 
 
 	public bool IsOutdoor(Node3D ply)
 	{
+		if (ply == null)
+			return true;
+
+		if (!ply.IsInsideTree())
+			return true;
+
 		bool hitSky = IsBelowSky(ply);
 
-		// Si es un Player, actualizamos su propiedad Outdoor
 		if (ply is Player player && ply.IsInGroup("player"))
 		{
 			player.Outdoor = hitSky;
@@ -711,8 +713,8 @@ public partial class Globals : Node
 
 		var root = GetTree().GetRoot();
 
-		var player = root.GetNodeOrNull<Player>(player_path);
-		var target = root.GetNodeOrNull<CollisionObject3D>(target_path);
+		Player player = root.GetNodeOrNull<Player>(player_path);
+		Node3D target = root.GetNodeOrNull<Node3D>(target_path);
 
 		if(player == null || target == null)
 		{
@@ -728,7 +730,11 @@ public partial class Globals : Node
 		// Colocar el objeto en la mano del jugador
 		target.GlobalPosition = player.HandNode.GlobalPosition;
 		target.GlobalRotation = player.HandNode.GlobalRotation;
-		target.CollisionLayer = 2;
+		if (target is CollisionObject3D collisionObject)
+		{
+			// Pone la capa 2 en true
+			collisionObject.SetCollisionLayerValue(2, true);
+		}
 
 		if(target is RigidBody3D rigidBody3)
 		{
@@ -759,16 +765,30 @@ public partial class Globals : Node
 	{
 		PrintRole("Client disconected");
 
-		PlayersConected.Clear();
-		AssignedCharacter.Clear();
-		DestrolledNode.Clear();
+		PlayersConected?.Clear();
+		AssignedCharacter?.Clear();
+		DestrolledNode?.Clear();
 
 		CloseUp();
+		
+		// Safety check for the Multiplayer API
+		if (GetTree() != null) 
+		{
+			Multiplayerpeer = new OfflineMultiplayerPeer();
+			Multiplayer.MultiplayerPeer = Multiplayerpeer;
+		}
 
-		Multiplayerpeer = new OfflineMultiplayerPeer();
-		Multiplayer.MultiplayerPeer = Multiplayerpeer;
-
-		LoadScene.Instance.loadscene(Map, "res://Scenes/main_menu.tscn");
+		// Safety check for your Scene Loader
+		if (LoadScene.Instance != null)
+		{
+			LoadScene.Instance.loadscene(Map, "res://Scenes/main_menu.tscn");
+		}
+		else
+		{
+			GD.PrintErr("Error: LoadScene.Instance is null!");
+			// Fallback to standard change scene if your custom loader fails
+			GetTree().ChangeSceneToFile("res://Scenes/main_menu.tscn");
+		}
 	}
 
 	[Rpc(MultiplayerApi.RpcMode.AnyPeer, CallLocal = true)]
@@ -851,18 +871,33 @@ public partial class Globals : Node
 
 	public void MultiplayerServerDisconnected()
 	{
-		PrintRole("Client disconected");
+		PrintRole("Client disconnected");
 
-		PlayersConected.Clear();
-		AssignedCharacter.Clear();
-		DestrolledNode.Clear();
+		// Ensure collections aren't null before clearing
+		PlayersConected?.Clear();
+		AssignedCharacter?.Clear();
+		DestrolledNode?.Clear();
 
 		CloseUp();
 
-		Multiplayerpeer = new OfflineMultiplayerPeer();
-		Multiplayer.MultiplayerPeer = Multiplayerpeer;
+		// Safety check for the Multiplayer API
+		if (GetTree() != null) 
+		{
+			Multiplayerpeer = new OfflineMultiplayerPeer();
+			Multiplayer.MultiplayerPeer = Multiplayerpeer;
+		}
 
-		LoadScene.Instance.loadscene(Map, "res://Scenes/main_menu.tscn");
+		// Safety check for your Scene Loader
+		if (LoadScene.Instance != null)
+		{
+			LoadScene.Instance.loadscene(Map, "res://Scenes/main_menu.tscn");
+		}
+		else
+		{
+			GD.PrintErr("Error: LoadScene.Instance is null!");
+			// Fallback to standard change scene if your custom loader fails
+			GetTree().ChangeSceneToFile("res://Scenes/main_menu.tscn");
+		}
 	}
 
 
@@ -880,7 +915,7 @@ public partial class Globals : Node
 		Multiplayer.ConnectedToServer -= MultiplayerConnectionServerSucess;
 		Multiplayer.ConnectionFailed -= MultiplayerConnectionFailed;
 
-		TemperatureTarget = Globals.Instance.TemperatureOriginal;
+		TemperatureTarget = TemperatureOriginal;
 		HumidityTarget = HumidityOriginal;
 		PressureTarget = PressureOriginal;
 		WindDirectionTarget = WindDirectionOriginal;
@@ -921,6 +956,15 @@ public partial class Globals : Node
 
 	public override void _Ready()
 	{
+
+		if(Instance != null)
+		{
+			GD.PushError("Ya existe una instancia de Globals. Esto no deber�a pasar, asegurate de que solo haya un nodo Globals en la escena.");
+			this.QueueFree();
+			return ;
+		}
+		Instance = this;
+
 		Timer = GetNode<Timer>("Timer");
 		BroadcastTimer = GetNode<Timer>("Broadcast_Timer");
 
@@ -941,22 +985,22 @@ public partial class Globals : Node
 	{
 		if(!Multiplayer.IsServer())
 		{
-			return ;
+			return;
 		}
 
 		if(Map != null && IsInstanceValid(Map))
 		{
 			PrintRole("Joined player id: " + peer_id.ToString());
-			var player = PlayerScene.Instantiate();
+			Player player = PlayerScene.Instantiate<Player>();
 			player.Name = peer_id.ToString();
 			Map.AddChild(player, true);
 
 
-			var assigned_ok = true;
+			bool assigned_ok = true;
 
 			if(!AssignedCharacter.ContainsKey((int)peer_id))
 			{
-				var next_character = GetNextAvalibleCharacter();
+				string next_character = GetNextAvalibleCharacter();
 				assigned_ok = AssingCharacterToPlayer(peer_id, next_character);
 			}
 
@@ -1047,7 +1091,7 @@ public partial class Globals : Node
 		"Acid rain", "Earthquake", "Sand Storm", "blizzard", "Dust Storm"
 	};
 
-	[Rpc(MultiplayerApi.RpcMode.AnyPeer, CallLocal = true)]
+	[Rpc(MultiplayerApi.RpcMode.Authority, CallLocal = true)]
 	public void SetWeatherAndDisaster(string name = "", int index = -1)
 	{
 		// Por defecto, asumimos que no se encontró
@@ -1107,6 +1151,7 @@ public partial class Globals : Node
 		}
 
 		// Si est� conectado cerrar conexi�n
+		peer.Close();
 		Multiplayerpeer.Close();
 	}
 

@@ -76,6 +76,11 @@ public partial class PauseMenu : CanvasLayer
 		Time = GetNode<HSlider>("Panel/Settings/Time");
 		Quality = GetNode<OptionButton>("Panel/Settings/Quality");
 		Resolutions = GetNode<OptionButton>("Panel/Settings/Resolutions");
+
+		Worldenvironment = Globals.Instance.Map.Worldenvironment;
+		Light = Globals.Instance.Map.Worldenvironment.Sun;
+		Light2 = Globals.Instance.Map.Worldenvironment.Moon;
+
 		if(!IsMultiplayerAuthority())
 		{
 			this.Hide();
@@ -300,13 +305,13 @@ public partial class PauseMenu : CanvasLayer
 		Globals.Instance.GlobalsData.Resolution = index;
 		var size = ResolutionsDic.GetValueOrDefault(Resolutions.GetItemText(index));
 		DisplayServer.WindowSetSize(size);
-		GetTree().Root.Size = size; 
 		Globals.Instance.GlobalsData.SaveFile();
 	}
 
 
 	protected void _OnFullscreenToggled(bool toggled_on)
 	{
+		Globals.Instance.GlobalsData.Fullscreen = toggled_on;
 		if(toggled_on == true)
 		{
 			DisplayServer.WindowSetMode(DisplayServer.WindowMode.Fullscreen);
@@ -315,7 +320,6 @@ public partial class PauseMenu : CanvasLayer
 		{
 			DisplayServer.WindowSetMode(DisplayServer.WindowMode.Windowed);
 		}
-		Globals.Instance.GlobalsData.Fullscreen = toggled_on;
 		Globals.Instance.GlobalsData.SaveFile();
 	}
 

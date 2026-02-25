@@ -5,9 +5,9 @@ using Godot.Collections;
 public partial class LoadScene : Node
 {
 
-	internal static LoadScene Instance;
+	public static LoadScene Instance { get; private set; }
 
-	public override void _EnterTree()
+	public override void _Ready()
 	{
 		if(Instance != null)
 		{

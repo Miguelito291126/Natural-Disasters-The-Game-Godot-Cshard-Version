@@ -154,9 +154,11 @@ spawn_path = NodePath("..")
 _spawnable_scenes = PackedStringArray("uid://bkfobjkkd58w0", "uid://cv8xwubw2paof")
 spawn_path = NodePath("..")
 
-[node name="WorldEnvironment" type="WorldEnvironment" parent="." unique_id=535787648]
+[node name="WorldEnvironment" type="WorldEnvironment" parent="." unique_id=535787648 node_paths=PackedStringArray("Sun", "Moon")]
 environment = SubResource("Environment_cfhfe")
 script = ExtResource("4_4c2oa")
+Sun = NodePath("Sun")
+Moon = NodePath("Moon")
 
 [node name="Sun" type="DirectionalLight3D" parent="WorldEnvironment" unique_id=1660688296]
 shadow_enabled = true

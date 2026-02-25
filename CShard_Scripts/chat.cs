@@ -317,21 +317,75 @@ public partial class Chat : CanvasLayer
 		AutocompleteMethods = new Array<string>(DevCommands.Keys);
 	}
 
-	public override void _Input(InputEvent @event)
-	{
-		if (!IsMultiplayerAuthority()) return;
+public override void _Input(InputEvent @event)
+{
+    // Solo procesar si somos el dueño de este chat
+    if (!IsMultiplayerAuthority()) return;
 
-		if (@event.IsActionPressed("ui_accept")) // Tecla Enter
+    // 1. Abrir el chat con la tecla Enter o T
+    if (@event.IsActionPressed("Enter") || @event.IsActionPressed("Chat")) // "chat_bind" suele ser la T
+    {
+        if (!LineEdit.HasFocus())
+        {
+            LineEdit.GrabFocus();
+            // Opcional: pausar movimiento del jugador aquí si es necesario
+        }
+    }
+
+    // 2. Lógica cuando el LineEdit tiene el foco
+    if (LineEdit.HasFocus())
+    {
+        if (@event is InputEventKey keyEvent && keyEvent.Pressed)
+        {
+            switch (keyEvent.Keycode)
+            {
+                case Key.Enter:
+                    _OnButtonPressed(); // Enviar mensaje
+                    LineEdit.ReleaseFocus();
+                    break;
+
+                case Key.Escape:
+                    LineEdit.ReleaseFocus(); // Cancelar escritura
+                    break;
+
+                case Key.Up:
+                    _HandleHistory(-1); // Ir al mensaje anterior
+                    GetViewport().SetInputAsHandled();
+                    break;
+
+                case Key.Down:
+                    _HandleHistory(1); // Ir al mensaje siguiente
+                    GetViewport().SetInputAsHandled();
+                    break;
+
+                case Key.Tab:
+                    _HandleAutocomplete(); // Autocompletar comandos
+                    GetViewport().SetInputAsHandled();
+                    break;
+            }
+        }
+    }
+}
+
+	// Funciones auxiliares que suelen acompañar al historial y autocompletado
+	private void _HandleHistory(int direction)
+	{
+		if (History.Count == 0) return;
+
+		HistoryIndex += direction;
+		HistoryIndex = Mathf.Clamp(HistoryIndex, 0, History.Count - 1);
+		
+		LineEdit.Text = History[HistoryIndex];
+		LineEdit.CaretColumn = LineEdit.Text.Length; // Poner el cursor al final
+	}
+
+	private void _HandleAutocomplete()
+	{
+		if (AutocompleteMatches.Count > 0)
 		{
-			if (LineEdit.HasFocus())
-			{
-				// Aquí procesarías el texto: _OnSendButtonPressed();
-				LineEdit.ReleaseFocus();
-			}
-			else
-			{
-				LineEdit.GrabFocus();
-			}
+			AutocompleteIndex = (AutocompleteIndex + 1) % AutocompleteMatches.Count;
+			LineEdit.Text = "/" + AutocompleteMatches[AutocompleteIndex];
+			LineEdit.CaretColumn = LineEdit.Text.Length;
 		}
 	}
 

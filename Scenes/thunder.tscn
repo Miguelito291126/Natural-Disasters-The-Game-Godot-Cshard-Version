@@ -121,3 +121,5 @@ draw_pass_1 = SubResource("QuadMesh_8jrdf")
 [node name="MultiplayerSynchronizer" type="MultiplayerSynchronizer" parent="." unique_id=906978340]
 root_path = NodePath("../spark")
 replication_config = SubResource("SceneReplicationConfig_go6sb")
+
+[connection signal="finished" from="spark" to="." method="_OnSparkFinished"]

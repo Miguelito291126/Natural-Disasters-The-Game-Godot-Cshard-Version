@@ -57,13 +57,13 @@ public partial class Tornado : Area3D
 				rigidBody3D.ApplyCentralImpulse(force);
 				rigidBody3D.Freeze = false;
 			}
-			else if(body.IsInGroup("player") && body is CharacterBody3D characterBody3D)
+			else if(body.IsInGroup("player") && body is Player playerBody)
 			{
 				var direction = (body.GlobalPosition - GlobalPosition).Normalized();
 				var perpendicular_direction = new Vector3( - direction.Z, 0, direction.X);
-				// Direcci�n perpendicular al vector hacia el tornado
+				// Direccin perpendicular al vector hacia el tornado
 				var force = perpendicular_direction * TornadoStrength;
-				characterBody3D.Velocity = force;
+				playerBody.ApplyDisastersPush(force);
 			}
 		}
 	}

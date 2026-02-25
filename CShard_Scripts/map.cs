@@ -5,7 +5,7 @@ using Godot.Collections;
 [GlobalClass]
 public partial class Map : Node3D
 {
-	public WorldEnvironment Worldenvironment;
+	public MapEnvironment Worldenvironment;
 	[Export] public PackedScene SnowDecalScene;
 	[Export] public PackedScene SandDecalScene;
 	
@@ -21,7 +21,7 @@ public partial class Map : Node3D
 	{
 		if(Multiplayer.IsServer())
 		{
-			Rpc(Globals.MethodName.SetWeatherAndDisaster, "Original", -1);
+			Globals.Instance.Rpc(nameof(Globals.Instance.SetWeatherAndDisaster), "Original", -1);
 			Globals.Instance.Timer.Stop();
 			Globals.Instance.Started = false;
 		}
@@ -29,7 +29,7 @@ public partial class Map : Node3D
 
 	public override void _Ready()
 	{
-		Worldenvironment = GetNode<WorldEnvironment>("WorldEnvironment");
+		Worldenvironment = GetNode<MapEnvironment>("WorldEnvironment");
 		Globals.Instance.Map = this;
 		
 		if (!Globals.Instance.IsConnected(nameof(Globals.CurrentWeatherAndDisasterChanged), Callable.From((System.Action<string>)_OnDisasterChanged)))
@@ -41,7 +41,7 @@ public partial class Map : Node3D
 
 		if(Multiplayer.IsServer())
 		{
-			Rpc(Globals.MethodName.SetWeatherAndDisaster, "Original", -1);
+			Globals.Instance.Rpc(nameof(Globals.Instance.SetWeatherAndDisaster), "Original", -1);
 
 			if(Globals.Instance.Gamemode == "survival")
 			{
@@ -231,7 +231,7 @@ public partial class Map : Node3D
 			{
 				volcano.Position = new Vector3(GD.RandRange(0, 4097), 0, GD.RandRange(0, 4097));
 			}
-			ActiveDisasterNodes.Append(volcano);
+			ActiveDisasterNodes.Add(volcano);
 
 			AddChild(volcano, true);
 
@@ -258,7 +258,7 @@ public partial class Map : Node3D
 				tornado.Position = new Vector3(GD.RandRange(0, 4097), 0, GD.RandRange(0, 4097));
 			}
 			AddChild(tornado, true);
-			ActiveDisasterNodes.Append(tornado);
+			ActiveDisasterNodes.Add(tornado);
 
 			Globals.Instance.TemperatureTarget = GD.RandRange(5, 15);
 			Globals.Instance.HumidityTarget = GD.RandRange(30, 40);
@@ -296,9 +296,9 @@ public partial class Map : Node3D
 			Globals.Instance.WindDirectionTarget = new Vector3(GD.RandRange( - 1, 1), 0, GD.RandRange( - 1, 1));
 			Globals.Instance.WindSpeedTarget = GD.RandRange(0, 10);
 
-			var earquake = Globals.Instance.EarthquakeScene.Instantiate();
+			var earquake = Globals.Instance.EarthquakeScene.Instantiate<Earthquake>();
 			AddChild(earquake, true);
-			ActiveDisasterNodes.Append(earquake);
+			ActiveDisasterNodes.Add(earquake);
 
 			_UpdateEnvironment();
 		}
@@ -455,9 +455,9 @@ public partial class Map : Node3D
 
 
 		// Limpiar efectos del desastre anterior
-		foreach(Node node in ActiveDisasterNodes)
+		foreach(Node3D node in ActiveDisasterNodes)
 		{
-			if(GodotObject.IsInstanceValid(node))
+			if(IsInstanceValid(node))
 			{
 				node.QueueFree();
 			}
@@ -466,7 +466,7 @@ public partial class Map : Node3D
 
 		if(Globals.Instance.Gamemode == "survival")
 		{
-			Rpc(Globals.MethodName.AddPoints);
+			Globals.Instance.Rpc(nameof(Globals.Instance.AddPoints), 100);
 		}
 	}
 
@@ -526,7 +526,7 @@ public partial class Map : Node3D
 			Vector3 rand_pos = new Vector3(GD.RandRange(0, 4097), 1000, GD.RandRange(0, 4097));
 			meteor.Position = rand_pos;
 			AddChild(meteor, true);
-			ActiveDisasterNodes.Append(meteor);
+			ActiveDisasterNodes.Add(meteor);
 
 			await ToSignal(GetTree().CreateTimer(1), SceneTreeTimer.SignalName.Timeout);
 		}
@@ -634,7 +634,7 @@ public partial class Map : Node3D
 					}
 
 					AddChild(lighting, true);
-					ActiveDisasterNodes.Append(lighting);
+					ActiveDisasterNodes.Add(lighting);
 				}
 			}
 

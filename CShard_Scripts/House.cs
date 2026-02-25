@@ -6,7 +6,7 @@ public partial class House : StaticBody3D
 {
 	public Node3D Door;
 	public CollisionShape3D DoorCollisionShape;
-	public MeshInstance3D HauseModel;
+	public Node3D HauseModel;
 	[Export] public AudioStreamPlayer3D DoorOpenSound;
 	[Export] public AudioStreamPlayer3D DoorCloseSound;
 
@@ -97,6 +97,6 @@ public partial class House : StaticBody3D
 	{
 		Door = GetNode<Node3D>("hause/pivot");
 		DoorCollisionShape = GetNode<CollisionShape3D>("DoorCollision");
-		HauseModel = GetNode<MeshInstance3D>("hause");
+		HauseModel = GetNode<Node3D>("hause");
 	}
 }

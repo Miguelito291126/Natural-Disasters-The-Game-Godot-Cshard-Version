@@ -57,10 +57,12 @@ properties/5/path = NodePath("hause:scale")
 properties/5/spawn = true
 properties/5/replication_mode = 1
 
-[node name="hause" type="StaticBody3D" unique_id=1707887295 groups=["Destrollable", "Hause"]]
+[node name="hause" type="StaticBody3D" unique_id=1707887295 node_paths=PackedStringArray("DoorOpenSound", "DoorCloseSound") groups=["Destrollable", "Hause"]]
 collision_layer = 128
 collision_mask = 1021
 script = ExtResource("1_gw74x")
+DoorOpenSound = NodePath("Open_door_sound")
+DoorCloseSound = NodePath("Close_door_sound")
 
 [node name="hause" parent="." unique_id=1057886774 instance=ExtResource("2_f6ooy")]
 
@@ -129,7 +131,7 @@ omni_range = 31.011
 [node name="MultiplayerSynchronizer" type="MultiplayerSynchronizer" parent="." unique_id=652065289]
 replication_config = SubResource("SceneReplicationConfig_8npjq")
 
-[connection signal="area_entered" from="Area3D" to="." method="_on_area_3d_area_entered"]
-[connection signal="body_entered" from="Area3D" to="." method="_on_area_3d_body_entered"]
+[connection signal="area_entered" from="Area3D" to="." method="_OnArea3dAreaEntered"]
+[connection signal="body_entered" from="Area3D" to="." method="_OnArea3dBodyEntered"]
 
 [editable path="hause"]

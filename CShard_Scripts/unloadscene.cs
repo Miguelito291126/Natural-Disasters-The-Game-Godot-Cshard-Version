@@ -9,16 +9,17 @@ public partial class UnloadScene : Node
 	[Signal]
 	public delegate void UnloadDoneEventHandler();
 
-	public static UnloadScene Instance;
+	public static UnloadScene Instance { get; private set; }
 
-	public override void _EnterTree()
+	public override void _Ready()
 	{
 		if(Instance != null)
 		{
-			GD.PrintErr("Ya existe una instancia de Globals. Esto no debera pasar, pero si est pasando, se est creando una nueva instancia de Globals para evitar errores fatales. Si este mensaje aparece ms de una vez, por favor reporta este error a los desarrolladores.");
+			GD.PrintErr("Ya existe una instancia de UnloadScene. Esto no debera pasar, pero si est pasando, se est creando una nueva instancia de UnloadScene para evitar errores fatales. Si este mensaje aparece ms de una vez, por favor reporta este error a los desarrolladores.");
 		}
 		Instance = this;
 	}
+
 
 	public static string UnloadingScreenPath = "res://Scenes/loading_screen.tscn";
 	public PackedScene UnloadingScreenScene = ResourceLoader.Load<PackedScene>(UnloadingScreenPath);

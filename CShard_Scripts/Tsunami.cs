@@ -4,7 +4,7 @@ using Godot.Collections;
 [GlobalClass]
 public partial class Tsunami : Area3D
 {
-	public Node tsunami;
+	public Node3D tsunami;
 	[Export] public int Speed = 100;
 	[Export] public int TsunamiStrength = 100;
 	[Export] public Vector3 Direction = new Vector3(0, 0, 1);
@@ -24,15 +24,20 @@ public partial class Tsunami : Area3D
 				rigidBody3D.ApplyCentralImpulse(force);
 				rigidBody3D.Freeze = false;
 			}
+			// Dentro del foreach de Tsunami.cs
 			else if(body.IsInGroup("player") && body is Player playerBody)
 			{
-				playerBody.Velocity = Direction * Speed * 100 * (float)delta;
+				// Calculamos el empuje (puedes ajustar el multiplicador 1.5f a tu gusto)
+				Vector3 pushForce = Direction.Normalized() * Speed * 1.5f; 
+				
+				// Llamamos a la nueva función del jugador
+				playerBody.ApplyDisastersPush(pushForce);
 			}
 		}
 	}
 
 	public override void _Ready()
 	{
-		tsunami = GetNode("tsunami");
+		tsunami = GetNode<Node3D>("tsunami");
 	}
 }

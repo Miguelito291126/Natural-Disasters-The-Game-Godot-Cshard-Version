@@ -203,6 +203,7 @@ text = "Ported connected to: 9993"
 
 [node name="Panel" type="Panel" parent="Panel/MultiplayerList" unique_id=1665968298]
 layout_mode = 2
+size_flags_vertical = 3
 theme_override_styles/panel = SubResource("StyleBoxFlat_cp0ys")
 script = ExtResource("4_opfnp")
 

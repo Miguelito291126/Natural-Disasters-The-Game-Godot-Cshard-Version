@@ -13,7 +13,7 @@ public partial class Earthquake : Node3D
 
 	public AudioStreamPlayer3D StartWeakEarthquake;
 	public AudioStreamPlayer3D StartStrongEarthquake;
-	public AudioStreamPlayer3D EarthquakeSound;
+	public AudioStreamPlayer EarthquakeSound;
 	public AudioStreamPlayer3D EarthqueakeAftershotSound;
 
 	public override void _PhysicsProcess(double delta)
@@ -33,7 +33,7 @@ public partial class Earthquake : Node3D
 	{
 		StartWeakEarthquake = GetNode<AudioStreamPlayer3D>("earquake_start_sound_weak");
 		StartStrongEarthquake = GetNode<AudioStreamPlayer3D>("earquake_start_sound_strong");
-		EarthquakeSound = GetNode<AudioStreamPlayer3D>("earquake_sound");
+		EarthquakeSound = GetNode<AudioStreamPlayer>("earquake_sound");
 		EarthqueakeAftershotSound = GetNode<AudioStreamPlayer3D>("earqueake_aftershot");
 		PlayInitialSounds();
 		DestroyAllHouses();
@@ -287,7 +287,7 @@ public partial class Earthquake : Node3D
 
 	public void Destroy(House v)
 	{
-		if(GodotObject.IsInstanceValid(v))
+		if(IsInstanceValid(v))
 		{
 			if((v.IsInGroup("Destrollable") || v.IsInGroup("Hause")) && v.HasMethod("destroy"))
 			{
@@ -300,11 +300,11 @@ public partial class Earthquake : Node3D
 	{
 
 		// Destruir todas las casas al iniciar el terremoto
-		foreach(House house in GetTree().GetNodesInGroup("Hause"))
+		foreach(Node3D house in GetTree().GetNodesInGroup("Hause"))
 		{
-			if(GodotObject.IsInstanceValid(house))
+			if(IsInstanceValid(house) && house is House house1)
 			{
-				Destroy(house);
+				Destroy(house1);
 			}
 		}
 	}
@@ -331,12 +331,16 @@ public partial class Earthquake : Node3D
 		vol_mod *= distance_mod;
 
 
-		if(!EarthquakeSound.Playing)
+		if (EarthquakeSound != null && !EarthquakeSound.Playing)
 		{
 			EarthquakeSound.Play();
+
+
+			EarthquakeSound.VolumeDb = vol_mod;
 		}
 
-		EarthquakeSound.VolumeDb = vol_mod;
+
+		
 	}
 
 
