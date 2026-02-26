@@ -121,7 +121,7 @@ public partial class Volcano : Node3D
 
 		if(IsVolcanoAsh)
 		{
-			Rpc(Globals.MethodName.SetWeatherAndDisaster, "Dust Storm", 10);
+			Globals.Instance.Rpc(Globals.MethodName.SetWeatherAndDisaster, "Dust Storm", 13);
 		}
 	}
 

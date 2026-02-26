@@ -9,7 +9,15 @@ public partial class ThunderExplosion : Node3D
 	public float ExplosionRadius;
 	public GpuParticles3D Parks;
 
-	public Array<PackedScene> Lol = new Array<PackedScene>() {ResourceLoader.Load<PackedScene>("res://Sounds/disasters/nature/closethunder01.mp3"), ResourceLoader.Load<PackedScene>("res://Sounds/disasters/nature/closethunder02.mp3"), ResourceLoader.Load<PackedScene>("res://Sounds/disasters/nature/closethunder03.mp3"), ResourceLoader.Load<PackedScene>("res://Sounds/disasters/nature/closethunder04.mp3"), ResourceLoader.Load<PackedScene>("res://Sounds/disasters/nature/closethunder05.mp3")};
+	public Array<AudioStream> Lol = new Array<AudioStream>() 
+    {
+        ResourceLoader.Load<AudioStream>("res://Sounds/disasters/nature/closethunder01.mp3"),
+        ResourceLoader.Load<AudioStream>("res://Sounds/disasters/nature/closethunder02.mp3"),
+        ResourceLoader.Load<AudioStream>("res://Sounds/disasters/nature/closethunder03.mp3"),
+        ResourceLoader.Load<AudioStream>("res://Sounds/disasters/nature/closethunder04.mp3"),
+        ResourceLoader.Load<AudioStream>("res://Sounds/disasters/nature/closethunder05.mp3")
+    };
+
 	public AudioStreamPlayer3D AudioPlayer;
 
 
@@ -23,8 +31,11 @@ public partial class ThunderExplosion : Node3D
 
 
 		// Configurar el sonido del trueno
-		AudioPlayer.Stream = Lol[GD.RandRange(0, Lol.Count - 1)].Instantiate<AudioStream>();
-		AudioPlayer.Play();
+		if (Lol.Count > 0)
+        {
+            AudioPlayer.Stream = Lol[GD.RandRange(0, Lol.Count - 1)];
+            AudioPlayer.Play();
+        }
 	}
 
 

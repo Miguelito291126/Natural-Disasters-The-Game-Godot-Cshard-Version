@@ -22,7 +22,7 @@ public partial class Thunder : Node3D
 		Star.Emitting = true;
 
 		// Configurar la posici�n de la explosi�n en la posici�n del suelo
-		ThunderExplosion explosion = ExplosionScene.Instantiate<ThunderExplosion>();
+		Node3D explosion = ExplosionScene.Instantiate<Node3D>();
 		explosion.Position = this.Position;
 		GetParent().AddChild(explosion);
 

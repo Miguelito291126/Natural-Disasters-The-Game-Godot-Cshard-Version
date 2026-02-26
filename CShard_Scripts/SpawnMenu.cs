@@ -140,16 +140,10 @@ public partial class SpawnMenu : CanvasLayer
 
 			// En OnPress
 			Node3D new_i = (Node3D)i.Duplicate();
-			new_i.GlobalPosition = collision_point + (collision_normal * 0.5f);
 			Spawnedobject.Add(new_i);
-
-
-			// Asignar autoridad al servidor (peer_id = 1 es el servidor)
 			new_i.SetMultiplayerAuthority(1);
-
-
-			// A�adir al mapa como propiedad de la escena
 			Globals.Instance.Map.AddChild(new_i, true);
+			new_i.GlobalPosition = collision_point + (collision_normal * 0.5f);
 		}
 	}
 

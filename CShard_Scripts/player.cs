@@ -164,21 +164,17 @@ public partial class Player : CharacterBody3D
 	{
 		RagdollEnabled = enable;
 
-		// 2. Desactivar el procesamiento de animaciones inmediatamente
 		if(AnimationTreeNode != null) AnimationTreeNode.Active = !enable;
 		if(AnimationplayerNode != null) AnimationplayerNode.PlaybackActive = !enable;
-
-		// 3. La colisión de la cápsula SÍ puede ser diferida si da problemas, 
-		// pero para el reset es mejor intentar directo:
-		if(Capsule != null) Capsule.Disabled = enable;
+		if(Capsule != null) Capsule.SetDeferred(CollisionShape3D.PropertyName.Disabled, enable);
 
 		if(enable)
 		{
-			_StartPhysicalBonesSim();
+			CallDeferred(MethodName._StartPhysicalBonesSim);
 		}
 		else
 		{
-			_StopPhysicalBonesSim();
+			CallDeferred(MethodName._StopPhysicalBonesSim);
 
 			// Restaurar transforms inmediatamente
 			if(HeadNode != null) HeadNode.Transform = HeadDefaultLocalTransform;
@@ -604,7 +600,7 @@ public partial class Player : CharacterBody3D
 			return ;
 		}
 
-		if(Globals.Instance.Bradiation >= 80 && Globals.Instance.IsOutdoor(this) && Outdoor)
+		if(Globals.Instance.Bradiation >= 80 && Globals.Instance.IsOutdoor(this))
 		{
 			BodyBradiation = (float)Mathf.Clamp(BodyBradiation + 5 * delta, MinBdradiation, MaxBradiation);
 		}
@@ -1265,6 +1261,10 @@ public partial class Player : CharacterBody3D
 				{
 					Rpc(MethodName.Damage, damag); 
 				}
+			}
+			else
+			{
+				GD.PrintErr("Área de explosión sin padre válido: " + area.Name);
 			}
 
 		}

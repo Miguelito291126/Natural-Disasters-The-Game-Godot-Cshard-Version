@@ -28,9 +28,9 @@ public partial class Meteors : RigidBody3D
 			return;
 		}
 
-		Explosion explosion_node = ExplosionScene.Instantiate<Explosion>();
-		explosion_node.GlobalPosition = this.GlobalPosition;
+		Node3D explosion_node = ExplosionScene.Instantiate<Node3D>();
 		GetParent().AddChild(explosion_node, true);
+		explosion_node.GlobalPosition = this.GlobalPosition;
 		this.QueueFree();
 	}
 

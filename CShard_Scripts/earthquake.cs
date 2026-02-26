@@ -120,9 +120,9 @@ public partial class Earthquake : Node3D
 
 
 		// Aplicar efectos a los jugadores
-		foreach(Player v in GetTree().GetNodesInGroup("player"))
+		foreach(Node3D v in GetTree().GetNodesInGroup("player"))
 		{
-			if(v.IsOnFloor())
+			if(v is Player player && player.IsOnFloor())
 			{
 				if(3 <= mag && mag < 4)
 				{
@@ -146,23 +146,23 @@ public partial class Earthquake : Node3D
 				}
 				else if(8 <= mag && mag < 9)
 				{
-					v.SetVelocity(vec * 1.125f);
+					player.SetVelocity(vec * 1.125f);
 				}
 				else if(9 <= mag && mag < 10)
 				{
-					v.SetVelocity(vec * 1.5f);
+					player.SetVelocity(vec * 1.5f);
 				}
 				else if(10 <= mag && mag < 11)
 				{
-					v.SetVelocity(vec * 2f);
+					player.SetVelocity(vec * 2f);
 				}
 				else if(11 <= mag && mag < 12)
 				{
-					v.SetVelocity(vec * 2.125f);
+					player.SetVelocity(vec * 2.125f);
 				}
 				else if(12 <= mag && mag < 13)
 				{
-					v.SetVelocity(vec * 2.5f);
+					player.SetVelocity(vec * 2.5f);
 				}
 			}
 		}
@@ -475,11 +475,11 @@ public partial class Earthquake : Node3D
 		var mya = (GD.RandRange( - 4, 4) / 100) * percentage;
 		var xa = bxa + mxa;
 		var ya = bya + mya;
-		foreach(Player v in GetTree().GetNodesInGroup("player"))
+		foreach(Node3D v in GetTree().GetNodesInGroup("player"))
 		{
-			if(v.IsOnFloor())
+			if(v is Player player && player.IsOnFloor())
 			{
-				SendClientsideEffects(v, 0.1f);
+				SendClientsideEffects(player, 0.1f);
 			}
 		}
 
@@ -495,11 +495,11 @@ public partial class Earthquake : Node3D
 		var mya = (GD.RandRange( - 5, 5) / 100) * percentage;
 		var xa = bxa + mxa;
 		var ya = bya + mya;
-		foreach(Player v in GetTree().GetNodesInGroup("player"))
+		foreach(Node3D v in GetTree().GetNodesInGroup("player"))
 		{
-			if(v.IsOnFloor())
+			if(v is Player player && player.IsOnFloor())
 			{
-				SendClientsideEffects(v, 0.2f);
+				SendClientsideEffects(player, 0.2f);
 			}
 		}
 		DoPhysics();
@@ -514,11 +514,11 @@ public partial class Earthquake : Node3D
 		var mya = (GD.RandRange( - 5, 5) / 100) * percentage;
 		var xa = bxa + mxa;
 		var ya = bya + mya;
-		foreach(Player v in GetTree().GetNodesInGroup("players"))
+		foreach(Node3D v in GetTree().GetNodesInGroup("player"))
 		{
-			if(v.IsOnFloor())
+			if(v is Player player && player.IsOnFloor())
 			{
-				SendClientsideEffects(v, 0.3f);
+				SendClientsideEffects(player, 0.3f);
 			}
 		}
 		DoPhysics();
@@ -533,11 +533,11 @@ public partial class Earthquake : Node3D
 		var mya = (GD.RandRange( - 5, 5) / 100) * percentage;
 		var xa = bxa + mxa;
 		var ya = bya + mya;
-		foreach(Player v in GetTree().GetNodesInGroup("players"))
+		foreach(Node3D v in GetTree().GetNodesInGroup("player"))
 		{
-			if(v.IsOnFloor())
+			if(v is Player player && player.IsOnFloor())
 			{
-				SendClientsideEffects(v, 0.4f);
+				SendClientsideEffects(player, 0.4f);
 			}
 		}
 		DoPhysics();
@@ -552,11 +552,11 @@ public partial class Earthquake : Node3D
 		var mya = (GD.RandRange( - 5, 5) / 100) * percentage;
 		var xa = bxa + mxa;
 		var ya = bya + mya;
-		foreach(Player v in GetTree().GetNodesInGroup("player"))
+		foreach(Node3D v in GetTree().GetNodesInGroup("player"))
 		{
-			if(v.IsOnFloor())
+			if(v is Player player && player.IsOnFloor())
 			{
-				SendClientsideEffects(v, 0.5f);
+				SendClientsideEffects(player, 0.5f);
 			}
 		}
 		DoPhysics();
@@ -571,11 +571,11 @@ public partial class Earthquake : Node3D
 		var mya = (GD.RandRange( - 5, 5) / 100) * percentage;
 		var xa = bxa + mxa;
 		var ya = bya + mya;
-		foreach(Player v in GetTree().GetNodesInGroup("player"))
+		foreach(Node3D v in GetTree().GetNodesInGroup("player"))
 		{
-			if(v.IsOnFloor())
+			if(v is Player player && player.IsOnFloor())
 			{
-				SendClientsideEffects(v, 2f);
+				SendClientsideEffects(player, 2f);
 			}
 		}
 		DoPhysics();
@@ -590,11 +590,11 @@ public partial class Earthquake : Node3D
 		var mya = (GD.RandRange( - 5, 5) / 100) * percentage;
 		var xa = bxa + mxa;
 		var ya = bya + mya;
-		foreach(Player v in GetTree().GetNodesInGroup("player"))
+		foreach(Node3D v in GetTree().GetNodesInGroup("player"))
 		{
-			if(v.IsOnFloor())
+			if(v is Player player && player.IsOnFloor())
 			{
-				SendClientsideEffects(v, 4f);
+				SendClientsideEffects(player, 4f);
 			}
 		}
 		DoPhysics();
@@ -609,11 +609,11 @@ public partial class Earthquake : Node3D
 		var mya = (GD.RandRange( - 5, 5) / 100) * percentage;
 		var xa = bxa + mxa;
 		var ya = bya + mya;
-		foreach(Player v in GetTree().GetNodesInGroup("player"))
+		foreach(Node3D v in GetTree().GetNodesInGroup("player"))
 		{
-			if(v.IsOnFloor())
+			if(v is Player player && player.IsOnFloor())
 			{
-				SendClientsideEffects(v, 8f);
+				SendClientsideEffects(player, 8f);
 			}
 		}
 		DoPhysics();
@@ -628,11 +628,11 @@ public partial class Earthquake : Node3D
 		var mya = (GD.RandRange( - 5, 5) / 100) * percentage;
 		var xa = bxa + mxa;
 		var ya = bya + mya;
-		foreach(Player v in GetTree().GetNodesInGroup("player"))
+		foreach(Node3D v in GetTree().GetNodesInGroup("player"))
 		{
-			if(v.IsOnFloor())
+			if(v is Player player && player.IsOnFloor())
 			{
-				SendClientsideEffects(v, 16f);
+				SendClientsideEffects(player, 16f);
 			}
 		}
 		DoPhysics();
@@ -647,11 +647,11 @@ public partial class Earthquake : Node3D
 		var mya = (GD.RandRange( - 5, 5) / 100) * percentage;
 		var xa = bxa + mxa;
 		var ya = bya + mya;
-		foreach(Player v in GetTree().GetNodesInGroup("player"))
+		foreach(Node3D v in GetTree().GetNodesInGroup("player"))
 		{
-			if(v.IsOnFloor())
+			if(v is Player player && player.IsOnFloor())
 			{
-				SendClientsideEffects(v, 38f);
+				SendClientsideEffects(player, 38f);
 			}
 		}
 		DoPhysics();
@@ -666,11 +666,11 @@ public partial class Earthquake : Node3D
 		var mya = (GD.RandRange( - 5, 5) / 100) * percentage;
 		var xa = bxa + mxa;
 		var ya = bya + mya;
-		foreach(Player v in GetTree().GetNodesInGroup("player"))
+		foreach(Node3D v in GetTree().GetNodesInGroup("player"))
 		{
-			if(v.IsOnFloor())
+			if(v is Player player && player.IsOnFloor())
 			{
-				SendClientsideEffects(v, 38f);
+				SendClientsideEffects(player, 38f);
 			}
 		}
 		DoPhysics();
@@ -685,11 +685,11 @@ public partial class Earthquake : Node3D
 		var mya = (GD.RandRange( - 425, 425) / 100) * percentage;
 		var xa = bxa + mxa;
 		var ya = bya + mya;
-		foreach(Player v in GetTree().GetNodesInGroup("player"))
+		foreach(Node3D v in GetTree().GetNodesInGroup("player"))
 		{
-			if(v.IsOnFloor())
+			if(v is Player player && player.IsOnFloor())
 			{
-				SendClientsideEffects(v, 38f);
+				SendClientsideEffects(player, 38f);
 			}
 		}
 		DoPhysics();

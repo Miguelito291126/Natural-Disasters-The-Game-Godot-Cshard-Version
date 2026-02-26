@@ -149,26 +149,16 @@ public partial class Globals : Node
 
 	protected PhysicsDirectSpaceState3D _GetDirectSpaceState(Node node)
 	{
+		// 1. Intentamos obtener el World3D del nodo si es válido y es Node3D
+		if (IsInstanceValid(node) && node is Node3D node3D)
+		{
+			var world = node3D.GetWorld3D();
+			if (world != null) return world.DirectSpaceState;
+		}
 
-		// Intenta obtener el World3D a partir del nodo; si falla, intenta la escena actual.
-		World3D world = null;
-		if(node != null && IsInstanceValid(node) && node is Node3D node3D)
-		{
-			world = node3D.GetWorld3D();
-		}
-		if(world == null)
-		{
-			var scene = GetTree().GetCurrentScene();
-			if(IsInstanceValid(scene) && scene is Node3D scene3D)
-			{
-				world = scene3D.GetWorld3D();
-			}
-		}
-		if(world == null)
-		{
-			return null;
-		}
-		return world.DirectSpaceState;
+		// 2. Si falló lo anterior, intentamos obtenerlo desde la escena actual
+		var currentScene = GetTree()?.CurrentScene as Node3D;
+		return currentScene?.GetWorld3D()?.DirectSpaceState;
 	}
 
 	public bool PerformTraceCollision(Node3D ply, Vector3 direction)
@@ -180,11 +170,13 @@ public partial class Globals : Node
 		{
 			return false;
 		}
+
 		var ray = PhysicsRayQueryParameters3D.Create(start_pos, end_pos);
-		if (ply is CollisionObject3D collisionEntity)
+		if (ply is Player player) 
 		{
-			ray.Exclude = new Godot.Collections.Array<Rid> { collisionEntity.GetRid() };
+			ray.Exclude = new Array<Rid> { player.GetRid() };
 		}
+		
 		var result = space_state.IntersectRay(ray);
 		return result != new Dictionary{};
 	}
@@ -201,9 +193,9 @@ public partial class Globals : Node
 		}
 		PhysicsRayQueryParameters3D ray = PhysicsRayQueryParameters3D.Create(start_pos, end_pos);
 
-		if (ply is CollisionObject3D collisionEntity)
+		if (ply is Player player) 
 		{
-			ray.Exclude = new Godot.Collections.Array<Rid> { collisionEntity.GetRid() };
+			ray.Exclude = new Array<Rid> { player.GetRid() };
 		}
 		
 		Dictionary result = space_state.IntersectRay(ray);
@@ -238,30 +230,25 @@ public partial class Globals : Node
 
 	public bool IsBelowSky(Node3D ply)
 	{
-		if (ply == null)
+		if (ply == null || !ply.IsInsideTree())
 			return true;
 
-		if (!ply.IsInsideTree())
-			return true;
+		PhysicsDirectSpaceState3D space_state = _GetDirectSpaceState(ply);
+		if (space_state == null) return true;
 
-		var world = ply.GetWorld3D();
-		if (world == null)
-			return true;
-
-		var space_state = world.DirectSpaceState;
-		if (space_state == null)
-			return true;
-
-		Vector3 start_pos = ply.GlobalPosition;
-		Vector3 end_pos = start_pos + new Vector3(0, 48000, 0);
+		Vector3 start_pos = ply.GlobalPosition + new Vector3(0, 2.0f, 0);
+		Vector3 end_pos = start_pos + new Vector3(0, 1000, 0); // 1km es suficiente para la mayoría de mapas
 
 		var ray = PhysicsRayQueryParameters3D.Create(start_pos, end_pos);
 
-		if (ply is CollisionObject3D collisionEntity)
-			ray.Exclude = new Godot.Collections.Array<Rid> { collisionEntity.GetRid() };
+		if (ply is Player player) 
+		{
+			ray.Exclude = new Array<Rid> { player.GetRid() };
+		}
 
 		var result = space_state.IntersectRay(ray);
 
+		// Si el conteo es 0, no hay nada arriba (está bajo el cielo)
 		return result.Count == 0;
 	}
 
@@ -269,11 +256,9 @@ public partial class Globals : Node
 
 	public bool IsOutdoor(Node3D ply)
 	{
-		if (ply == null)
-			return true;
+		if (ply == null) return true;
 
-		if (!ply.IsInsideTree())
-			return true;
+		if (!ply.IsInsideTree()) return true;
 
 		bool hitSky = IsBelowSky(ply);
 
@@ -330,24 +315,36 @@ public partial class Globals : Node
 
 	public bool IsSomethingBlockingWind(Node3D entity)
 	{
-		var start_pos = entity.GlobalPosition;
-		var end_pos = start_pos - (WindDirection * 300);
-		var space_state = _GetDirectSpaceState(entity);
-		if(space_state == null)
-		{
+		// 1. Empezamos el rayo un poco más arriba (ej. 1.5m) para no chocar con el suelo
+		Vector3 start_pos = entity.GlobalPosition + new Vector3(0, 1.5f, 0);
+		
+		// 2. Reducimos el alcance. 300m es mucho. 
+		// Un valor entre 10 y 20 metros suele ser suficiente para "cobertura".
+		float rayLength = 15.0f; 
+		Vector3 end_pos = start_pos - (WindDirection * rayLength);
 
-			// Sin informaci�n del mundo, no asumimos bloqueo
-			return false;
-		}
+		PhysicsDirectSpaceState3D space_state = _GetDirectSpaceState(entity);
+		if(space_state == null) return false;
+
 		var ray = PhysicsRayQueryParameters3D.Create(start_pos, end_pos);
 
-		if (entity is CollisionObject3D collisionEntity)
+		// 3. Excluimos al jugador para que el rayo no choque con su propia espalda
+		if (entity is Player player) 
 		{
-			ray.Exclude = new Godot.Collections.Array<Rid> { collisionEntity.GetRid() };
+			ray.Exclude = new Array<Rid> { player.GetRid() };
 		}
 
+		// ACTIVAR CAPAS 8 (Casa) y 9 (Terreno)
+		// Usamos (1 << índice). El índice es (Número de Capa - 1)
+		uint mask = (1 << 7); // Capa 8
+		mask |= (1 << 8);     // Capa 9
+
+		ray.CollisionMask = mask; // Solo colisiona con las capas 8 y 9
+
 		var result = space_state.IntersectRay(ray);
-		return result != new Dictionary{};
+
+		// Si el resultado no está vacío, algo bloquea el viento
+		return result.Count > 0;
 	}
 
 	public float CalculeBoundingRadius(Node3D entity)
@@ -435,34 +432,32 @@ public partial class Globals : Node
 
 	public void Wind(Node3D obj)
 	{
+		if(!IsInstanceValid(obj)) return;
 
 		// Verificar si el objeto es un jugador
 		if(obj.IsInGroup("player") && obj is Player player)
 		{
-			if(!IsInstanceValid(obj))
-			{
-				return ;
-			}
+			bool outdoor = IsOutdoor(player);
+			bool blocked = IsSomethingBlockingWind(player);
 
+			// LOG DE DEPURACIÓN: Si ves esto en consola sabrás por qué es 0
+			// GD.Print($"Outdoor: {outdoor}, Blocked: {blocked}, GlobalWind: {WindSpeed}");
 
-			// Calcular la velocidad del viento local
-			var local_wind = WindSpeed;
-			if(!IsOutdoor(obj) || IsSomethingBlockingWind(obj))
+			float local_wind = WindSpeed;
+
+			if(!outdoor || blocked)
 			{
 				local_wind = 0;
 			}
 
 			player.BodyWind = local_wind;
 
-
-			// Calcular la velocidad del viento y la friccin
-			Vector3 wind_vel = WindDirection * (float)local_wind;
-
-			// Verificar si est al aire libre y no hay obstculos que bloqueen el viento
-			if(IsOutdoor(obj) && !IsSomethingBlockingWind(obj) && local_wind >= 30)
+			// Aplicar movimiento
+			if(local_wind >= 30) // Solo si hay viento fuerte
 			{
+				Vector3 wind_vel = WindDirection * local_wind;
 				var delta_velocity = wind_vel - player.Velocity;
-				player.Velocity += delta_velocity * (float)0.3;
+				player.Velocity += delta_velocity * 0.3f;
 			}
 		}
 

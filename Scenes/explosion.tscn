@@ -4,6 +4,7 @@
 [ext_resource type="AudioStream" uid="uid://51sjjqi43ypi" path="res://Sounds/disasters/atmospheric/explosion_light9.mp3" id="3_i7oed"]
 
 [sub_resource type="SphereShape3D" id="SphereShape3D_up542"]
+radius = 69.82395
 
 [sub_resource type="Curve" id="Curve_a801j"]
 _data = [Vector2(0, 1), 0.0, 0.0, 0, 0, Vector2(0.63273454, 1), 0.0, 0.0, 0, 0, Vector2(1, 0.007078886), 0.0, 0.0, 0, 0]
@@ -125,17 +126,24 @@ properties/1/replication_mode = 1
 properties/2/path = NodePath(".:scale")
 properties/2/spawn = true
 properties/2/replication_mode = 1
+properties/3/path = NodePath("..:position")
+properties/3/spawn = true
+properties/3/replication_mode = 1
+properties/4/path = NodePath("..:rotation")
+properties/4/spawn = true
+properties/4/replication_mode = 1
+properties/5/path = NodePath("..:scale")
+properties/5/spawn = true
+properties/5/replication_mode = 1
 
 [node name="Explosion" type="Node3D" unique_id=1040130816 groups=["Explosion"]]
 script = ExtResource("1_a801j")
 
 [node name="Area3D" type="Area3D" parent="." unique_id=1903622450 groups=["Explosion"]]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.0103197, 0.0393953, -0.0188904)
 collision_layer = 64
 collision_mask = 957
 
 [node name="CollisionShape3D" type="CollisionShape3D" parent="Area3D" unique_id=1583832399]
-transform = Transform3D(10, 0, 0, 0, 10, 0, 0, 0, 10, 0, 0, 0)
 shape = SubResource("SphereShape3D_up542")
 
 [node name="Sparks" type="GPUParticles3D" parent="." unique_id=979384527]

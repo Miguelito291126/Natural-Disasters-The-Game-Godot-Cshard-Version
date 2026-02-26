@@ -224,6 +224,7 @@ down={
 3d_physics/layer_8="objects"
 3d_physics/layer_9="terrain"
 3d_physics/layer_10="tornado"
+3d_physics/layer_11="RayCast"
 
 [physics]
 
