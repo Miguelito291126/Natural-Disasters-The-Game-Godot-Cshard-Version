@@ -53,5 +53,5 @@ theme = ExtResource("2_bsx7a")
 text = "Exit
 "
 
-[connection signal="pressed" from="Panel/Buttons/Continue" to="." method="_on_return_pressed"]
-[connection signal="pressed" from="Panel/Buttons/Exit" to="." method="_on_exit_pressed"]
+[connection signal="pressed" from="Panel/Buttons/Continue" to="." method="_OnReturnPressed"]
+[connection signal="pressed" from="Panel/Buttons/Exit" to="." method="_OnExitPressed"]

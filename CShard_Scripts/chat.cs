@@ -149,7 +149,7 @@ public partial class Chat : CanvasLayer
 
 		}
 		// call_local ya ejecuta la funcin localmente en el servidor
-		Rpc(nameof(Player._SetAdminMode), true);
+		jugador_encontrado.Rpc(Player.MethodName._SetAdminMode, true);
 		return $"Ahora {player_name} es admin";
 	}
 
@@ -188,7 +188,7 @@ public partial class Chat : CanvasLayer
 			// Usar RPC para sincronizar el cambio en todos los clientes
 
 		}// call_local ya ejecuta la funcin localmente en el servidor
-		Rpc(nameof(Player._SetAdminMode), false);
+		jugador_encontrado.Rpc(Player.MethodName._SetAdminMode, false);
 		return $"Ahora {player_name} ya no es admin";
 	}
 
@@ -282,11 +282,11 @@ public partial class Chat : CanvasLayer
 		}
 
 		// 1. Verificamos que el mapa sea accesible
-		if (Globals.Instance.Map != null)
+		if (Globals.Instance != null)
 		{
 			// 2. Ejecutamos el RPC desde el mapa para que todos lo reciban
 			// Enviamos el nombre y -1 como índice (porque estamos usando el nombre)
-			Globals.Instance.Map.Rpc(nameof(Globals.SetWeatherAndDisaster), disaster_name, -1);
+			Globals.Instance.Rpc(Globals.MethodName.SetWeatherAndDisaster, disaster_name, -1);
 			
 			return $"Clima/Desastre activado por red: {disaster_name}";
 		}
@@ -627,7 +627,7 @@ public override void _Input(InputEvent @event)
 			return ;
 		}
 
-		Rpc(nameof(MsgRpc), Globals.Instance.Username, LineEdit.Text);
+		Rpc(MethodName.MsgRpc, Globals.Instance.Username, LineEdit.Text);
 
 		LineEdit.Text = "";
 		LineEdit.ReleaseFocus();

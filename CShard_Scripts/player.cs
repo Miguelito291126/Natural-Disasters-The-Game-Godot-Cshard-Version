@@ -70,7 +70,7 @@ public partial class Player : CharacterBody3D
 	public Node3D EsqueletoNode;
 	public Label3D Label;
 	public CanvasLayer TempEffect;
-	public CanvasLayer DeathMenu;
+	public DeathMenu DeathMenu;
 	public GpuParticles3D FireParticles;
 
 	public AudioStreamPlayer3D SneezeAudio;
@@ -83,10 +83,10 @@ public partial class Player : CharacterBody3D
 	public CanvasLayer Underlavaeffect;
 
 
-	public AudioStreamPlayer3D RainSound;
-	public AudioStreamPlayer3D WindSound;
-	public AudioStreamPlayer3D WindModerateSound;
-	public AudioStreamPlayer3D WindExtremeSound;
+	public AudioStreamPlayer RainSound;
+	public AudioStreamPlayer WindSound;
+	public AudioStreamPlayer WindModerateSound;
+	public AudioStreamPlayer WindExtremeSound;
 
 	public RayCast3D Interactor;
 	public SpotLight3D SpotLight3D;
@@ -270,7 +270,7 @@ public partial class Player : CharacterBody3D
 				Globals.Instance.RemovePoints();
 			}
 
-			Rpc(nameof(_SetRagdollState), true);
+			Rpc(MethodName._SetRagdollState, true);
 		}
 
 		else
@@ -282,11 +282,9 @@ public partial class Player : CharacterBody3D
 
 	public void Die()
 	{
-		Input.SetMouseMode(Input.MouseModeEnum.Visible);
-		if(DeathMenu != null)
-		{
-			DeathMenu.Show();
-		}
+		Input.MouseMode = Input.MouseModeEnum.Visible;
+		if(DeathMenu != null) DeathMenu.Show();
+
 	}
 
 	public async void Ignite(int time)
@@ -394,10 +392,10 @@ public partial class Player : CharacterBody3D
 		SpotLight3D = GetNodeOrNull<SpotLight3D>("head/Camera3D/SpotLight3D");
 
 		// Sonidos (Asegúrate que coincidan con los nombres del Inspector)
-		RainSound = GetNodeOrNull<AudioStreamPlayer3D>("Rain sound");
-		WindSound = GetNodeOrNull<AudioStreamPlayer3D>("Wind sound");
-		WindModerateSound = GetNodeOrNull<AudioStreamPlayer3D>("Wind Morerate sound");
-		WindExtremeSound = GetNodeOrNull<AudioStreamPlayer3D>("Wind Extreme sound");
+		RainSound = GetNodeOrNull<AudioStreamPlayer>("RainSound");
+		WindSound = GetNodeOrNull<AudioStreamPlayer>("WindSound");
+		WindModerateSound = GetNodeOrNull<AudioStreamPlayer>("WindModeratesound");
+		WindExtremeSound = GetNodeOrNull<AudioStreamPlayer>("WindExtremeSound");
 
 		// Esqueleto y Física
 		EsqueletoNode = GetNodeOrNull<Node3D>("Esqueleto");
@@ -408,7 +406,7 @@ public partial class Player : CharacterBody3D
 
 		// spawn y otros
 		Spawn = GetNodeOrNull<Marker3D>("../Spawn");
-		DeathMenu = GetNodeOrNull<CanvasLayer>("DeathMenu");
+		DeathMenu = GetNodeOrNull<DeathMenu>("DeathMenu");
 		TempEffect = GetNodeOrNull<CanvasLayer>("TempEffect");
 		Underwatereffect = GetNodeOrNull<CanvasLayer>("Underwater");
 		Underlavaeffect = GetNodeOrNull<CanvasLayer>("UnderLava");
@@ -459,7 +457,7 @@ public partial class Player : CharacterBody3D
 			if (CameraNode != null) CameraNode.Current = true;
 
 			_ResetPlayer();
-			Rpc(nameof(_SetRagdollState), false);
+			Rpc(MethodName._SetRagdollState, false);
 			
 			// Verificar si hay jugadores con el mismo nombre y aadir nmero si es necesario
 			var nombre_base = Globals.Instance.Username;
@@ -553,11 +551,11 @@ public partial class Player : CharacterBody3D
 		{
 			if(alpha_cold != 0)
 			{
-				Rpc(nameof(Damage), alpha_hot + alpha_cold);
+				Rpc(MethodName.Damage, alpha_hot + alpha_cold);
 			}
 			else if(alpha_hot != 0)
 			{
-				Rpc(nameof(Damage), alpha_hot + alpha_cold);
+				Rpc(MethodName.Damage, alpha_hot + alpha_cold);
 			}
 		}
 
@@ -594,7 +592,7 @@ public partial class Player : CharacterBody3D
 		{
 			if(GD.RandRange(1, 25) == 25)
 			{
-				Rpc(nameof(Damage), GD.RandRange(1, 30));
+				Rpc(MethodName.Damage, GD.RandRange(1, 30));
 			}
 		}
 	}
@@ -619,7 +617,7 @@ public partial class Player : CharacterBody3D
 		{
 			if(GD.RandRange(1, 25) == 25)
 			{
-				Rpc(nameof(Damage), GD.RandRange(1, 30));
+				Rpc(MethodName.Damage, GD.RandRange(1, 30));
 			}
 		}
 	}
@@ -727,7 +725,7 @@ public partial class Player : CharacterBody3D
 		{
 			if(GD.RandRange(1, 5) == 5)
 			{
-				Rpc(nameof(Damage), 5);
+				Rpc(MethodName.Damage, 5);
 			}
 		}
 	}
@@ -768,107 +766,113 @@ public partial class Player : CharacterBody3D
 
 			if(keyEvent.Keycode == Key.Key1)
 			{
-				Globals.Instance.Rpc(nameof(Globals.Instance.SetWeatherAndDisaster), "", 1);
+				Globals.Instance.Rpc(Globals.MethodName.SetWeatherAndDisaster, "", 1);
 			}
 			if(keyEvent.Keycode == Key.Key2)
 			{
-				Globals.Instance.Rpc(nameof(Globals.Instance.SetWeatherAndDisaster), "", 2);
+				Globals.Instance.Rpc(Globals.MethodName.SetWeatherAndDisaster, "", 2);
 			}
 			if(keyEvent.Keycode == Key.Key3)
 			{
-				Globals.Instance.Rpc(nameof(Globals.Instance.SetWeatherAndDisaster), "", 3);
+				Globals.Instance.Rpc(Globals.MethodName.SetWeatherAndDisaster, "", 3);
 			}
 			if(keyEvent.Keycode == Key.Key4)
 			{
-				Globals.Instance.Rpc(nameof(Globals.Instance.SetWeatherAndDisaster), "", 4);
+				Globals.Instance.Rpc(Globals.MethodName.SetWeatherAndDisaster, "", 4);
 			}
 			if(keyEvent.Keycode == Key.Key5)
 			{
-				Globals.Instance.Rpc(nameof(Globals.Instance.SetWeatherAndDisaster), "", 5);
+				Globals.Instance.Rpc(Globals.MethodName.SetWeatherAndDisaster, "", 5);
 			}
 			if(keyEvent.Keycode == Key.Key6)
 			{
-				Globals.Instance.Rpc(nameof(Globals.Instance.SetWeatherAndDisaster), "", 6);
+				Globals.Instance.Rpc(Globals.MethodName.SetWeatherAndDisaster, "", 6);
 			}
 			if(keyEvent.Keycode == Key.Key7)
 			{
-				Globals.Instance.Rpc(nameof(Globals.Instance.SetWeatherAndDisaster), "", 7);
+				Globals.Instance.Rpc(Globals.MethodName.SetWeatherAndDisaster, "", 7);
 			}
 			if(keyEvent.Keycode == Key.Key8)
 			{
-				Globals.Instance.Rpc(nameof(Globals.Instance.SetWeatherAndDisaster), "", 8);
+				Globals.Instance.Rpc(Globals.MethodName.SetWeatherAndDisaster, "", 8);
 			}
 			if(keyEvent.Keycode == Key.Key9)
 			{
-				Globals.Instance.Rpc(nameof(Globals.Instance.SetWeatherAndDisaster), "", 9);
+				Globals.Instance.Rpc(Globals.MethodName.SetWeatherAndDisaster, "", 9);
 			}
 			if(keyEvent.Keycode == Key.Key0)
 			{
-				Globals.Instance.Rpc(nameof(Globals.Instance.SetWeatherAndDisaster), "", 0);
+				Globals.Instance.Rpc(Globals.MethodName.SetWeatherAndDisaster, "", 0);
 			}
 		}
 	}
 
-	public void rainsound()
+	public void UpdateRainSound()
 	{
-		Globals.Instance.IsRaining = RainNode.Emitting && Globals.Instance.IsOutdoor(this) && Outdoor;
-		if(Globals.Instance.IsRaining)
-{			if (RainSound != null)
+		// 1. Verificamos si realmente debe sonar la lluvia
+		// Combinamos: ¿El emisor está activo? Y ¿El jugador está a la intemperie?
+		bool shouldPlay = RainNode.Emitting && Globals.Instance.IsOutdoor(this);
+
+		// Actualizamos el estado global
+		Globals.Instance.IsRaining = shouldPlay;
+
+		if (RainSound == null) return; // Seguridad
+
+		if (shouldPlay)
+		{
+			if (!RainSound.Playing) 
 			{
-				if(!RainSound.Playing)
-				{
-					RainSound.Play();
-				}
+				RainSound.Play();
 			}
 		}
 		else
 		{
-			if (RainSound != null)
+			if (RainSound.Playing)
 			{
 				RainSound.Stop();
 			}
 		}
 	}
 
-public void windsound()
-{
-    // 1. Verificación de seguridad (Blindaje)
-    // Si falta alguno de los nodos, salimos para evitar el crash.
-    if (WindSound == null || WindModerateSound == null || WindExtremeSound == null) 
-        return;
+	public void UpdateWindSound()
+	{
+		// 1. Verificación de seguridad (Blindaje)
+		// Si falta alguno de los nodos, salimos para evitar el crash.
+		if (WindSound == null || WindModerateSound == null || WindExtremeSound == null) 
+			return;
 
-    // 2. Determinamos qué sonido DEBERÍA estar sonando
-    AudioStreamPlayer3D targetSound = null;
+		// 2. Determinamos qué sonido DEBERÍA estar sonando
+		AudioStreamPlayer targetSound = null;
 
-    if (BodyWind > 100)
-    {
-        targetSound = WindExtremeSound;
-    }
-    else if (BodyWind > 50)
-    {
-        targetSound = WindModerateSound;
-    }
-    else if (BodyWind > 0)
-    {
-        targetSound = WindSound;
-    }
+		if (BodyWind > 100)
+		{
+			targetSound = WindExtremeSound;
+		}
+		else if (BodyWind > 50)
+		{
+			targetSound = WindModerateSound;
+		}
+		else if (BodyWind > 0)
+		{
+			targetSound = WindSound;
+		}
 
-    // 3. Gestión de estados (Play / Stop)
-    // Lista de todos para iterar y apagar los que no necesitamos
-    AudioStreamPlayer3D[] allWinds = { WindSound, WindModerateSound, WindExtremeSound };
+		// 3. Gestión de estados (Play / Stop)
+		// Lista de todos para iterar y apagar los que no necesitamos
+		AudioStreamPlayer[] allWinds = { WindSound, WindModerateSound, WindExtremeSound };
 
-    foreach (var v in allWinds)
-    {
-        if (v == targetSound)
-        {
-            if (!v.Playing) v.Play();
-        }
-        else
-        {
-            if (v.Playing) v.Stop();
-        }
-    }
-}
+		foreach (var v in allWinds)
+		{
+			if (v == targetSound)
+			{
+				if (!v.Playing) v.Play();
+			}
+			else
+			{
+				if (v.Playing) v.Stop();
+			}
+		}
+	}
 
 	public override void _Process(double delta)
 	{
@@ -880,13 +884,13 @@ public void windsound()
 			return ;
 		}
 
-		BodyTemp((float)delta);
-		BodyOxy((float)delta);
-		BodyRad((float)delta);
+		BodyTemp(delta);
+		BodyOxy(delta);
+		BodyRad(delta);
 		UnderwaterOrUnderlavaEffects();
 		IsOnFireEffects();
-		rainsound();
-		windsound();
+		UpdateRainSound();
+		UpdateWindSound();
 		UpdateLabels();
 	}
 
@@ -972,7 +976,7 @@ public void windsound()
 				{
 					if (FallStrength <= -90)
 					{
-						Rpc(nameof(Damage), 50);
+						Rpc(MethodName.Damage, 50);
 					}
 				}
 			}
@@ -1099,13 +1103,13 @@ public void windsound()
 					{
 
 						// Si somos el servidor/host, llamamos DIRECTO
-						Globals.Instance.Rpc(nameof(Globals.Instance.RequestPickObject), GetPath(), target.GetPath());
+						Globals.Instance.RequestPickObject(GetPath(), target.GetPath());
 					}
 					else
 					{
 
 						// Si somos cliente, usamos RPC hacia el servidor
-						Globals.Instance.Rpc(nameof(Globals.Instance.RequestPickObject), GetPath(), target.GetPath());
+						Globals.Instance.Rpc(Globals.MethodName.RequestPickObject, GetPath(), target.GetPath());
 					}
 				}
 			}
@@ -1216,7 +1220,7 @@ public void windsound()
 	{
 		if(body.IsInGroup("Meteor"))
 		{
-			Rpc(nameof(Damage), 100);
+			Rpc(MethodName.Damage, 100);
 		}
 	}
 
@@ -1236,37 +1240,39 @@ public void windsound()
 	{
 		if (area.IsInGroup("Explosion"))
 		{
-			// 1. Obtenemos el padre y verificamos que no sea nulo
-			Explosion areaParent = area.GetParent<Explosion>();
-			if (areaParent == null) return;
-
-			// 2. CORRECCIÓN DE DIRECCIÓN: (Destino - Origen) 
-			// Para alejarte de la explosión: (Tu posición - Posición explosión)
-			float distance = (GlobalPosition - area.GlobalPosition).Length();
-			Vector3 direction = (GlobalPosition - area.GlobalPosition).Normalized();
-
-			// 3. Verificación de seguridad de variables
-			// Si ExplosionForce es una variable de la clase Explosion, no necesitas HasMeta
-			float force = areaParent.ExplosionForce * (1.0f - Mathf.Clamp(distance / areaParent.ExplosionRadius, 0, 1));
-
-			// 4. Aplicar velocidad (Recuerda que Velocity es Vector3)
-			velocity = direction * force;
-
-			// 5. Daño
-			int damag = 0;
-			// Si usas metadatos:
-			if (areaParent.HasMeta("explosion_damage"))
-			{
-				damag = areaParent.ExplosionDamage;
-			} 
-			// Si es una variable normal de la clase, simplemente:
-			// damag = areaParent.ExplosionDamage;
-
-			if (damag > 0)
-			{
-				// Nota: Asegúrate de que el método Damage tenga el atributo [Rpc]
-				Rpc(nameof(Damage), damag); 
+			var parent = area.GetParent();
+			if (parent is Explosion explosion) {
+				float distance = (GlobalPosition - area.GlobalPosition).Length();
+				Vector3 direction = (GlobalPosition - area.GlobalPosition).Normalized();
+				float force = explosion.ExplosionForce * (1.0f - Mathf.Clamp(distance / explosion.ExplosionRadius, 0, 1));
+				velocity = direction * force;
+				int damag = 0;
+				if (explosion.HasMeta(nameof(explosion.ExplosionDamage))) 
+				{
+					damag = (int)explosion.GetMeta(nameof(explosion.ExplosionDamage));
+				}
+				if (damag > 0)
+				{
+					Rpc(MethodName.Damage, damag); 
+				}
 			}
+			else if (parent is ThunderExplosion thunderExplosion)
+			{
+				float distance = (GlobalPosition - area.GlobalPosition).Length();
+				Vector3 direction = (GlobalPosition - area.GlobalPosition).Normalized();
+				float force = thunderExplosion.ExplosionForce * (1.0f - Mathf.Clamp(distance / thunderExplosion.ExplosionRadius, 0, 1));
+				velocity = direction * force;
+				int damag = 0;
+				if (thunderExplosion.HasMeta(nameof(thunderExplosion.ExplosionDamage)))
+				{
+					damag = (int)thunderExplosion.GetMeta(nameof(ThunderExplosion.ExplosionDamage));
+				} 
+				if (damag > 0)
+				{
+					Rpc(MethodName.Damage, damag); 
+				}
+			}
+
 		}
 		else if(area.IsInGroup("Lava_Area"))
 		{
@@ -1315,7 +1321,7 @@ public void windsound()
 			return;
 		}
 
-		Rpc(nameof(_SetRagdollState), false);
+		Rpc(MethodName._SetRagdollState, false);
 
 		if (Spawn != null)
 		{

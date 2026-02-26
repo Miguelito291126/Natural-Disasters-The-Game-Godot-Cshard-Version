@@ -25,7 +25,18 @@ public partial class SpawnMenu : CanvasLayer
 
 	public override void _EnterTree()
 	{
-		SetMultiplayerAuthority(int.Parse(GetParent<Player>().Name));
+		// Intentamos obtener el ID del nombre, pero con precaución
+		string parentName = GetParent().Name;
+		int id;
+		if (int.TryParse(parentName, out id))
+		{
+			SetMultiplayerAuthority(id);
+		}
+		else
+		{
+			// Si el nombre no es un número, usamos la autoridad del padre (el Player)
+			SetMultiplayerAuthority(GetParent().GetMultiplayerAuthority());
+		}
 	}
 
 	public override void _Ready()

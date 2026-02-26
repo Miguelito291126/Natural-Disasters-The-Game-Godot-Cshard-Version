@@ -119,14 +119,6 @@ public partial class Volcano : Node3D
 
 		Smoke.Emitting = true;
 
-		Globals.Instance.TemperatureTarget = GD.RandRange(30, 40);
-		Globals.Instance.HumidityTarget = GD.RandRange(0, 10);
-		Globals.Instance.BradiationTarget = 0;
-		Globals.Instance.OxygenTarget = 0;
-		Globals.Instance.PressureTarget = GD.RandRange(10000, 10020);
-		Globals.Instance.WindDirectionTarget = new Vector3(GD.RandRange( - 1, 1), 0, GD.RandRange( - 1, 1));
-		Globals.Instance.WindSpeedTarget = GD.RandRange(0, 50);
-
 		if(IsVolcanoAsh)
 		{
 			Rpc(Globals.MethodName.SetWeatherAndDisaster, "Dust Storm", 10);

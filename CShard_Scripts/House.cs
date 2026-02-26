@@ -51,11 +51,11 @@ public partial class House : StaticBody3D
 
 		if(!DoorOpen)
 		{
-			Rpc(nameof(OpenDoor));
+			Rpc(MethodName.OpenDoor);
 		}
 		else
 		{
-			Rpc(nameof(CloseDoor));
+			Rpc(MethodName.CloseDoor);
 		}
 	}
 
@@ -81,7 +81,7 @@ public partial class House : StaticBody3D
 	{
 		if(body.IsInGroup("Meteor"))
 		{
-			Rpc(nameof(Destroy));
+			Rpc(MethodName.Destroy);
 		}
 	}
 
@@ -89,7 +89,7 @@ public partial class House : StaticBody3D
 	{
 		if(area.IsInGroup("Tornado") || area.IsInGroup("Water_Area") || area.IsInGroup("Explosion") || area.IsInGroup("Lava_Area"))
 		{
-			Rpc(nameof(Destroy));
+			Rpc(MethodName.Destroy);
 		}
 	}
 

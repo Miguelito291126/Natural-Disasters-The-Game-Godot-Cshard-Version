@@ -65,7 +65,7 @@ public partial class PlayersListMenu : CanvasLayer
 		}
 
 		// Enviar a todos
-		Rpc(nameof(SyncPlayers), data);
+		Rpc(MethodName.SyncPlayers, data);
 	}
 
 	public override void _Input(InputEvent _event)

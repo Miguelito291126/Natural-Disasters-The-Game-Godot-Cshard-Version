@@ -8,6 +8,7 @@ public partial class WarningHud : CanvasLayer
 
 	public override void _EnterTree()
 	{
+		// Intentamos obtener el ID del nombre, pero con precaución
 		SetMultiplayerAuthority(Multiplayer.GetUniqueId());
 	}
 

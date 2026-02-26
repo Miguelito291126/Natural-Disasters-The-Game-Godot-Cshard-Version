@@ -77,3 +77,4 @@ root_path = NodePath("../Parks")
 replication_config = SubResource("SceneReplicationConfig_y34ue")
 
 [connection signal="finished" from="Parks" to="." method="_OnSparkFinished"]
+[connection signal="finished" from="AudioStreamPlayer3D" to="." method="_OnSparkFinished"]

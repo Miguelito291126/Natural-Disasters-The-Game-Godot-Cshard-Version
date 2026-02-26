@@ -28,13 +28,13 @@ public partial class Globals : Node
 
 
 	//Globals Weather
-	[Export] public float Temperature = 23;
-	[Export] public float Pressure = 10000;
-	[Export] public float Oxygen = 100;
-	[Export] public float Bradiation = 0;
-	[Export] public float Humidity = 25;
-	[Export] public Vector3 WindDirection = new Vector3(1, 0, 0);
-	[Export] public float WindSpeed = 0;
+	[Export] public float Temperature = 23f;
+	[Export] public float Pressure = 10000f;
+	[Export] public float Oxygen = 100f;
+	[Export] public float Bradiation = 0f;
+	[Export] public float Humidity = 25f;
+	[Export] public Vector3 WindDirection = new Vector3(1f, 0f, 0f);
+	[Export] public float WindSpeed = 0f;
 	[Export] public bool IsRaining = false;
 	public Variant Gravity = ProjectSettings.GetSetting("physics/3d/default_gravity");
 
@@ -48,23 +48,23 @@ public partial class Globals : Node
 
 
 	//Globals Weather target
-	[Export] public float TemperatureTarget = 23;
-	[Export] public float PressureTarget = 10000;
-	[Export] public float OxygenTarget = 100;
-	[Export] public float BradiationTarget = 0;
-	[Export] public float HumidityTarget = 25;
-	[Export] public Vector3 WindDirectionTarget = new Vector3(1, 0, 0);
+	[Export] public float TemperatureTarget = 23f;
+	[Export] public float PressureTarget = 10000f;
+	[Export] public float OxygenTarget = 100f;
+	[Export] public float BradiationTarget = 0f;
+	[Export] public float HumidityTarget = 25f;
+	[Export] public Vector3 WindDirectionTarget = new Vector3(1f, 0f, 0f);
 	[Export] public float WindSpeedTarget = 0;
 
 
 	//Globals Weather original
-	[Export] public float TemperatureOriginal = 23;
-	[Export] public float PressureOriginal = 10000;
-	[Export] public float OxygenOriginal = 100;
-	[Export] public float BradiationOriginal = 0;
-	[Export] public float HumidityOriginal = 25;
-	[Export] public Vector3 WindDirectionOriginal = new Vector3(1, 0, 0);
-	[Export] public float WindSpeedOriginal = 0;
+	[Export] public float TemperatureOriginal = 23f;
+	[Export] public float PressureOriginal = 10000f;
+	[Export] public float OxygenOriginal = 100f;
+	[Export] public float BradiationOriginal = 0f;
+	[Export] public float HumidityOriginal = 25f;
+	[Export] public Vector3 WindDirectionOriginal = new Vector3(1f, 0f, 0f);
+	[Export] public float WindSpeedOriginal = 0f;
 
 	[Export] public float Seconds = 0.0f;
 
@@ -82,6 +82,7 @@ public partial class Globals : Node
 	[Export] public string Gamemode = "survival";
 	[Export] public DataResource GlobalsData;
 
+	private string _CurrentWeatherAndDisaster = "Original";
 	public string CurrentWeatherAndDisaster
 	{
 		set
@@ -92,9 +93,12 @@ public partial class Globals : Node
 				EmitSignal(SignalName.CurrentWeatherAndDisasterChanged, value);
 			}
 		}
-		get { return _CurrentWeatherAndDisaster; }
+		get 
+		{ 
+			return _CurrentWeatherAndDisaster; 
+		}
 	}
-	private string _CurrentWeatherAndDisaster = "Original";
+	
 
 
 	[Export] public int CurrentWeatherAndDisasterInt = 0;
@@ -730,6 +734,7 @@ public partial class Globals : Node
 		// Colocar el objeto en la mano del jugador
 		target.GlobalPosition = player.HandNode.GlobalPosition;
 		target.GlobalRotation = player.HandNode.GlobalRotation;
+
 		if (target is CollisionObject3D collisionObject)
 		{
 			// Pone la capa 2 en true
@@ -927,30 +932,33 @@ public partial class Globals : Node
 
 	public override void _Process(double _delta)
 	{
-		if(!Multiplayer.HasMultiplayerPeer())
-		{
-			return ;
-		}
+		if(!Multiplayer.HasMultiplayerPeer()) return;
 
-		if(!Multiplayer.IsServer())
-		{
-			return ;
-		}
+		// IMPORTANTE: El Lerp debe ejecutarse en el Servidor para mantener la lógica,
+		// pero asegúrate de que estas variables estén sincronizadas con MultiplayerSynchronizer.
+		if(!Multiplayer.IsServer()) return;
 
-		TimeLeft = (float)Timer.TimeLeft;
-		Temperature = Mathf.Clamp(Temperature,  - 275.5f, 275.5f);
+		// Usamos un factor de velocidad (ajusta el 0.5f a tu gusto) multiplicado por delta
+		float weight = (float)(0.5f * _delta); 
+
+		Temperature = Mathf.Lerp(Temperature, TemperatureTarget, weight);
+		Humidity = Mathf.Lerp(Humidity, HumidityTarget, weight);
+		Bradiation = Mathf.Lerp(Bradiation, BradiationTarget, weight);
+		Pressure = Mathf.Lerp(Pressure, PressureTarget, weight);
+		Oxygen = Mathf.Lerp(Oxygen, OxygenTarget, weight);
+		WindSpeed = Mathf.Lerp(WindSpeed, WindSpeedTarget, weight);
+		
+		// Para vectores se usa una aproximación similar
+		WindDirection = WindDirection.Lerp(WindDirectionTarget, weight).Normalized();
+
+		// Clamp después del Lerp para mantener los límites
+		Temperature = Mathf.Clamp(Temperature, -275.5f, 275.5f);
 		Humidity = Mathf.Clamp(Humidity, 0, 100);
 		Bradiation = Mathf.Clamp(Bradiation, 0, 100);
 		Pressure = Mathf.Clamp(Pressure, 0, 100000);
 		Oxygen = Mathf.Clamp(Oxygen, 0, 100);
-
-		Temperature = Mathf.Lerp(Temperature, TemperatureTarget, 0.005f);
-		Humidity = Mathf.Lerp(Humidity, HumidityTarget, 0.005f);
-		Bradiation = Mathf.Lerp(Bradiation, BradiationTarget, 0.005f);
-		Pressure = Mathf.Lerp(Pressure, PressureTarget, 0.005f);
-		Oxygen = Mathf.Lerp(Oxygen, OxygenTarget, 0.005f);
-		WindDirection = WindDirection.Lerp(WindDirectionTarget, 0.005f).Normalized();
-		WindSpeed = Mathf.Lerp(WindSpeed, WindSpeedTarget, 0.005f);
+		WindSpeed = Mathf.Clamp(WindSpeed, 0, 300);
+		
 	}
 
 
@@ -1006,12 +1014,12 @@ public partial class Globals : Node
 
 			if(assigned_ok)
 			{
-				Rpc(nameof(SyncAssignedCharacter), AssignedCharacter);
+				Rpc(MethodName.SyncAssignedCharacter, AssignedCharacter);
 				SyncAssignedCharacter(AssignedCharacter);
-				Rpc(nameof(SyncPlayerList));
-				RpcId(peer_id, nameof(SyncDestrolledNodes), DestrolledNode);
+				Rpc(MethodName.SyncPlayerList);
+				RpcId(peer_id, MethodName.SyncDestrolledNodes, DestrolledNode);
 				// envia al cliente
-				RpcId(peer_id, nameof(SetWeatherAndDisaster), "", CurrentWeatherAndDisasterInt);
+				RpcId(peer_id, MethodName.SetWeatherAndDisaster, CurrentWeatherAndDisaster, CurrentWeatherAndDisasterInt);
 			}
 			else
 			{
@@ -1021,10 +1029,10 @@ public partial class Globals : Node
 
 		else
 		{
-			Rpc(nameof(SyncAssignedCharacter), AssignedCharacter);
+			Rpc(MethodName.SyncAssignedCharacter, AssignedCharacter);
 			SyncAssignedCharacter(AssignedCharacter);
-			Rpc(nameof(SyncPlayerList));
-			RpcId(peer_id, nameof(SyncDestrolledNodes), DestrolledNode);
+			Rpc(MethodName.SyncPlayerList);
+			RpcId(peer_id, MethodName.SyncDestrolledNodes, DestrolledNode);
 			// broadcast
 			PrintRole("No se pudo aadir al jugador con el id: " + peer_id.ToString());
 		}
@@ -1055,9 +1063,9 @@ public partial class Globals : Node
 
 
 			
-			Rpc(nameof(SyncAssignedCharacter), AssignedCharacter);
+			Rpc(MethodName.SyncAssignedCharacter, AssignedCharacter);
 			SyncAssignedCharacter(AssignedCharacter);
-			Rpc(nameof(SyncPlayerList));
+			Rpc(MethodName.SyncPlayerList);
 		}
 
 
@@ -1067,9 +1075,9 @@ public partial class Globals : Node
 			{
 				AssignedCharacter.Remove((int)peer_id);
 			}
-			Rpc(nameof(SyncAssignedCharacter), AssignedCharacter);
+			Rpc(MethodName.SyncAssignedCharacter, AssignedCharacter);
 			SyncAssignedCharacter(AssignedCharacter);
-			Rpc(nameof(SyncPlayerList));
+			Rpc(MethodName.SyncPlayerList);
 			PrintRole("player no found: " + peer_id.ToString());
 		}
 	}
@@ -1080,7 +1088,7 @@ public partial class Globals : Node
 		if(Multiplayer.IsServer())
 		{
 			var random_weather_and_disaster = GD.RandRange(0, 13);
-			Rpc(nameof(SetWeatherAndDisaster), "", random_weather_and_disaster);
+			Rpc(MethodName.SetWeatherAndDisaster, "", random_weather_and_disaster);
 		}
 	}
 

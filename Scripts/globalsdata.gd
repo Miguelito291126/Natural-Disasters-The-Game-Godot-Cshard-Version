@@ -1,4 +1,4 @@
-class_name DataResource extends Resource
+class_name DataResource2 extends Resource
 
 static var path = "user://GlobalsData.tres"
 
@@ -15,13 +15,11 @@ static var path = "user://GlobalsData.tres"
 @export var quality = 0
 
 func save_file():
-    ResourceSaver.save(self, path)
+	ResourceSaver.save(self, path)
 
 static func load_file():
-    var data: DataResource = load(path) as DataResource
-    if not data:
-        data = DataResource.new()
+	var data: DataResource2 = load(path) as DataResource2
+	if not data:
+		data = DataResource2.new()
 
-    return data
-
-
+	return data

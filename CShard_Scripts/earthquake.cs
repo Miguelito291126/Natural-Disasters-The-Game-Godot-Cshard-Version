@@ -4,8 +4,8 @@ using Godot.Collections;
 [GlobalClass]
 public partial class Earthquake : Node3D
 {
-	[Export] public int Magnitude = 7;
-	[Export] public int MagnitudeModifier = 0;
+	[Export] public float Magnitude = 7;
+	[Export] public float MagnitudeModifier = 0;
 	public ulong NextPhysicsTime = Time.GetTicksMsec();
 	public ulong SpawnTime = Time.GetTicksMsec();
 	[Export] public Array<int> Life = new Array<int> {15, 20};
@@ -98,7 +98,7 @@ public partial class Earthquake : Node3D
 	public void DoPhysics()
 	{
 		// Obtener el valor del ConVar "gdisasters_envearthquake_simquality"
-		int mag = Magnitude * MagnitudeModifier;
+		float mag = Magnitude * MagnitudeModifier;
 
 
 		// Si no podemos hacer fsica en este momento o la magnitud es menor que 3, no hacemos nada
@@ -266,7 +266,7 @@ public partial class Earthquake : Node3D
 		}
 	}
 
-	public void Unfreeze(Node3D v, int _mag)
+	public void Unfreeze(Node3D v, float _mag)
 	{
 		if(GD.RandRange(1, 1024 - (25.6 * _mag)) == 1)
 		{
@@ -291,7 +291,7 @@ public partial class Earthquake : Node3D
 		{
 			if((v.IsInGroup("Destrollable") || v.IsInGroup("Hause")) && v.HasMethod("destroy"))
 			{
-				Rpc(nameof(v.Destroy));
+				Rpc(House.MethodName.Destroy);
 			}
 		}
 	}
@@ -396,12 +396,12 @@ public partial class Earthquake : Node3D
 	{
 
 		// Ajustar el valor de MagnitudeModifier
-		this.MagnitudeModifier = Mathf.Clamp(this.MagnitudeModifier + ((int)delta / 4), 0, 1);
+		MagnitudeModifier = Mathf.Clamp(MagnitudeModifier + ((float)delta / 4), 0, 1);
 	}
 
-	public int GetRealMagnitude()
+	public float GetRealMagnitude()
 	{
-		return (int)(Magnitude * MagnitudeModifier);
+		return Magnitude * MagnitudeModifier;
 	}
 
 	public void ProcessMagnitude()
