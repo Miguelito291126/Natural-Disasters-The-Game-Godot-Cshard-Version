@@ -31,8 +31,8 @@ public partial class Player : CharacterBody3D
 	public int MaxBradiation = 100;
 
 	[Export] public float FallStrength = 0f;
-	[Export] public float FallDamageThreshold = -15.0f; // Velocidad mínima para empezar a recibir daño
-	[Export] public float FallDamageMultiplier = 2.5f;   // Qué tan mortal es la caída
+	[Export] public float FallDamageThreshold = -60.0f; // Velocidad mínima para empezar a recibir daño
+	[Export] public float FallDamageMultiplier = 0.8f;   // Qué tan mortal es la caída
 
 	public int MinHearth = 0;
 	public int MinTemp = 24;
