@@ -114,7 +114,7 @@ public partial class Globals : Node
 	public Timer Timer;
 	public Timer BroadcastTimer;
 
-	[Export] public Dictionary<string, Variant> RoomList = new Dictionary<string, Variant>{{"name", "name"},{"players", 0}};
+	[Export] public Dictionary<string, Variant> RoomList = new Dictionary<string, Variant>{{"Name", "Name"},{"Players", 0}};
 	[Export] public string BroadcasterIp = "192.168.1.255";
 	[Export] public int LisenerPort = 5556;
 	[Export] public int BroadcasterPort = 5554;
@@ -969,7 +969,7 @@ public partial class Globals : Node
 		Instance = this;
 
 		Timer = GetNode<Timer>("Timer");
-		BroadcastTimer = GetNode<Timer>("Broadcast_Timer");
+		BroadcastTimer = GetNode<Timer>("BroadcastTimer");
 
 		Multiplayer.PeerConnected += MultiplayerPlayerSpawner;
 		Multiplayer.PeerDisconnected += MultiplayerPlayerRemover;
@@ -1267,8 +1267,8 @@ public partial class Globals : Node
 
 	public void SetUpBroadcast(string Name)
 	{
-		RoomList["name"] = Name;
-		RoomList["players"] = (int)PlayersConected.Count;
+		RoomList["Name"] = Name;
+		RoomList["Players"] = (int)PlayersConected.Count;
 
 		Broadcaster = new PacketPeerUdp();
 		Broadcaster.SetBroadcastEnabled(true);

@@ -4,23 +4,26 @@ using Godot.Collections;
 [GlobalClass]
 public partial class ServerBrowser : Panel
 {
-	public Node List;
+	public VBoxContainer List;
 	public PackedScene Serverinfo = ResourceLoader.Load<PackedScene>("res://Scenes/server_info.tscn");
-
 	public const float TIMEOUT = 3.0f;
 
 	public override void _Ready()
 	{
-		List = GetNode("List");
+		List = GetNode<VBoxContainer>("List");
 		Globals.Instance.ServerBrowser = this;
+
+		// Crear un timer que limpie la lista cada 1 segundo en lugar de cada frame
+		Timer cleanTimer = new Timer();
+		cleanTimer.WaitTime = 1.0f;
+		cleanTimer.Autostart = true;
+		cleanTimer.Timeout += () => Reload(); // Quitamos el parámetro
+		AddChild(cleanTimer);
 	}
 
 	public override void _Process(double _delta)
 	{
-
-		// 1) Eliminar servidores que llevan demasiado sin actualizar
-		var now = (int)Time.GetUnixTimeFromSystem();
-		Reload(now);
+		int currentTime = (int)Time.GetUnixTimeFromSystem();
 
 		if (Globals.Instance.Lisener.GetAvailablePacketCount() > 0)
 		{
@@ -30,11 +33,19 @@ public partial class ServerBrowser : Panel
 			string data = System.Text.Encoding.ASCII.GetString(bytes);
 			
 			// 1. Convertimos el JSON a Diccionario
-			var room_list = Json.ParseString(data).AsGodotDictionary();
+			var jsonResult = Json.ParseString(data);
+			if (jsonResult.VariantType != Variant.Type.Dictionary)
+			{
+				GD.PrintErr("Error: El paquete recibido no es un JSON válido o no es un objeto.");
+				return;
+			}
+			var room_list = jsonResult.AsGodotDictionary();
 			
 			// 2. Extraemos el nombre y jugadores (esto crea las variables que te faltaban)
-			string rName = room_list["Name"].AsString();
-			string rPlayers = room_list["Players"].ToString();
+			string rName = room_list.ContainsKey("Name") ? room_list["Name"].AsString() : "Unknown Server";
+			string rPlayers = room_list.ContainsKey("Players") ? room_list["Players"].ToString() : "0";
+
+			if (string.IsNullOrEmpty(rName) || rName == "Unknown Server") return;
 
 			foreach (Node i in List.GetChildren())
 			{
@@ -46,7 +57,7 @@ public partial class ServerBrowser : Panel
 					item.GetNode<Label>("Players").Text = rPlayers + " - ";
 					item.ServerIp = server_ip;
 					item.ServerPort = server_port.ToString();
-					item.LastSeen = now;
+					item.LastSeen = currentTime;
 					return;
 				}
 			}
@@ -58,19 +69,22 @@ public partial class ServerBrowser : Panel
 			currentinfo.GetNode<Label>("Players").Text = rPlayers + " - ";
 			currentinfo.ServerIp = server_ip;
 			currentinfo.ServerPort = server_port.ToString();
-			currentinfo.LastSeen = now;
+			currentinfo.LastSeen = currentTime;
 			List.AddChild(currentinfo, true);
 		}
 
 	}
 
-	public void Reload(float now)
+	public void Reload()
 	{
+
+		int currentTime = (int)Time.GetUnixTimeFromSystem();
+
 		foreach(Node i in List.GetChildren())
 		{
 			if(i is ServerInfo item)
 			{
-				if(now - item.LastSeen > TIMEOUT)
+				if(currentTime - item.LastSeen > TIMEOUT)
 				{
 					Globals.Instance.PrintRole("Removing inactive server:" + i.Name);
 					i.QueueFree();

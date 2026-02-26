@@ -186,9 +186,21 @@ public partial class Player : CharacterBody3D
 
 	protected void _StartPhysicalBonesSim()
 	{
-		if(SkeletonPhy != null)
+		if (SkeletonPhy != null)
 		{
+			// En PhysicalBoneSimulator3D, la propiedad es 'Active'
+			SkeletonPhy.Active = true; 
 			SkeletonPhy.PhysicalBonesStartSimulation();
+
+			// Aplicar inercia para que no caiga "muerto" en el sitio
+			foreach (var node in SkeletonPhy.GetChildren())
+			{
+				if (node is PhysicalBone3D b)
+				{
+					// Esto le da al ragdoll la velocidad que llevaba el jugador
+					b.LinearVelocity = this.Velocity; 
+				}
+			}
 		}
 	}
 
@@ -197,6 +209,7 @@ public partial class Player : CharacterBody3D
 		if (SkeletonPhy != null)
 		{
 			SkeletonPhy.PhysicalBonesStopSimulation();
+			SkeletonPhy.Active = false; // Desactivamos el simulador
 			
 			foreach (var bone in SkeletonPhy.GetChildren())
 			{
@@ -204,7 +217,6 @@ public partial class Player : CharacterBody3D
 				{
 					b.LinearVelocity = Vector3.Zero;
 					b.AngularVelocity = Vector3.Zero;
-					// Opcional: b.JointConstraints = false; si usas configuraciones complejas
 				}
 			}
 		}
@@ -212,32 +224,32 @@ public partial class Player : CharacterBody3D
 
 	protected void _UpdateCameraFollowRagdoll()
 	{
+		if (CameraNode == null) return;
 
-		// 1) Prioridad: seguir un hueso F�SICO (PhysicalBone3D), que s� se mueve con el ragdoll
-		if(RagdollFollowBone != null && CameraNode != null)
+		Vector3 targetPosition;
+		
+		// 1) Intentar seguir el hueso fsico
+		if (RagdollFollowBone != null)
 		{
-			var bone_transform = RagdollFollowBone.GlobalTransform;
-
-			// Posicin: misma posicin relativa que la cmara viva, pero rotacin original (para que no mire al suelo)
-			var local_origin = CameraDefaultLocalTransform.Origin;
-			var target_position = bone_transform * local_origin;
-			CameraNode.GlobalPosition = target_position;
-			CameraNode.GlobalBasis = CameraDefaultTransform.Basis;
-			return ;
+			// Solo tomamos la posicin global del hueso
+			targetPosition = RagdollFollowBone.GlobalPosition;
 		}
-
-
-		// 2) Fallback: si por alguna raz�n no hay hueso f�sico, usar el hueso "cuello" del Skeleton
-		if(Skeleton != null && HeadBoneIndex >= 0 && CameraNode != null)
+		// 2) Fallback al Skeleton normal
+		else if (Skeleton != null && HeadBoneIndex >= 0)
 		{
-			var bone_global_pose = Skeleton.GetBoneGlobalPose(HeadBoneIndex);
-			var bone_world_transform = Skeleton.GlobalTransform * bone_global_pose;
-
-			var local_origin2 = CameraDefaultLocalTransform.Origin;
-			var target_position2 = bone_world_transform * local_origin2;
-			CameraNode.GlobalPosition = target_position2;
-			CameraNode.GlobalBasis = CameraDefaultTransform.Basis;
+			// Convertimos la pose local del hueso a coordenadas de mundo
+			targetPosition = Skeleton.GlobalTransform * Skeleton.GetBoneGlobalPose(HeadBoneIndex).Origin;
 		}
+		else return;
+
+		// APLICAR POSICIN:
+		// Queremos que la cmara est un poco por encima o desplazada segn tu configuracin original,
+		// pero sin heredar la rotacin loca del hueso al caer.
+		CameraNode.GlobalPosition = targetPosition + CameraDefaultLocalTransform.Origin;
+
+		// MANTENER ROTACIN:
+		// Usamos la rotacin que tena la cmara antes de morir para que el jugador vea el mundo derecho.
+		CameraNode.GlobalBasis = CameraDefaultTransform.Basis;
 	}
 
 	[Rpc(MultiplayerApi.RpcMode.AnyPeer,CallLocal = true)]
@@ -402,6 +414,7 @@ public partial class Player : CharacterBody3D
 		SkeletonPhy = GetNodeOrNull<PhysicalBoneSimulator3D>("Esqueleto/Skeleton3D/PhysicalBoneSimulator3D");
 		Mesh = GetNodeOrNull<MeshInstance3D>("Esqueleto/Skeleton3D/human");
 		Capsule = GetNodeOrNull<CollisionShape3D>("CollisionShape3D");
+		RagdollFollowBone = GetNodeOrNull<Node3D>("Esqueleto/Skeleton3D/PhysicalBoneSimulator3D/Physical Bone clumna3"); // Ajusta el nombre según tu esqueleto
 
 		// spawn y otros
 		Spawn = GetNodeOrNull<Marker3D>("../Spawn");
@@ -927,8 +940,13 @@ public partial class Player : CharacterBody3D
 		{
 			return ;
 		}
+		// Hacer que la c�mara siga al cuerpo en ragdoll
+		if(RagdollEnabled)
+		{
+			_UpdateCameraFollowRagdoll();
+			return ;
+		}
 
-		
 		if(chat_node != null)
 		{
 			LineEdit line_edit = chat_node.LineEdit;
@@ -937,20 +955,6 @@ public partial class Player : CharacterBody3D
 				return ;
 			}
 		}
-
-		// Hacer que la c�mara siga al cuerpo en ragdoll
-		if(RagdollEnabled)
-		{
-			_UpdateCameraFollowRagdoll();
-			return ;
-
-			// No procesar movimiento cuando el ragdoll est� activo
-
-		}// Add the gravity.
-
-
-		
-
 		if (!Noclip)
 		{
 			if (!IsOnFloor())
