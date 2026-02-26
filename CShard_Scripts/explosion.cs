@@ -21,6 +21,7 @@ public partial class Explosion : Node3D
 		SmokeShockwaveExplosion = GetNode<GpuParticles3D>("Smoke shock");
 		Sparks = GetNode<GpuParticles3D>("Sparks");
 		SparksShock = GetNode<GpuParticles3D>("Sparks shock");
+		
 		Sparks.Emitting = true;
 		SmokeShockwaveExplosion.Emitting = true;
 		Smoke.Emitting = true;

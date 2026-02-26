@@ -6,7 +6,7 @@ public partial class BreakableHause : Node3D
 {
 	public override async void _Ready()
 	{
-		await ToSignal(GetTree().CreateTimer(0.5f), SceneTreeTimer.SignalName.Timeout);
+		await ToSignal(GetTree().CreateTimer(5f), SceneTreeTimer.SignalName.Timeout);
 		this.QueueFree();
 	}
 }

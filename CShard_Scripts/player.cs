@@ -25,12 +25,14 @@ public partial class Player : CharacterBody3D
 
 
 	public int MaxHearth = 100;
+	public int StableTemp = 37;
 	public int MaxTemp = 44;
 	public int MaxOxygen = 100;
 	public int MaxBradiation = 100;
 
 	[Export] public float FallStrength = 0f;
-
+	[Export] public float FallDamageThreshold = -15.0f; // Velocidad mínima para empezar a recibir daño
+	[Export] public float FallDamageMultiplier = 2.5f;   // Qué tan mortal es la caída
 
 	public int MinHearth = 0;
 	public int MinTemp = 24;
@@ -256,29 +258,30 @@ public partial class Player : CharacterBody3D
 
 		if(Hearth <= 0)
 		{
-			IsAlive = false;
+			if(!IsAlive)
+			{
+				return ;
+			}
 
+			IsAlive = false;
 
 			// Solo ejecutar die() y quitar puntos en la instancia local del jugador que muri�
 			if(IsMultiplayerAuthority())
 			{
 				Die();
-				Globals.Instance.RemovePoints();
 			}
 
 			Rpc(MethodName._SetRagdollState, true);
-		}
-
-		else
-		{
-			IsAlive = true;
 		}
 	}
 
 
 	public void Die()
 	{
-		Input.MouseMode = Input.MouseModeEnum.Visible;
+		Globals.Instance.RemovePoints();
+		Callable.From(() => {
+			Input.MouseMode = Input.MouseModeEnum.Visible;
+		}).CallDeferred();
 		if(DeathMenu != null) DeathMenu.Show();
 
 	}
@@ -954,25 +957,24 @@ public partial class Player : CharacterBody3D
 			{
 				if (IsInWater || IsInLava)
 				{
-					// 2. Modificamos la variable local
 					velocity.Y = (float)Globals.Instance.Gravity * (float)delta * SwimFactor;
 				}
 				else
 				{
-					// Si está cayendo, aplica más gravedad
-					// Nota: Aquí ambos casos restan lo mismo según tu código original
 					velocity.Y -= (float)Globals.Instance.Gravity * (float)delta;
-					
-					FallStrength = velocity.Y;
+					FallStrength = Mathf.Min(FallStrength, velocity.Y);
 				}
 			}
 			else
 			{
 				if (!(IsInWater || IsInLava))
 				{
-					if (FallStrength <= -90)
+					if (FallStrength < FallDamageThreshold)
 					{
-						Rpc(MethodName.Damage, 50);
+						float excess = Mathf.Abs(FallStrength) - Mathf.Abs(FallDamageThreshold);
+						float calculatedDamage = Mathf.Pow(excess, 1.2f) * FallDamageMultiplier;
+
+						Rpc(MethodName.Damage, calculatedDamage);
 					}
 				}
 			}
@@ -982,10 +984,6 @@ public partial class Player : CharacterBody3D
 			velocity.Y = 0;
 		}
 
-		// 3. REASIGNAMOS el vector modificado de vuelta a la propiedad Velocity
-		
-
-		// Handle jump.
 		if(Input.IsActionJustPressed("Jump"))
 		{
 			if(IsOnFloor())
@@ -1136,6 +1134,7 @@ public partial class Player : CharacterBody3D
 		if(Noclip)
 		{
 			Capsule.Disabled = true;
+			Velocity = Vector3.Zero;
 			velocity = Vector3.Zero;
 			FallStrength = 0f;
 			Globals.Instance.PrintRole("Noclip activated");
@@ -1301,7 +1300,7 @@ public partial class Player : CharacterBody3D
 	public void _ResetPlayer()
 	{
 		Hearth = MaxHearth;
-		BodyTemperature = 37;
+		BodyTemperature = StableTemp;
 		BodyOxygen = MaxOxygen;
 		BodyBradiation = MinBdradiation;
 		IsAlive = true;
