@@ -1246,11 +1246,8 @@ public partial class Player : CharacterBody3D
 				Vector3 direction = (GlobalPosition - area.GlobalPosition).Normalized();
 				float force = explosion.ExplosionForce * (1.0f - Mathf.Clamp(distance / explosion.ExplosionRadius, 0, 1));
 				velocity = direction * force;
-				int damag = 0;
-				if (explosion.HasMeta(nameof(explosion.ExplosionDamage))) 
-				{
-					damag = (int)explosion.GetMeta(nameof(explosion.ExplosionDamage));
-				}
+				int damag = explosion.ExplosionDamage;
+
 				if (damag > 0)
 				{
 					Rpc(MethodName.Damage, damag); 
@@ -1262,11 +1259,8 @@ public partial class Player : CharacterBody3D
 				Vector3 direction = (GlobalPosition - area.GlobalPosition).Normalized();
 				float force = thunderExplosion.ExplosionForce * (1.0f - Mathf.Clamp(distance / thunderExplosion.ExplosionRadius, 0, 1));
 				velocity = direction * force;
-				int damag = 0;
-				if (thunderExplosion.HasMeta(nameof(thunderExplosion.ExplosionDamage)))
-				{
-					damag = (int)thunderExplosion.GetMeta(nameof(ThunderExplosion.ExplosionDamage));
-				} 
+				int damag = thunderExplosion.ExplosionDamage;
+
 				if (damag > 0)
 				{
 					Rpc(MethodName.Damage, damag); 
