@@ -1,6 +1,6 @@
 ﻿Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 2012
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Natural Disasters Survival The Game CShard Version", "Natural Disasters Survival The Game CShard Version.csproj", "{AED6D71E-0E2B-4582-BFAC-0BFC01D4AEBC}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Natural Disasters Survival The Game CShard Version", "Natural Disasters Survival The Game CShard Version.csproj", "{A120FED9-D38A-43DC-9770-5D73768631D7}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -9,11 +9,11 @@ Global
 	ExportRelease|Any CPU = ExportRelease|Any CPU
 	EndGlobalSection
 	GlobalSection(ProjectConfigurationPlatforms) = postSolution
-		{AED6D71E-0E2B-4582-BFAC-0BFC01D4AEBC}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{AED6D71E-0E2B-4582-BFAC-0BFC01D4AEBC}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{AED6D71E-0E2B-4582-BFAC-0BFC01D4AEBC}.ExportDebug|Any CPU.ActiveCfg = ExportDebug|Any CPU
-		{AED6D71E-0E2B-4582-BFAC-0BFC01D4AEBC}.ExportDebug|Any CPU.Build.0 = ExportDebug|Any CPU
-		{AED6D71E-0E2B-4582-BFAC-0BFC01D4AEBC}.ExportRelease|Any CPU.ActiveCfg = ExportRelease|Any CPU
-		{AED6D71E-0E2B-4582-BFAC-0BFC01D4AEBC}.ExportRelease|Any CPU.Build.0 = ExportRelease|Any CPU
+		{A120FED9-D38A-43DC-9770-5D73768631D7}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{A120FED9-D38A-43DC-9770-5D73768631D7}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{A120FED9-D38A-43DC-9770-5D73768631D7}.ExportDebug|Any CPU.ActiveCfg = ExportDebug|Any CPU
+		{A120FED9-D38A-43DC-9770-5D73768631D7}.ExportDebug|Any CPU.Build.0 = ExportDebug|Any CPU
+		{A120FED9-D38A-43DC-9770-5D73768631D7}.ExportRelease|Any CPU.ActiveCfg = ExportRelease|Any CPU
+		{A120FED9-D38A-43DC-9770-5D73768631D7}.ExportRelease|Any CPU.Build.0 = ExportRelease|Any CPU
 	EndGlobalSection
 EndGlobal

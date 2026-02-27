@@ -161,6 +161,7 @@ Sun = NodePath("Sun")
 Moon = NodePath("Moon")
 
 [node name="Sun" type="DirectionalLight3D" parent="WorldEnvironment" unique_id=1660688296]
+transform = Transform3D(1, 0, 0, 0, 0.45709792, 0.8894164, 0, -0.8894164, 0.45709792, 0, 0, 0)
 shadow_enabled = true
 
 [node name="Moon" type="DirectionalLight3D" parent="WorldEnvironment" unique_id=1935824634]

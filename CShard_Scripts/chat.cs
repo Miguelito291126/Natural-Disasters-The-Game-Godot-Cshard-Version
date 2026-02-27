@@ -1,373 +1,297 @@
 using System.Linq;
+using System.Reflection;
 using Godot;
 using Godot.Collections;
 
 [GlobalClass]
 public partial class Chat : CanvasLayer
 {
-	public TextEdit TextEdit;
+    public TextEdit TextEdit;
+    public LineEdit LineEdit;
+    public Button Button;
 
-	public LineEdit LineEdit;
-	public Button Button;
+    public Array<string> History = new Array<string>();
+    public int HistoryIndex = -1;
 
+	private Array<string> _autocompleteMatches = new Array<string>();
+	private int _autocompleteIndex = 0;
 
-	public Array<string> AutocompleteMatches = new Array<string>();
-	public int AutocompleteIndex = 0;
-	public Array<string> AutocompleteMethods = new Array<string>();
-	public Array<string> History = new Array<string>();
-	public int HistoryIndex =  - 1;
-	public bool UserIsScrolling = false;
-	public int ScrollRetries = 0;
-	public const int MAX_SCROLL_RETRIES = 5;
+    // 1. DICCIONARIO CORREGIDO (Nombres exactos de los métodos en C#)
+    public Dictionary<string, Dictionary<string, Variant>> DevCommands = new Dictionary<string, Dictionary<string, Variant>>{
+        {"god_mode", new Dictionary<string, Variant>{
+            {"desc", "Activa modo Dios."},
+            {"method", nameof(_CmdGodModePlayer)}, // Usamos nameof para evitar errores de dedo
+            {"args", 0}}},
+        {"ungod_mode", new Dictionary<string, Variant>{
+            {"desc", "Desactiva modo Dios."},
+            {"method", nameof(_CmdUngodModePlayer)},
+            {"args", 0}}},
+        {"kill_player", new Dictionary<string, Variant>{
+            {"desc", "Mata a un jugador. /kill_player Nombre"},
+            {"method", nameof(_CmdKillPlayer)},
+            {"args", 1}}},
+        {"damage_player", new Dictionary<string, Variant>{
+            {"desc", "Daña a un jugador. /damage_player Nombre Cantidad"},
+            {"method", nameof(_CmdDamagePlayer)},
+            {"args", 2}}},
+        {"spawn_disaster", new Dictionary<string, Variant>{
+            {"desc", "Genera desastre. /spawn_disaster Nombre"},
+            {"method", nameof(_CmdSpawnDisasterWeather)},
+            {"args", 1}}},
+        {"admin", new Dictionary<string, Variant>{
+            {"desc", "Da admin. /admin Nombre"},
+            {"method", nameof(_CmdAdminModePlayer)},
+            {"args", 1}}},
+        {"unadmin", new Dictionary<string, Variant>{
+            {"desc", "Quita admin. /unadmin Nombre"},
+            {"method", nameof(_CmdUnadminModePlayer)},
+            {"args", 1}}}
+    };
 
+    // --- LÓGICA DE COMANDOS (Asegúrate que reciban STRING) ---
 
-	public Dictionary<string, Dictionary<string, Variant>> DevCommands = new Dictionary<string, Dictionary<string, Variant>>{
-			{"god_mode", new Dictionary<string, Variant>{
-						{"desc", "Muestra todos los comandos."},
-						{"method", "_cmd_god_mode_player"},
-						{"args", 0},
-						}},
-			{"ungod_mode", new Dictionary<string, Variant>{
-						{"desc", "Muestra todos los comandos."},
-						{"method", "_cmd_ungod_mode_player"},
-						{"args", 0},
-						}},
-			{"kill_player", new Dictionary<string, Variant>{
-						{"desc", "Cambia la velocidad del jugador. Uso: /set_speed 10"},
-						{"method", "_cmd_kill_player"},
-						{"args", 1},
-						}},
-			{"teleport_player", new Dictionary<string, Variant>{
-						{"desc", "Teletransporta al jugador a otro jugador. Uso: /teleport_player PlayerName"},
-						{"method", "_cmd_teleport_player"},
-						{"args", 1},
-						}},
-			{"teleport_position", new Dictionary<string, Variant>{
-						{"desc", "Teletransporta al jugador a una posici�n. Uso: /teleport_position Vector3(x,y,z)"},
-						{"method", "_cmd_teleport_position"},
-						{"args", 1},
-						}},
-			{"kick_player", new Dictionary<string, Variant>{
-						{"desc", "Expulsa a un jugador del servidor. Uso: /kick_player PlayerName"},
-						{"method", "_cmd_kick_player"},
-						{"args", 1},
-						}},
-			{"damage_player", new Dictionary<string, Variant>{
-						{"desc", "Inflige da�o a un jugador. Uso: /damage_player PlayerName damage_amount"},
-						{"method", "_cmd_damage_player"},
-						{"args", 2},
-						}},
-			{"spawn_disaster", new Dictionary<string, Variant>{
-						{"desc", "Genera un desastre o clima. Uso: /spawn_disaster disaster_name"},
-						{"method", "_cmd_spawn_disaster_weather"},
-						{"args", 1},
-						}},
-			{"admin", new Dictionary<string, Variant>{
-						{"desc", "Genera un desastre o clima. Uso: /spawn_disaster disaster_name"},
-						{"method", "_cmd_admin_mode_player"},
-						{"args", 1},
-						}},
-
-			{"unadmin", new Dictionary<string, Variant>{
-						{"desc", "Genera un desastre o clima. Uso: /spawn_disaster disaster_name"},
-						{"method", "_cmd_unadmin_mode_player"},
-						{"args", 1},
-						}},
-
-			};
-
-	protected Player _GetLocalPlayer()
-	{
-		foreach(Node p in GetTree().GetNodesInGroup("player"))
-		{
-			if(p is Player player && player.IsMultiplayerAuthority())
-				{
-					return player;
-				}
-		}
-
-		return null;
-	}
-
-
-	protected string _CmdGodModePlayer()
-	{
-		var player = _GetLocalPlayer() as Player;
-		if(player == null || !player.AdminMode)
-		{
-			return "No tienes permisos";
-		}
-		player.GodMode = true;
-		return "God Mode activado en ti";
-	}
-
-	protected string _CmdUngodModePlayer()
-	{
-		var player = _GetLocalPlayer() as Player;
-		if(player == null || !player.AdminMode)
-		{
-			return "No tienes permisos";
-		}
-		player.GodMode = false;
-		return "God Mode desactivado en ti";
-	}
-
-
-	protected string _CmdAdminModePlayer(string player_name)
-	{
-		var local = _GetLocalPlayer() as Player;
-		if(local == null || !local.AdminMode)
-		{
-			return "No tienes permisos";
-		}
-
-
-		// Solo el servidor puede cambiar admin_mode
-		if(!Multiplayer.IsServer())
-		{
-			return "Solo el servidor puede cambiar permisos de admin";
-		}
-
-
-		// Buscar el jugador por nombre
-		Player jugador_encontrado = null;
-		foreach(Node3D p in GetTree().GetNodesInGroup("player"))
-		{
-			if(p is Player player && GodotObject.IsInstanceValid(player) && player.Username == player_name)
-			{
-				jugador_encontrado = player;
-				break;
-			}
-		}
-
-		if(jugador_encontrado == null)
-		{
-			return $"Jugador no encontrado: {player_name}";
-
-
-			// Usar RPC para sincronizar el cambio en todos los clientes
-
-		}
-		// call_local ya ejecuta la funcin localmente en el servidor
-		jugador_encontrado.Rpc(Player.MethodName._SetAdminMode, true);
-		return $"Ahora {player_name} es admin";
-	}
-
-	protected string _CmdUnadminModePlayer(string player_name)
-	{
-		var local = _GetLocalPlayer() as Player;
-		if(local == null || !local.AdminMode)
-		{
-			return "No tienes permisos";
-		}
-
-
-		// Solo el servidor puede cambiar admin_mode
-		if(!Multiplayer.IsServer())
-		{
-			return "Solo el servidor puede cambiar permisos de admin";
-		}
-
-
-		// Buscar el jugador por nombre
-		Player jugador_encontrado = null;
-		foreach(Node3D p in GetTree().GetNodesInGroup("player"))
-		{
-			if(p is Player player && GodotObject.IsInstanceValid(player) && player.Username == player_name)
-			{
-				jugador_encontrado = player;
-				break;
-			}
-		}
-
-		if(jugador_encontrado == null)
-		{
-			return $"Jugador no encontrado: {player_name}";
-
-
-			// Usar RPC para sincronizar el cambio en todos los clientes
-
-		}// call_local ya ejecuta la funcin localmente en el servidor
-		jugador_encontrado.Rpc(Player.MethodName._SetAdminMode, false);
-		return $"Ahora {player_name} ya no es admin";
-	}
-
-
-	protected string _CmdKillPlayer(string player_name)
-	{
-		var local = _GetLocalPlayer();
-		if(local == null || !local.AdminMode)
-		{
-			return "No tienes permisos";
-		}
-		foreach(Node p in GetTree().GetNodesInGroup("player"))
-		{
-			if(p is Player player && player.Username == player_name)
-			{
-				player.Damage(999);
-				return $"{player_name} ha sido eliminado";
-			}
-		}
-		return "Jugador no encontrado";
-	}
-
-
-	protected string _CmdKickPlayer(string player_name)
-	{
-		var local = _GetLocalPlayer() as Player;
-		if(local == null || !local.AdminMode)
-		{
-			return "No tienes permisos";
-		}
-		foreach(Node p in GetTree().GetNodesInGroup("player"))
-		{
-			if(p is Player player && player.Username == player_name)
-			{
-				Multiplayer.MultiplayerPeer.DisconnectPeer(player.PlayerId, true);
-				return $"{player_name} expulsado";
-			}
-		}
-		return "Jugador no encontrado";
-	}
-
-
-	protected string _CmdTeleportPlayer(string player_name, string target_name)
-	{
-		var local = _GetLocalPlayer();
-		if (local == null || !local.AdminMode) return "No tienes permisos";
-
-		Player playerToMove = null; // Cambiado de 'player' para evitar conflictos
-		Player targetPlayer = null;
-
-		foreach (Node p in GetTree().GetNodesInGroup("player"))
-		{
-			if (p is Player playerNode)
-			{
-				if (playerNode.Username == player_name) playerToMove = playerNode;
-				if (playerNode.Username == target_name) targetPlayer = playerNode;
-			}
-		}
-
-		if (playerToMove == null || targetPlayer == null) return "Jugador no encontrado";
-
-		playerToMove.GlobalPosition = targetPlayer.GlobalPosition;
-		return $"Teletransportado {player_name} a {target_name}";
-	}
-
-	protected string _CmdDamagePlayer(string player_name, Variant damage)
-	{
-		var local = _GetLocalPlayer();
-		if (local == null || !local.AdminMode) return "No tienes permisos";
-		
-		// Los comandos suelen recibir Variant desde el sistema de chat, convertimos a int
-		int damageAmount = damage.AsInt32();
-
-		foreach (Node p in GetTree().GetNodesInGroup("player"))
-		{
-			if (p is Player player && player.Username == player_name)
-			{
-				player.Damage(damageAmount);
-				return $"{player_name} recibió {damageAmount} de daño";
-			}
-		}
-		return "Jugador no encontrado";
-	}
-
-	protected string _CmdSpawnDisasterWeather(string disaster_name)
-	{
-		var local = _GetLocalPlayer();
-		if(local == null || !local.AdminMode)
-		{
-			return "No tienes permisos";
-		}
-
-		// 1. Verificamos que el mapa sea accesible
-		if (Globals.Instance != null)
-		{
-			// 2. Ejecutamos el RPC desde el mapa para que todos lo reciban
-			// Enviamos el nombre y -1 como índice (porque estamos usando el nombre)
-			Globals.Instance.Rpc(Globals.MethodName.SetWeatherAndDisaster, disaster_name, -1);
-			
-			return $"Clima/Desastre activado por red: {disaster_name}";
-		}
-
-		return "Error: No se encontró el nodo del Mapa para sincronizar.";
-	}
-
-
-	public override void _EnterTree()
-	{
-		SetMultiplayerAuthority(Multiplayer.GetUniqueId());
-	}
-
-	public override void _Ready()
-	{
-		TextEdit = GetNode<TextEdit>("Panel/TextEdit");
-		LineEdit = GetNode<LineEdit>("Panel/Panel2/LineEdit");
-		Button = GetNode<Button>("Panel/Panel2/Button");
-
-		if(!IsMultiplayerAuthority())
-		{
-			this.Visible = false;
-			return ;
-		}
-
-		this.Visible = true;
-
-		AutocompleteMethods = new Array<string>(DevCommands.Keys);
-	}
-
-public override void _Input(InputEvent @event)
-{
-    // Solo procesar si somos el dueño de este chat
-    if (!IsMultiplayerAuthority()) return;
-
-    // 1. Abrir el chat con la tecla Enter o T
-    if (@event.IsActionPressed("Enter") || @event.IsActionPressed("Chat")) // "chat_bind" suele ser la T
+    public string _CmdGodModePlayer()
     {
-        if (!LineEdit.HasFocus())
+        var player = _GetLocalPlayer();
+        if (player == null) return "Error: Jugador local no encontrado";
+        player.GodMode = true;
+        return "God Mode activado";
+    }
+
+    public string _CmdUngodModePlayer()
+    {
+        var player = _GetLocalPlayer();
+        if (player == null) return "Error: Jugador local no encontrado";
+        player.GodMode = false;
+        return "God Mode desactivado";
+    }
+
+    public string _CmdKillPlayer(string playerName)
+    {
+        foreach (Node p in GetTree().GetNodesInGroup("player"))
         {
-            LineEdit.GrabFocus();
-            // Opcional: pausar movimiento del jugador aquí si es necesario
+            if (p is Player player && player.Username == playerName)
+            {
+                player.Damage(999);
+                return $"{playerName} fue eliminado.";
+            }
+        }
+        return "Jugador no encontrado.";
+    }
+
+    public string _CmdDamagePlayer(string playerName, string amount)
+    {
+        if (!int.TryParse(amount, out int damageVal)) return "Cantidad de daño inválida.";
+        
+        foreach (Node p in GetTree().GetNodesInGroup("player"))
+        {
+            if (p is Player player && player.Username == playerName)
+            {
+                player.Damage(damageVal);
+                return $"{playerName} recibió {damageVal} de daño.";
+            }
+        }
+        return "Jugador no encontrado.";
+    }
+
+	public string _CmdSpawnDisasterWeather(string disasterName)
+    {
+        if (Globals.Instance != null)
+        {
+            Globals.Instance.Rpc(Globals.MethodName.SetWeatherAndDisaster, disasterName, -1);
+            return $"Desastre enviado: {disasterName}";
+        }
+        return "Error de Globals.";
+    }
+
+	public string _CmdAdminModePlayer(string playerName)
+		{
+			// Buscamos al jugador por nombre en el grupo "player"
+			Player target = GetTree().GetNodesInGroup("player")
+				.OfType<Player>()
+				.FirstOrDefault(p => p.Username == playerName);
+
+			if (target == null) return $"Jugador no encontrado: {playerName}";
+
+			// Ejecutamos el RPC en el jugador objetivo para cambiar su permiso
+			// El servidor manda la orden a todos (especialmente al cliente del jugador)
+			target.Rpc(Player.MethodName._SetAdminMode, true);
+			
+			return $"Permisos de ADMIN otorgados a {playerName}";
+		}
+
+    public string _CmdUnadminModePlayer(string playerName)
+    {
+        Player target = GetTree().GetNodesInGroup("player")
+            .OfType<Player>()
+            .FirstOrDefault(p => p.Username == playerName);
+
+        if (target == null) return $"Jugador no encontrado: {playerName}";
+
+        target.Rpc(Player.MethodName._SetAdminMode, false);
+        
+        return $"Permisos de ADMIN removidos a {playerName}";
+    }
+
+    // --- PROCESAMIENTO Y RED ---
+
+    public void _RunCommand(string cmd)
+    {
+        string[] parts = cmd.StripEdges().Split(" ", false);
+        if (parts.Length == 0) return;
+
+        string commandName = parts[0].ToLower();
+        if (!DevCommands.ContainsKey(commandName))
+        {
+            _ConsolePrint($"Comando desconocido: {commandName}");
+            return;
+        }
+
+        var cmdInfo = DevCommands[commandName];
+        string methodName = cmdInfo["method"].AsString();
+        int requiredArgsCount = cmdInfo["args"].AsInt32();
+        
+        string[] args = parts.Skip(1).ToArray();
+
+        if (args.Length < requiredArgsCount)
+        {
+            _ConsolePrint($"Uso: /{commandName} {cmdInfo["desc"]}");
+            return;
+        }
+
+        // --- USAMOS REFLEXIÓN PARA EVITAR EL ERROR DE GODOT ---
+        MethodInfo method = GetType().GetMethod(methodName);
+        
+        if (method != null)
+        {
+            try 
+            {
+                // Convertimos los argumentos al tipo que espera el método
+                object[] invokeArgs = args.Take(requiredArgsCount).Cast<object>().ToArray();
+                
+                // Si el método no tiene argumentos, pasamos null
+                if (requiredArgsCount == 0) invokeArgs = null;
+
+                object result = method.Invoke(this, invokeArgs);
+                if (result != null) _ConsolePrint(result.ToString());
+            }
+            catch (TargetParameterCountException)
+            {
+                _ConsolePrint($"Error: El método {methodName} espera un número distinto de argumentos.");
+            }
+            catch (System.Exception e)
+            {
+                _ConsolePrint($"Error al ejecutar comando: {e.InnerException?.Message ?? e.Message}");
+            }
+        }
+        else
+        {
+            _ConsolePrint($"Error: No se encontró el método '{methodName}' en la clase Chat.");
         }
     }
 
-    // 2. Lógica cuando el LineEdit tiene el foco
-    if (LineEdit.HasFocus())
+    [Rpc(MultiplayerApi.RpcMode.AnyPeer, CallLocal = true)]
+    public void MsgRpc(string username, string data)
     {
-        if (@event is InputEventKey keyEvent && keyEvent.Pressed)
+        // 1. Mostrar el mensaje para todos
+        TextEdit.Text += $"{username}: {data}\n";
+        _ScrollToBottom();
+
+        // 2. Si es comando, ejecutar SOLO en el servidor por seguridad y sincronización
+        if (data.StartsWith("/") && Multiplayer.IsServer())
         {
-            switch (keyEvent.Keycode)
+            string commandWithoutSlash = data.Substring(1);
+            
+            // Validar admin antes de ejecutar
+            Player sender = GetTree().GetNodesInGroup("player")
+                .OfType<Player>()
+                .FirstOrDefault(p => p.Username == username);
+
+            if (sender != null && sender.AdminMode)
             {
-                case Key.Enter:
-                    _OnButtonPressed(); // Enviar mensaje
-                    LineEdit.ReleaseFocus();
-                    break;
-
-                case Key.Escape:
-                    LineEdit.ReleaseFocus(); // Cancelar escritura
-                    break;
-
-                case Key.Up:
-                    _HandleHistory(-1); // Ir al mensaje anterior
-                    GetViewport().SetInputAsHandled();
-                    break;
-
-                case Key.Down:
-                    _HandleHistory(1); // Ir al mensaje siguiente
-                    GetViewport().SetInputAsHandled();
-                    break;
-
-                case Key.Tab:
-                    _HandleAutocomplete(); // Autocompletar comandos
-                    GetViewport().SetInputAsHandled();
-                    break;
+                _RunCommand(commandWithoutSlash);
             }
         }
     }
-}
 
-	// Funciones auxiliares que suelen acompañar al historial y autocompletado
+    // --- FUNCIONES DE APOYO (Input y UI) ---
+
+    public override void _Ready()
+    {
+        TextEdit = GetNode<TextEdit>("Panel/TextEdit");
+        LineEdit = GetNode<LineEdit>("Panel/Panel2/LineEdit");
+        Button = GetNode<Button>("Panel/Panel2/Button");
+
+        if (!IsMultiplayerAuthority())
+        {
+            this.Visible = false;
+            return;
+        }
+        
+        // Conectar señales por código para estar seguros
+        LineEdit.FocusEntered += _OnLineEditFocusEntered;
+        LineEdit.FocusExited += _OnLineEditFocusExited;
+        Button.Pressed += _OnButtonPressed;
+    }
+
+	public override void _Input(InputEvent @event)
+	{
+		if (!IsMultiplayerAuthority()) return;
+
+		// Abrir chat
+		if (@event.IsActionPressed("Chat") && !LineEdit.HasFocus())
+		{
+			LineEdit.GrabFocus();
+			GetViewport().SetInputAsHandled(); // Evita que la "T" se escriba en el LineEdit
+		}
+
+		if (LineEdit.HasFocus() && @event is InputEventKey k && k.Pressed)
+		{
+			if (k.Keycode == Key.Tab)
+			{
+				_HandleAutocomplete();
+				GetViewport().SetInputAsHandled(); // ¡CRUCIAL! Evita que el Tab cambie el foco de la UI
+			}
+			else if (k.Keycode == Key.Enter)
+			{
+				_OnButtonPressed();
+			}
+			else if (k.Keycode == Key.Escape)
+			{
+				LineEdit.ReleaseFocus();
+			}
+			// Historial (Flechas arriba/abajo)
+			else if (k.Keycode == Key.Up) { _HandleHistory(-1); GetViewport().SetInputAsHandled(); }
+			else if (k.Keycode == Key.Down) { _HandleHistory(1); GetViewport().SetInputAsHandled(); }
+		}
+	}
+
+	private void _HandleAutocomplete()
+	{
+		string currentText = LineEdit.Text.ToLower();
+		
+		// Si el texto empieza con /, buscamos sin el slash
+		string searchKey = currentText.StartsWith("/") ? currentText.Substring(1) : currentText;
+
+		// Si es una nueva búsqueda (no estamos ciclando), regeneramos la lista de coincidencias
+		if (_autocompleteMatches.Count == 0 || !searchKey.StartsWith(_autocompleteMatches[_autocompleteIndex].Substring(0, Mathf.Min(searchKey.Length, _autocompleteMatches[_autocompleteIndex].Length))))
+		{
+			_autocompleteMatches = new Array<string>(DevCommands.Keys.Where(k => k.StartsWith(searchKey)).ToArray());
+			_autocompleteIndex = 0;
+		}
+		else
+		{
+			// Si ya hay una lista, pasamos al siguiente
+			_autocompleteIndex = (_autocompleteIndex + 1) % _autocompleteMatches.Count;
+		}
+
+		if (_autocompleteMatches.Count > 0)
+		{
+			LineEdit.Text = "/" + _autocompleteMatches[_autocompleteIndex];
+			LineEdit.CaretColumn = LineEdit.Text.Length; // Mover cursor al final
+		}
+	}
+
 	private void _HandleHistory(int direction)
 	{
 		if (History.Count == 0) return;
@@ -376,277 +300,39 @@ public override void _Input(InputEvent @event)
 		HistoryIndex = Mathf.Clamp(HistoryIndex, 0, History.Count - 1);
 		
 		LineEdit.Text = History[HistoryIndex];
-		LineEdit.CaretColumn = LineEdit.Text.Length; // Poner el cursor al final
+		LineEdit.CaretColumn = LineEdit.Text.Length;
 	}
 
-	private void _HandleAutocomplete()
-	{
-		if (AutocompleteMatches.Count > 0)
-		{
-			AutocompleteIndex = (AutocompleteIndex + 1) % AutocompleteMatches.Count;
-			LineEdit.Text = "/" + AutocompleteMatches[AutocompleteIndex];
-			LineEdit.CaretColumn = LineEdit.Text.Length;
-		}
-	}
+    public void _OnButtonPressed()
+    {
+        if (string.IsNullOrWhiteSpace(LineEdit.Text)) return;
 
+        Rpc(MethodName.MsgRpc, Globals.Instance.Username, LineEdit.Text);
+        
+        History.Add(LineEdit.Text);
+        LineEdit.Text = "";
+        LineEdit.ReleaseFocus();
+    }
 
+    public Player _GetLocalPlayer()
+    {
+        return GetTree().GetNodesInGroup("player")
+            .OfType<Player>()
+            .FirstOrDefault(p => p.IsMultiplayerAuthority());
+    }
 
-	protected bool _IsAtBottom()
-	{
-		var scroll_bar = TextEdit.GetVScrollBar();
-		if(scroll_bar == null)
-		{
-			return true;
+    private void _ScrollToBottom()
+    {
+        CallDeferred(MethodName._DoScrollToBottom);
+    }
 
-			// Considerar que est� al final si est� dentro de 20 p�xeles del m�ximo
+    private void _DoScrollToBottom()
+    {
+        var scroll = TextEdit.GetVScrollBar();
+        TextEdit.ScrollVertical = (double)scroll.MaxValue;
+    }
 
-		}// Esto permite un peque�o margen para detectar si el usuario est� scrolleando
-		if(scroll_bar.MaxValue <= 0)
-		{
-			return true;
-		}
-
-		return scroll_bar.Value >= (scroll_bar.MaxValue - 20);
-	}
-
-	protected void _ScrollToBottom()
-	{
-		ScrollRetries = 0;
-		CallDeferred("_do_scroll_to_bottom");
-	}
-
-	protected void _DoScrollToBottom()
-	{
-
-		// Si el nodo ya no existe, parar
-		if(!GodotObject.IsInstanceValid(this) || !IsInsideTree())
-		{
-			return ;
-		}
-
-		if(!GodotObject.IsInstanceValid(TextEdit))
-		{
-			return ;
-		}
-
-		var scroll_bar = TextEdit.GetVScrollBar();
-
-		if(scroll_bar == null)
-		{
-			ScrollRetries += 1;
-			if(ScrollRetries < MAX_SCROLL_RETRIES)
-			{
-				CallDeferred("_do_scroll_to_bottom");
-			}
-			return ;
-		}
-
-		var max_val = scroll_bar.MaxValue;
-		if(max_val <= 0)
-		{
-			ScrollRetries += 1;
-			if(ScrollRetries < MAX_SCROLL_RETRIES)
-			{
-				CallDeferred("_do_scroll_to_bottom");
-			}
-			return ;
-		}
-
-
-		// Scroll final
-		TextEdit.ScrollVertical = max_val;
-		scroll_bar.Value = max_val;
-	}
-
-
-	protected void _ConsolePrint(string text)
-	{
-
-		// Verificar si estaba al final ANTES de a�adir el texto
-		var was_at_bottom = _IsAtBottom();
-		TextEdit.Text += text + "\n";
-
-		// Solo hacer scroll si estaba al final antes de a�adir el texto
-		if(was_at_bottom)
-		{
-			_ScrollToBottom();
-		}
-	}
-
-	protected void _RunCommand(string cmd)
-	{
-		if (!IsMultiplayerAuthority()) return;
-
-		// 1. Limpiamos y dividimos el comando
-		string[] parts = cmd.StripEdges().Split(" ");
-		if (parts.Length == 0) return;
-
-		string command_name = parts[0];
-
-		// 2. Creamos un Array de Godot con los argumentos (saltando el primero)
-		var args = new Godot.Collections.Array();
-		for (int i = 1; i < parts.Length; i++)
-		{
-			args.Add(parts[i]);
-		}
-
-		if (DevCommands.ContainsKey(command_name))
-		{
-			var cmd_info = DevCommands[command_name];
-
-			// 3. Verificamos cantidad de argumentos usando .Count
-			if (args.Count < cmd_info["args"].AsInt32())
-			{
-				_ConsolePrint($"Faltan argumentos. Uso: /{command_name} {cmd_info["desc"]}");
-				return;
-			}
-
-			string method_name = cmd_info["method"].AsString();
-			
-			// 4. Ejecutamos el método
-			if (HasMethod(method_name))
-			{
-				// Callv requiere un Godot.Collections.Array
-				var result = Callv(method_name, args);
-				if (result.VariantType != Variant.Type.Nil)
-				{
-					_ConsolePrint(result.ToString());
-				}
-			}
-			else
-			{
-				_ConsolePrint("Error interno: método no encontrado.");
-			}
-			return;
-		}
-
-		_ConsolePrint($"Comando desconocido: {command_name}");
-	}
-
-
-	[Rpc(MultiplayerApi.RpcMode.AnyPeer, CallLocal = true)]
-	public void MsgRpc(string username, string data)
-	{
-
-		// Esta funcin se ejecuta en todos los clientes (call_local)
-
-		// Asegurar que el scroll funcione incluso si este chat no tiene autoridad
-		if(data.StartsWith("/"))
-		{
-
-			// Buscar el jugador que envi el comando
-			Player jugador_encontrado = null;
-			foreach(Node3D player in GetTree().GetNodesInGroup("player"))
-			{
-				if(player is Player p && IsInstanceValid(p) && p.Username == username)
-				{
-					var player_username = p.Username;
-					if(player_username == username)
-					{
-						jugador_encontrado = p;
-						break;
-					}
-				}
-			}
-
-
-			// Si no se encuentra el jugador, bloquear el comando
-			if(jugador_encontrado == null)
-			{
-				_ConsolePrint("Error: Jugador no encontrado");
-				return ;
-			}
-
-
-			// Verificar si el jugador es admin
-			if(!jugador_encontrado.AdminMode)
-			{
-				_ConsolePrint("No tienes permisos para ejecutar comandos");
-				return ;
-			}
-
-
-			// Validar que el comando no est� vac�o
-			var comando_limpio = data.StripEdges();
-			if(comando_limpio.Length <= 1)
-			{
-				// Solo tiene "/" o est� vac�o
-				return ;
-			}
-
-
-			// Verificar si estaba al final ANTES de a�adir el texto
-			var was_at_bottom = _IsAtBottom();
-
-			// Mostrar el comando en el chat
-			TextEdit.Text += username + ": " + data + "\n";
-
-			// Solo hacer scroll si estaba al final antes de aadir el texto
-			if(was_at_bottom)
-			{
-				_ScrollToBottom();
-			}
-
-
-			// Ejecutar el comando solo si este chat tiene autoridad
-			if(IsMultiplayerAuthority())
-			{
-
-				// Ejecutar el comando (quitar el "/" del inicio)
-				data = data.Remove(0, 1);
-				Globals.Instance.PrintRole(data);
-				_RunCommand(data);
-			}
-		}
-		else
-		{
-
-			// Mensaje normal (no comando)
-			var mensaje_limpio = data.StripEdges();
-			if(mensaje_limpio.Length > 0)
-			{
-
-				// Verificar si estaba al final ANTES de a�adir el texto
-				var was_at_bottom = _IsAtBottom();
-				TextEdit.Text += username + ": " + data + "\n";
-
-				// Solo hacer scroll si estaba al final antes de aadir el texto
-				if(was_at_bottom)
-				{
-					_ScrollToBottom();
-				}
-			}
-		}
-	}
-
-
-	protected void _OnButtonPressed()
-	{
-		if(!IsMultiplayerAuthority())
-		{
-			return ;
-		}
-
-		Rpc(MethodName.MsgRpc, Globals.Instance.Username, LineEdit.Text);
-
-		LineEdit.Text = "";
-		LineEdit.ReleaseFocus();
-		Button.ReleaseFocus();
-
-		// Asegurar que is_chat_open se establece en false cuando se cierra el chat
-		Globals.Instance.IsChatOpen = false;
-	}
-
-
-	protected void _OnLineEditFocusEntered()
-	{
-		Globals.Instance.IsChatOpen = true;
-	}
-
-	protected void _OnLineEditFocusExited()
-	{
-		Globals.Instance.IsChatOpen = false;
-	}
-
-
+    public void _ConsolePrint(string text) => TextEdit.Text += $"[SYSTEM]: {text}\n";
+    public void _OnLineEditFocusEntered() => Globals.Instance.IsChatOpen = true;
+    public void _OnLineEditFocusExited() => Globals.Instance.IsChatOpen = false;
 }

@@ -14,6 +14,7 @@ public partial class Player : CharacterBody3D
 	public const float SPEED_WALK = 15.0f;
 	public const float SPEED_NOCLIP = 100.0f;
 	public const float JUMP_VELOCITY = 14.0f;
+	public const float DOWN_VELOCITY = 14.0f;
 	public const float SENSIBILITY = 0.3f;
 	public const float LERP_VAL = 0.15f;
 
@@ -753,77 +754,44 @@ public partial class Player : CharacterBody3D
 
 	public override void _Input(InputEvent ev)
 	{
-		if(!IsMultiplayerAuthority())
+		// 1. Validaciones iniciales (Cláusulas de guarda)
+		if (!IsMultiplayerAuthority()) return;
+		
+		// Bloquear si el chat está abierto o enfocado
+		if (Globals.Instance.IsChatOpen) return;
+		if (chat_node?.LineEdit?.HasFocus() == true) return;
+
+		// 2. Procesar entrada de teclado
+		if (ev is InputEventKey keyEvent && keyEvent.Pressed && !keyEvent.Echo)
 		{
-			return ;
-		}
+			// Solo si es admin y modo sandbox
+			if (!AdminMode || Globals.Instance.Gamemode != "sandbox") return;
 
-		// Bloquear input cuando el chat est� abierto
-		if(chat_node != null)
-		{
-			LineEdit line_edit = chat_node.LineEdit;
-			if(line_edit != null && line_edit.HasFocus())
+			int disasterId = -1;
+			int totalDesastres = 13; 
+
+			switch (keyEvent.Keycode)
 			{
-				return ;
-			}
-		}
+				case Key.Right: // SIGUIENTE
+					// Globals.Instance.CurrentDisasterId es una variable que deberías tener para saber cuál hay ahora
+					int siguiente = (Globals.Instance.CurrentWeatherAndDisasterID + 1);
+					if (siguiente > totalDesastres) siguiente = 0; // Reinicia al primero si pasa del máximo
+					disasterId = siguiente;
+					break;
 
-		if(Globals.Instance.IsChatOpen)
-		{
-			return ;
-		}
+				case Key.Left: // ANTERIOR
+					int anterior = (Globals.Instance.CurrentWeatherAndDisasterID - 1);
+					if (anterior < 0) anterior = totalDesastres; // Va al último si baja de 0
+					disasterId = anterior;
+					break;
 
-		if(ev is InputEventKey keyEvent && keyEvent.Pressed && !keyEvent.Echo)
-		{
-			if(!AdminMode)
-			{
-				return ;
-			}
-
-			if(Globals.Instance.Gamemode != "sandbox")
-			{
-				return ;
+				default: return;
 			}
 
-			if(keyEvent.Keycode == Key.Key1)
+			// Si disasterId cambió, enviamos el RPC
+			if (disasterId != -1)
 			{
-				Globals.Instance.Rpc(Globals.MethodName.SetWeatherAndDisaster, "", 1);
-			}
-			if(keyEvent.Keycode == Key.Key2)
-			{
-				Globals.Instance.Rpc(Globals.MethodName.SetWeatherAndDisaster, "", 2);
-			}
-			if(keyEvent.Keycode == Key.Key3)
-			{
-				Globals.Instance.Rpc(Globals.MethodName.SetWeatherAndDisaster, "", 3);
-			}
-			if(keyEvent.Keycode == Key.Key4)
-			{
-				Globals.Instance.Rpc(Globals.MethodName.SetWeatherAndDisaster, "", 4);
-			}
-			if(keyEvent.Keycode == Key.Key5)
-			{
-				Globals.Instance.Rpc(Globals.MethodName.SetWeatherAndDisaster, "", 5);
-			}
-			if(keyEvent.Keycode == Key.Key6)
-			{
-				Globals.Instance.Rpc(Globals.MethodName.SetWeatherAndDisaster, "", 6);
-			}
-			if(keyEvent.Keycode == Key.Key7)
-			{
-				Globals.Instance.Rpc(Globals.MethodName.SetWeatherAndDisaster, "", 7);
-			}
-			if(keyEvent.Keycode == Key.Key8)
-			{
-				Globals.Instance.Rpc(Globals.MethodName.SetWeatherAndDisaster, "", 8);
-			}
-			if(keyEvent.Keycode == Key.Key9)
-			{
-				Globals.Instance.Rpc(Globals.MethodName.SetWeatherAndDisaster, "", 9);
-			}
-			if(keyEvent.Keycode == Key.Key0)
-			{
-				Globals.Instance.Rpc(Globals.MethodName.SetWeatherAndDisaster, "", 0);
+				Globals.Instance.Rpc(Globals.MethodName.SetWeatherAndDisaster, "", disasterId);
 			}
 		}
 	}
@@ -1003,9 +971,22 @@ public partial class Player : CharacterBody3D
 				velocity.Y = JUMP_VELOCITY;
 			}
 
+
+		}
+		
+		if(Input.IsActionPressed("Jump"))
+		{
 			if(IsInWater || IsInLava)
 			{
 				velocity.Y += JUMP_VELOCITY;
+			}
+		}
+
+		if(Input.IsActionPressed("down"))
+		{
+			if(IsInWater || IsInLava)
+			{
+				velocity.Y -= DOWN_VELOCITY;
 			}
 		}
 
@@ -1046,7 +1027,7 @@ public partial class Player : CharacterBody3D
 			}
 			else if(Input.IsActionPressed("down"))
 			{
-				desired_velocity.Y =  - SPEED;
+				desired_velocity.Y =  -SPEED;
 			}
 			else
 			{

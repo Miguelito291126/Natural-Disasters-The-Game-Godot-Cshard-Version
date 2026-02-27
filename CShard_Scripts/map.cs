@@ -19,6 +19,9 @@ public partial class Map : Node3D
 
 	public override void _ExitTree()
 	{
+		// Desconectar la señal para evitar que Globals llame a un objeto destruido
+		Globals.Instance.CurrentWeatherAndDisasterChanged -= _OnDisasterChanged;
+
 		if(Multiplayer.IsServer())
 		{
 			Globals.Instance.Rpc(Globals.MethodName.SetWeatherAndDisaster, "Original", -1);
@@ -29,7 +32,7 @@ public partial class Map : Node3D
 
 	public override void _Ready()
 	{
-		Worldenvironment = GetNode<MapEnvironment>("WorldEnvironment");
+		Worldenvironment = GetNodeOrNull<MapEnvironment>("WorldEnvironment");
 
 		Globals.Instance.Map = this;
 		
@@ -537,15 +540,23 @@ public partial class Map : Node3D
 
 	protected void _UpdateEnvironment()
 	{
-		var player = Globals.Instance.LocalPlayer;
-
-		if(!GodotObject.IsInstanceValid(player))
+		// 1. Verificación de seguridad: ¿El nodo Worldenvironment sigue existiendo?
+		if (!GodotObject.IsInstanceValid(this) || !GodotObject.IsInstanceValid(Worldenvironment))
 		{
-			return ;
+			return;
+		}
+
+		var player = Globals.Instance.LocalPlayer;
+		if (!GodotObject.IsInstanceValid(player))
+		{
+			return;
 		}
 
 		var is_outdoor = Globals.Instance.IsOutdoor(player);
 
+		// Usar una variable local para el environment para evitar múltiples llamadas al getter nativo
+		var env = Worldenvironment.Environment;
+		if (env == null) return;
 
 		// Ajustes por desastre
 		switch(CurrentDisaster)

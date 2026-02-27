@@ -101,7 +101,7 @@ public partial class Globals : Node
 	
 
 
-	[Export] public int CurrentWeatherAndDisasterInt = 0;
+	[Export] public int CurrentWeatherAndDisasterID = 0;
 
 	public PackedScene PlayerScene = ResourceLoader.Load<PackedScene>("res://Scenes/player.tscn");
 	public PackedScene ThunderstormScene = ResourceLoader.Load<PackedScene>("res://Scenes/thunder.tscn");
@@ -1049,7 +1049,7 @@ public partial class Globals : Node
 				SyncAssignedCharacter(AssignedCharacter);
 				Rpc(MethodName.SyncPlayerList);
 				RpcId(peer_id, MethodName.SyncDestrolledNodes, DestrolledNode);
-				RpcId(peer_id, MethodName.SetWeatherAndDisaster, CurrentWeatherAndDisaster, CurrentWeatherAndDisasterInt);
+				RpcId(peer_id, MethodName.SetWeatherAndDisaster, CurrentWeatherAndDisaster, CurrentWeatherAndDisasterID);
 			}
 			else
 			{
@@ -1134,7 +1134,7 @@ public partial class Globals : Node
 	{
 		// Por defecto, asumimos que no se encontró
 		CurrentWeatherAndDisaster = "Original";
-		CurrentWeatherAndDisasterInt = -1;
+		CurrentWeatherAndDisasterID = -1;
 
 		// Caso A: Si recibimos un número (int)
 		if (name == "" && index >= 0)
@@ -1143,7 +1143,7 @@ public partial class Globals : Node
 			if (idx >= 0 && idx < _weatherNames.Length)
 			{
 				CurrentWeatherAndDisaster = _weatherNames[idx];
-				CurrentWeatherAndDisasterInt = idx;
+				CurrentWeatherAndDisasterID = idx;
 			}
 		}
 		// Caso B: Si recibimos un texto (string)
@@ -1154,13 +1154,13 @@ public partial class Globals : Node
 			if (idx != -1)
 			{
 				CurrentWeatherAndDisaster = name;
-				CurrentWeatherAndDisasterInt = idx;
+				CurrentWeatherAndDisasterID = idx;
 			}
 		}
 		else
 		{
 			CurrentWeatherAndDisaster = name;
-			CurrentWeatherAndDisasterInt = index;
+			CurrentWeatherAndDisasterID = index;
 		}
 	}
 
