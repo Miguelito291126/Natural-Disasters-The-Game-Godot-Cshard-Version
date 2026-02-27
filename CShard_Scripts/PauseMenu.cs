@@ -406,12 +406,12 @@ public partial class PauseMenu : CanvasLayer
 	{
 		Globals.Instance.GlobalsData.Antitropic = index;
 
-		var levels = new Array<int>{1, 2, 4, 8, 16, };
+		int[] levels = { 1, 2, 4, 8, 16 };
 
-		if(index >= 0 && index < levels.Count)
+		if(index >= 0 && index < levels.Length)
 		{
-			ProjectSettings.SetSetting("rendering/textures/default_filters/anisotropic_filtering_level", levels[index]);
-			ProjectSettings.Save();
+			int value = levels[index];
+			ProjectSettings.SetSetting("rendering/textures/default_filters/anisotropic_filtering_level", value);
 		}
 
 		Globals.Instance.GlobalsData.SaveFile();

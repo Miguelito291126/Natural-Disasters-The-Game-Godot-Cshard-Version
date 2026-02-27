@@ -449,11 +449,12 @@ public partial class MainMenu : Control
 	{
 		Globals.Instance.GlobalsData.Antitropic = index;
 
-		var levels = new Godot.Collections.Array{1, 2, 4, 8, 16, };
+		int[] levels = { 1, 2, 4, 8, 16 };
 
-		if(index >= 0 && index < levels.Count())
+		if(index >= 0 && index < levels.Length)
 		{
-			ProjectSettings.SetSetting("rendering/textures/default_filters/anisotropic_filtering_level", levels[index]);
+			int value = levels[index];
+			ProjectSettings.SetSetting("rendering/textures/default_filters/anisotropic_filtering_level", value);
 		}
 
 		Globals.Instance.GlobalsData.SaveFile();
