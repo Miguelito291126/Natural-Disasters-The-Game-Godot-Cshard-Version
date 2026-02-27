@@ -414,7 +414,7 @@ public partial class Player : CharacterBody3D
 		// Sonidos (Asegúrate que coincidan con los nombres del Inspector)
 		RainSound = GetNodeOrNull<AudioStreamPlayer>("RainSound");
 		WindSound = GetNodeOrNull<AudioStreamPlayer>("WindSound");
-		WindModerateSound = GetNodeOrNull<AudioStreamPlayer>("WindModeratesound");
+		WindModerateSound = GetNodeOrNull<AudioStreamPlayer>("WindModerateSound");
 		WindExtremeSound = GetNodeOrNull<AudioStreamPlayer>("WindExtremeSound");
 
 		// Esqueleto y Física

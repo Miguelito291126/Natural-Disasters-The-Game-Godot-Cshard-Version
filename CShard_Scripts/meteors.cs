@@ -4,15 +4,15 @@ using Godot.Collections;
 [GlobalClass]
 public partial class Meteors : RigidBody3D
 {
-	public PackedScene ExplosionScene = ResourceLoader.Load<PackedScene>("res://Scenes/explosion.tscn");
-	[Export] public int RandNum = GD.RandRange(1, 50);
+	[Export]  public PackedScene ExplosionScene = ResourceLoader.Load<PackedScene>("res://Scenes/explosion.tscn");
 	[Export] public bool IsVolcanoRock = false;
-
+	
+	public int RandNum;
 
 	// Called when the node enters the scene tree for the first time.
 	public override void _Ready()
 	{
-
+		RandNum = GD.RandRange(1, 50);
 		// Solo mover hacia arriba si NO es una roca del volc�n
 		if(!IsVolcanoRock)
 		{
@@ -23,16 +23,39 @@ public partial class Meteors : RigidBody3D
 
 	protected void _OnBodyEntered(Node3D body)
 	{
-		if(body == this)
-		{
-			return;
-		}
+		// En RigidBody3D, 'body' suele ser el OTRO objeto, 
+        // así que 'body == this' raramente será cierto, pero es buena seguridad.
+        if (body == this) return;
 
-		Node3D explosion_node = ExplosionScene.Instantiate<Node3D>();
-		GetParent().AddChild(explosion_node, true);
-		explosion_node.GlobalPosition = this.GlobalPosition;
-		this.QueueFree();
+        // Solo el servidor debería manejar la lógica de instanciar explosiones si hay daño
+        if (Multiplayer.IsServer())
+        {
+            SpawnExplosion();
+        }
+        
+        // Eliminamos el meteoro
+        QueueFree();
 	}
+
+	private void SpawnExplosion()
+    {
+        if (ExplosionScene == null) return;
+
+        Node3D explosionNode = ExplosionScene.Instantiate<Node3D>();
+        
+
+        explosionNode.TopLevel = true; // Asegura que no herede movimientos raros
+
+
+        // Usamos CallDeferred para añadir el nodo de forma segura fuera del paso de física
+        GetParent().AddChild(explosionNode, true);
+        
+        // Establecemos la posición. 
+        // Usamos CallDeferred para la posición también si el nodo aún no está en el árbol
+
+        explosionNode.GlobalPosition = GlobalPosition;
+        explosionNode.Position = Position;
+    }
 
 
 }

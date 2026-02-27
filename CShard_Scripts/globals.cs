@@ -1157,6 +1157,11 @@ public partial class Globals : Node
 				CurrentWeatherAndDisasterInt = idx;
 			}
 		}
+		else
+		{
+			CurrentWeatherAndDisaster = name;
+			CurrentWeatherAndDisasterInt = index;
+		}
 	}
 
 	[Rpc(MultiplayerApi.RpcMode.AnyPeer, CallLocal = true)]
