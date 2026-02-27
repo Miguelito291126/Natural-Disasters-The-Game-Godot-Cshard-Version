@@ -89,9 +89,13 @@ public partial class Map : Node3D
 
 	public override void _Process(double _delta)
 	{
+
 		if(Multiplayer.IsServer())
 		{
-			if(OS.HasFeature("dedicated_server") || OS.GetCmdlineUserArgs() != null || OS.GetCmdlineUserArgs().Contains("server"))
+			var args = OS.GetCmdlineUserArgs();
+			bool isServer = OS.HasFeature("dedicated_server") || (args != null && args.Contains("server"));
+
+			if(isServer)
 			{
 				Globals.Instance.Started = true;
 			}

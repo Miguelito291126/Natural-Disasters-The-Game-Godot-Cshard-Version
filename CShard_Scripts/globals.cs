@@ -680,7 +680,10 @@ public partial class Globals : Node
 			Multiplayer.MultiplayerPeer = Multiplayerpeer;
 			if(Multiplayer.IsServer())
 			{
-				if(OS.HasFeature("dedicated_server") || OS.GetCmdlineUserArgs() != null ||  OS.GetCmdlineUserArgs().Contains("server"))
+				var args = OS.GetCmdlineUserArgs();
+				bool isServer = OS.HasFeature("dedicated_server") || (args != null && args.Contains("server"));
+
+				if(isServer)
 				{
 					PrintRole("Dedicated server init");
 
