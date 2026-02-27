@@ -108,49 +108,50 @@ public partial class MainMenu : Control
 		LoadGameScene();
 		Globals.Instance.SetUpLisener();
 
-		if(OS.HasFeature("dedicated_server") || OS.GetCmdlineUserArgs() != null || OS.GetCmdlineUserArgs().Contains("server"))
+		var args = OS.GetCmdlineUserArgs();
+		bool isServer = OS.HasFeature("dedicated_server") || (args != null && args.Contains("server"));
+
+		if (isServer)
 		{
-			Globals.Instance.PrintRole("Starting server...");
+			Globals.Instance.PrintRole("Starting server setup...");
 
-			var args = OS.GetCmdlineUserArgs();
-			foreach(int i in GD.Range(args.Length))
+			// 1. PROCESAR ARGUMENTOS (Sin bloqueos)
+			if (args != null)
 			{
-				Globals.Instance.PrintRole("args: " + args[i]);
-				switch (args[i])
+				for (int i = 0; i < args.Length; i++)
 				{
-					case "--port":
-					case "port":
-					case "-p":
-					case "p":
+					switch (args[i])
+					{
+						case "--port": case "port": case "-p":
+							if (i + 1 < args.Length)
+							{
+								Globals.Instance.Port = args[i + 1].ToInt();
+								Globals.Instance.LisenerPort = Globals.Instance.Port + 1;
+								Globals.Instance.BroadcasterPort = Globals.Instance.Port - 1;
+								i++; // Saltamos el valor
+							}
+							break;
 
-						if((i + 1) < args.Length)
-						{
-							Globals.Instance.Port = args[i + 1].ToInt();
-							Globals.Instance.LisenerPort = Globals.Instance.Port + 1;
-							Globals.Instance.BroadcasterPort = Globals.Instance.Port - 1;
-						}
-						break;
-
-					case "--gamemode":
-					case "gamemode":
-					case "-g":
-					case "g":
-						if((i + 1) < args.Length)
-						{
-							Globals.Instance.Gamemode = args[i + 1];
-						}
-						break;
+						case "--gamemode": case "gamemode": case "-g":
+							if (i + 1 < args.Length)
+							{
+								Globals.Instance.Gamemode = args[i + 1];
+								i++; // Saltamos el valor
+							}
+							break;
+					}
 				}
-					
-
-				Globals.Instance.PrintRole( $"port: {Globals.Instance.Port}");
-				Globals.Instance.PrintRole($"ip: {IP.ResolveHostname(OS.GetEnvironment("COMPUTERNAME"), IP.Type.Ipv4)}" );
-				Globals.Instance.PrintRole("Init dedicated server...");
-
-				await ToSignal(GetTree().CreateTimer(2), SceneTreeTimer.SignalName.Timeout);
-
-				Globals.Instance.PlayMultiplayerServer();
 			}
+
+			// 2. LOGS DE CONFIGURACIÓN FINAL
+			Globals.Instance.PrintRole($"Config - Port: {Globals.Instance.Port}, Mode: {Globals.Instance.Gamemode}, IP: {Globals.Instance.Ip}");
+			
+			// 3. INICIO ÚNICO DEL SERVIDOR
+			// Esperamos un poco para asegurar que el árbol de nodos esté totalmente listo
+			await ToSignal(GetTree().CreateTimer(1.0), SceneTreeTimer.SignalName.Timeout);
+			
+			Globals.Instance.PrintRole("Init dedicated server now...");
+			Globals.Instance.PlayMultiplayerServer();
 		}
 	}
 
