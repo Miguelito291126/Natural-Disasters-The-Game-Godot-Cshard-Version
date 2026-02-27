@@ -23,9 +23,9 @@ public partial class Thunder : Node3D
 
 		// Configurar la posici�n de la explosi�n en la posici�n del suelo
 		Node3D explosion = ExplosionScene.Instantiate<Node3D>();
-		explosion.Position = this.Position;
 		GetParent().AddChild(explosion);
-
+		explosion.GlobalPosition = GlobalPosition;
+		
 
 	}
 
