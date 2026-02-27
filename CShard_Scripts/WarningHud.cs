@@ -50,7 +50,7 @@ public partial class WarningHud : CanvasLayer
 			{
 				// Globals.Instance.Timer debe estar sincronizado para que los clientes vean el TimeLeft
 				Label.Text = weatherInfo + "\nTime Left for the next disasters: \n" + 
-							Globals.Instance.Timer.TimeLeft.ToString("F2") + "\nTime:\n" + timeString;
+							Globals.Instance.TimeLeft.ToString("F2") + "\nTime:\n" + timeString;
 			}
 		}
 		else

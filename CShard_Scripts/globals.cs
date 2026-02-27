@@ -966,6 +966,7 @@ public partial class Globals : Node
 		// Usamos un factor de velocidad (ajusta el 0.5f a tu gusto) multiplicado por delta
 		float weight = (float)(0.5f * _delta); 
 
+		TimeLeft = (float)Timer.TimeLeft;
 		Temperature = Mathf.Lerp(Temperature, TemperatureTarget, weight);
 		Humidity = Mathf.Lerp(Humidity, HumidityTarget, weight);
 		Bradiation = Mathf.Lerp(Bradiation, BradiationTarget, weight);

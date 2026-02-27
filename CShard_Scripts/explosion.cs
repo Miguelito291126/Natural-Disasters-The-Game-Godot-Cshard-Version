@@ -33,5 +33,26 @@ public partial class Explosion : Node3D
 	{
 		this.QueueFree();
 	}
+	
+	private void _OnArea3DBodyEntered(Node3D body)
+	{
+		// Aplicar fuerza de explosión a objetos RigidBody3D
+		if (body is RigidBody3D rigidBody)
+		{
+			float distance = GlobalPosition.DistanceTo(rigidBody.GlobalPosition);
+			
+			// Calcular dirección desde la explosión hacia el objeto
+			// Usamos Normalized() para obtener el vector de dirección
+			Vector3 direction = (rigidBody.GlobalPosition - GlobalPosition).Normalized();
 
+			// Calcular fuerza basada en la distancia (más cerca = más fuerza)
+			// Usamos Mathf.Clamp para asegurar que el valor esté entre 0 y 1
+			float forceMultiplier = 1.0f - Mathf.Clamp(distance / ExplosionRadius, 0.0f, 1.0f);
+			float force = ExplosionForce * forceMultiplier;
+
+			// Aplicar impulso al RigidBody3D
+			// El segundo parámetro es la posición relativa (offset), Vector3.Zero aplica al centro
+			rigidBody.ApplyImpulse(direction * force, Vector3.Zero);
+		}
+	}
 }
