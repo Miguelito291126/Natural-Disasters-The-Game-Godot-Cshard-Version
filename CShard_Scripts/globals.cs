@@ -1327,7 +1327,7 @@ public partial class Globals : Node
 
 	protected void _OnBroadcastTimerTimeout()
 	{
-		RoomList["players"] = PlayersConected.Count;
+		RoomList["Players"] = PlayersConected.Count;
 		var data = Json.Stringify(RoomList);
 		var packet = data.ToAsciiBuffer();
 		if(Broadcaster != null)
