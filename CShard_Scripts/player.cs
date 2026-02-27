@@ -1248,34 +1248,38 @@ public partial class Player : CharacterBody3D
 		if (area.IsInGroup("Explosion"))
 		{
 			var parent = area.GetParent();
-			if (parent is Explosion explosion) {
-				float distance = (GlobalPosition - area.GlobalPosition).Length();
-				Vector3 direction = (GlobalPosition - area.GlobalPosition).Normalized();
-				float force = explosion.ExplosionForce * (1.0f - Mathf.Clamp(distance / explosion.ExplosionRadius, 0, 1));
-				velocity = direction * force;
-				int damag = explosion.ExplosionDamage;
+			float expForce = 0;
+			float expRadius = 0;
+			int expDamage = 0;
 
-				if (damag > 0)
-				{
-					Rpc(MethodName.Damage, damag); 
-				}
-			}
-			else if (parent is ThunderExplosion thunderExplosion)
+			// Comprobamos Thunder primero si es que hereda de Explosion
+			if (parent is ThunderExplosion thunder)
 			{
-				float distance = (GlobalPosition - area.GlobalPosition).Length();
-				Vector3 direction = (GlobalPosition - area.GlobalPosition).Normalized();
-				float force = thunderExplosion.ExplosionForce * (1.0f - Mathf.Clamp(distance / thunderExplosion.ExplosionRadius, 0, 1));
-				velocity = direction * force;
-				int damag = thunderExplosion.ExplosionDamage;
+				expForce = thunder.ExplosionForce;
+				expRadius = thunder.ExplosionRadius;
+				expDamage = thunder.ExplosionDamage;
+			}
+			else if (parent is Explosion normal)
+			{
+				expForce = normal.ExplosionForce;
+				expRadius = normal.ExplosionRadius;
+				expDamage = normal.ExplosionDamage;
+			}
 
-				if (damag > 0)
-				{
-					Rpc(MethodName.Damage, damag); 
-				}
-			}
-			else
+			if (expRadius > 0) 
 			{
-				GD.PrintErr("Área de explosión sin padre válido: " + area.Name);
+				float distance = GlobalPosition.DistanceTo(area.GlobalPosition);
+				Vector3 direction = (GlobalPosition - area.GlobalPosition).Normalized();
+				
+				// Aplicar empuje
+				float multiplier = 1.0f - Mathf.Clamp(distance / expRadius, 0, 1);
+				velocity += direction * expForce * multiplier; // Usa += para no anular velocidad actual
+
+				if (expDamage > 0)
+				{
+					// RPC para aplicar daño
+					Rpc(MethodName.Damage, (float)expDamage * multiplier); 
+				}
 			}
 
 		}
