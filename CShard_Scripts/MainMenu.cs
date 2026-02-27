@@ -116,27 +116,35 @@ public partial class MainMenu : Control
 			foreach(int i in GD.Range(args.Length))
 			{
 				Globals.Instance.PrintRole("args: " + args[i]);
-
-				if(args[i] == "--port")
+				switch (args[i])
 				{
-					if(i + 1 < args.Length)
-					{
-						Globals.Instance.Port = args[i + 1].ToInt();
-						Globals.Instance.LisenerPort = Globals.Instance.Port + 1;
-						Globals.Instance.BroadcasterPort = Globals.Instance.Port - 1;
-					}
-				}
-				else if(args[i] == "--gamemode")
-				{
-					if(i + 1 < args.Length)
-					{
-						Globals.Instance.Gamemode = args[i + 1];
-					}
-				}
+					case "--port":
+					case "port":
+					case "-p":
+					case "p":
 
-				//PANIC! <Globals . print_role ( port:  + str ( Globals . port ) )> unexpected at Token(type='TEXT', value='Globals', lineno=96, index=2923, end=2930)
+						if((i + 1) < args.Length)
+						{
+							Globals.Instance.Port = args[i + 1].ToInt();
+							Globals.Instance.LisenerPort = Globals.Instance.Port + 1;
+							Globals.Instance.BroadcasterPort = Globals.Instance.Port - 1;
+						}
+						break;
 
-				Globals.Instance.PrintRole("ip: " + IP.ResolveHostname(OS.GetEnvironment("COMPUTERNAME"), IP.Type.Ipv4));
+					case "--gamemode":
+					case "gamemode":
+					case "-g":
+					case "g":
+						if((i + 1) < args.Length)
+						{
+							Globals.Instance.Gamemode = args[i + 1];
+						}
+						break;
+				}
+					
+
+				Globals.Instance.PrintRole( $"port: {Globals.Instance.Port}");
+				Globals.Instance.PrintRole($"ip: {IP.ResolveHostname(OS.GetEnvironment("COMPUTERNAME"), IP.Type.Ipv4)}" );
 				Globals.Instance.PrintRole("Init dedicated server...");
 
 				await ToSignal(GetTree().CreateTimer(2), SceneTreeTimer.SignalName.Timeout);
