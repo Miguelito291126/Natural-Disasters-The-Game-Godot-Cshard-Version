@@ -13,7 +13,7 @@ public partial class House : StaticBody3D
 	[Export] public bool DoorOpen = false;
 	[Export] public bool Destrolled = false;
 
-	[Export] public PackedScene Bokenhause = ResourceLoader.Load<PackedScene>("res://Scenes/Breakable_Hause.tscn");
+	[Export] public PackedScene Bokenhause = ResourceLoader.Load<PackedScene>("res://Scenes/breakable_hause.tscn");
 
 	//# Factor extra de escala para las piezas destruidas. Las mallas del Breakable
 	//# estn en unidades ms pequeas que la casa; aumenta si se ven diminutas.
