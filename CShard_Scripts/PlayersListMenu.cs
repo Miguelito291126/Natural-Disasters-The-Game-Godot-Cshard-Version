@@ -10,19 +10,16 @@ public partial class PlayersListMenu : CanvasLayer
 	public override void _Ready()
 	{
 		List = GetNode<VBoxContainer>("Panel/List");
+		this.Visible = false;
 	}
-	//PANIC! <self . visible = false> unexpected at Token(type='TEXT', value='self', lineno=7, index=132, end=136)
 
-
-	// --- RPC: recibir lista desde el servidor ---
 	[Rpc(MultiplayerApi.RpcMode.AnyPeer, CallLocal = true)]
-	public void SyncPlayers(Array<Player> players_array)
+	public void SyncPlayers(Array players_array)
 	{
 		UpdateList(players_array);
 	}
-	//PANIC! <update_list ( players_array )> unexpected at Token(type='TEXT', value='update_list', lineno=12, index=277, end=288)
-	
-	public void UpdateList(Array<Player> players_array)
+
+	public void UpdateList(Array players_array)
 	{
 		// Limpiar lista
 		foreach(Node child in List.GetChildren())
@@ -35,11 +32,11 @@ public partial class PlayersListMenu : CanvasLayer
 		}
 
 		// Rellenar UI
-		foreach(Player p in players_array)
+		foreach(Dictionary p in players_array)
 		{
 			var inst = PlayerInfo.Instantiate();
-			inst.GetNode<Label>("Username").Text = p.Username;
-			inst.GetNode<Label>("Points").Text =  p.Points.ToString();
+			inst.GetNode<Label>("Username").Text = p["username"].AsString();
+			inst.GetNode<Label>("Points").Text =  p["points"].ToString();
 			List.AddChild(inst);
 		}
 	}
@@ -58,8 +55,8 @@ public partial class PlayersListMenu : CanvasLayer
 			if(IsInstanceValid(player_data))
 			{
 				data.Add(new Dictionary {
-					{"username", player_data},
-					{"points", player_data}
+					{"username", player_data.Username},
+					{"points", player_data.Points}
 				});
 			}
 		}

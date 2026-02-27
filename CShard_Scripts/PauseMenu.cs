@@ -197,11 +197,11 @@ public partial class PauseMenu : CanvasLayer
 
 	protected Player _GetLocalPlayer()
 	{
-		foreach(Player p in GetTree().GetNodesInGroup("player"))
+		foreach(Node3D p in GetTree().GetNodesInGroup("player"))
 		{
-			if(p.IsMultiplayerAuthority())
+			if(p is Player player && player.IsMultiplayerAuthority())
 			{
-				return p;
+				return player;
 			}
 		}
 

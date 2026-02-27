@@ -38,8 +38,6 @@ public partial class Map : Node3D
 			Globals.Instance.CurrentWeatherAndDisasterChanged += _OnDisasterChanged;
 		}
 
-
-
 		if(Multiplayer.IsServer())
 		{
 			Globals.Instance.Rpc(Globals.MethodName.SetWeatherAndDisaster, "Original", -1);

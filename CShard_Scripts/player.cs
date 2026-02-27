@@ -139,9 +139,14 @@ public partial class Player : CharacterBody3D
 
 	public override void _EnterTree()
 	{
-		PlayerId = int.Parse(Name.ToString());
+		if (int.TryParse(Name, out int id))
+		{
+			PlayerId = id;
+			SetMultiplayerAuthority(id);
+		}
+
 		Globals.Instance.PrintRole("set authority to: " + Name);
-		SetMultiplayerAuthority(PlayerId);
+		
 	}
 
 	public override void _ExitTree()
@@ -322,9 +327,10 @@ public partial class Player : CharacterBody3D
 	public bool HayJugadoresConMismoNombre(string nombre_a_verificar, bool excluir_este_jugador = true)
 	{
 		var contador = 0;
-		foreach(Player player in GetTree().GetNodesInGroup("player"))
+		foreach(Node3D p in GetTree().GetNodesInGroup("player"))
 		{
-
+			if (p is not Player player) continue;
+			
 			// Si se debe excluir este jugador, saltarlo
 			if(excluir_este_jugador && player == this)
 			{
@@ -348,14 +354,17 @@ public partial class Player : CharacterBody3D
 		return false;
 	}
 
+	
+
 
 	// Funci�n para obtener todos los jugadores que tienen el mismo nombre
 	public Array ObtenerJugadoresConMismoNombre(string nombre_a_verificar, bool excluir_este_jugador = true)
 	{
 		Array jugadores_duplicados = new Array();
 
-		foreach(Player player in GetTree().GetNodesInGroup("player"))
+		foreach(Node3D p in GetTree().GetNodesInGroup("player"))
 		{
+			if (p is not Player player) continue;
 
 			// Si se debe excluir este jugador, saltarlo
 			if(excluir_este_jugador && player == this)
@@ -456,6 +465,9 @@ public partial class Player : CharacterBody3D
 		if (SplashNode != null) SplashNode.Emitting = false;
 		if (DustNode != null) DustNode.Emitting = false;
 		if (SnowNode != null) SnowNode.Emitting = false;
+		if (CameraNode != null) CameraNode.Current = false;
+
+		CallDeferred(nameof(UpdateCharacter));
 
 		if (IsMultiplayerAuthority())
 		{
@@ -492,10 +504,6 @@ public partial class Player : CharacterBody3D
 					{
 						contador += 1;
 					}
-				}
-				else
-				{
-					GD.PrintErr("Nodo en grupo 'player' que no es Player: " + p.Name);
 				}
 			}
 
@@ -636,9 +644,18 @@ public partial class Player : CharacterBody3D
 
 	public void UpdateCharacter()
 	{
+		
+		// Si el nombre del nodo es "1", PlayerId debe ser 1.
+		// Si por alguna razón PlayerId sigue siendo el default (1), 
+		// intentamos obtenerlo del nombre de nuevo por seguridad.
+		if (PlayerId == 1 && Name != "Player") 
+		{
+			int.TryParse(Name, out PlayerId);
+		}
 
-		// Determinar el personaje deseado: si no somos autoridad, usamos el dict sincronizado.
 		var desired_char = Character;
+
+		// Si no somos el dueño de este Personaje3D, miramos el diccionario global
 		if(!IsMultiplayerAuthority())
 		{
 			if(Globals.Instance.AssignedCharacter.ContainsKey(PlayerId))
@@ -647,33 +664,25 @@ public partial class Player : CharacterBody3D
 			}
 		}
 
-		if(desired_char == null || desired_char == "" || desired_char == _LastAppliedCharacter)
+		// Si el color es el mismo que ya tenemos, no hacemos nada (optimización)
+		if(string.IsNullOrEmpty(desired_char) || desired_char == _LastAppliedCharacter)
 		{
-			return ;
+			return;
 		}
+
+		Globals.Instance.PrintRole($"Actualizando visual de Jugador {PlayerId} a color: {desired_char}");
 
 		_LastAppliedCharacter = desired_char;
 		Character = desired_char;
 
-		if(desired_char == "blue")
+		// Tu lógica de Switch/If de materiales...
+		switch (desired_char)
 		{
-			UpdateMaterial(0);
-		}
-		else if(desired_char == "red")
-		{
-			UpdateMaterial(1);
-		}
-		else if(desired_char == "green")
-		{
-			UpdateMaterial(2);
-		}
-		else if(desired_char == "yellow")
-		{
-			UpdateMaterial(3);
-		}
-		else
-		{
-			UpdateMaterial(0);
+			case "blue":   UpdateMaterial(0); break;
+			case "red":    UpdateMaterial(1); break;
+			case "green":  UpdateMaterial(2); break;
+			case "yellow": UpdateMaterial(3); break;
+			default:       UpdateMaterial(0); break;
 		}
 	}
 
@@ -889,7 +898,6 @@ public partial class Player : CharacterBody3D
 	public override void _Process(double delta)
 	{
 		UpdateCharacter();
-
 		// tambin para clientes no autoridad (solo material)
 		if(!IsMultiplayerAuthority())
 		{

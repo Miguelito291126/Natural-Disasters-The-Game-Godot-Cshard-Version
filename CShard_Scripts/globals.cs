@@ -83,7 +83,7 @@ public partial class Globals : Node
 	[Export] public DataResource GlobalsData;
 
 	private string _CurrentWeatherAndDisaster = "Original";
-	public string CurrentWeatherAndDisaster
+	[Export] public string CurrentWeatherAndDisaster
 	{
 		set
 		{
@@ -546,13 +546,14 @@ public partial class Globals : Node
 		}
 	}
 
-	[Rpc(MultiplayerApi.RpcMode.AnyPeer)]
+	[Rpc(MultiplayerApi.RpcMode.AnyPeer, CallLocal = true)]
 	public void SyncPlayerList()
 	{
-		PlayersConected.Clear();
+		PlayersConected?.Clear();
 
-		foreach(Player p in GetTree().GetNodesInGroup("player"))
+		foreach(Node3D v in GetTree().GetNodesInGroup("player"))
 		{
+			if(v is not Player p) continue;
 			if(IsInstanceValid(p))
 			{
 				PlayersConected.Add(p);
@@ -565,9 +566,9 @@ public partial class Globals : Node
 	public bool HayJugadoresConMismoNombre(string nombre_a_verificar, Node excluir_jugador = null)
 	{
 		var contador = 0;
-		foreach(Player player in GetTree().GetNodesInGroup("player"))
+		foreach(Node3D v in GetTree().GetNodesInGroup("player"))
 		{
-
+			if (v is not Player player) continue;
 			// Si se debe excluir un jugador especfico, saltarlo
 			if(excluir_jugador != null && player == excluir_jugador)
 			{
@@ -597,10 +598,11 @@ public partial class Globals : Node
 	{
 		var jugadores_duplicados = new Array();
 
-		foreach(Player player in GetTree().GetNodesInGroup("player"))
+		foreach(Node3D v in GetTree().GetNodesInGroup("player"))
 		{
+			if (v is not Player player) continue;
 
-			// Si se debe excluir un jugador espec�fico, saltarlo
+			// Si se debe excluir un jugador especfico, saltarlo
 			if(excluir_jugador != null && player == excluir_jugador)
 			{
 				continue;
@@ -622,10 +624,11 @@ public partial class Globals : Node
 	public int ContarJugadoresConMismoNombre(string nombre_a_verificar, Node excluir_jugador = null)
 	{
 		var contador = 0;
-		foreach(Node player in GetTree().GetNodesInGroup("player"))
+		foreach(Node3D p in GetTree().GetNodesInGroup("player"))
 		{
+			if (p is not Player player) continue;
 
-			// Si se debe excluir un jugador espec�fico, saltarlo
+			// Si se debe excluir un jugador especfico, saltarlo
 			if(excluir_jugador != null && player == excluir_jugador)
 			{
 				continue;
@@ -811,7 +814,7 @@ public partial class Globals : Node
 		PrintRole("Asignado el personaje: " + charac);
 	}
 
-	[Rpc(MultiplayerApi.RpcMode.AnyPeer, CallLocal = true)]
+	[Rpc(MultiplayerApi.RpcMode.Authority, CallLocal = true)]
 	public bool AssingCharacterToPlayer(long id, string charac)
 	{
 		var chosen_char = charac;
@@ -835,10 +838,34 @@ public partial class Globals : Node
 		return true;
 	}
 
-	[Rpc(MultiplayerApi.RpcMode.AnyPeer)]
+	[Rpc(MultiplayerApi.RpcMode.AnyPeer, CallLocal = true)]
 	public void SyncAssignedCharacter(Dictionary<int, string> data)
 	{
-		AssignedCharacter = data.Duplicate(true);
+		AssignedCharacter = new Dictionary<int, string>();
+		foreach (var key in data.Keys)
+		{
+			AssignedCharacter[(int)key] = data[key].ToString();
+		}
+
+		// APLICAR A LOS NODOS EXISTENTES
+		foreach (var entry in AssignedCharacter)
+		{
+			int peerId = entry.Key;
+			string characterName = entry.Value;
+
+			// Buscamos el nodo del jugador en el mapa usando su ID como nombre
+			if (Map != null)
+			{
+				Player p = Map.GetNodeOrNull<Player>(peerId.ToString());
+				if (p != null)
+				{
+					p.Character = characterName;
+					// Aquí deberías llamar a una función dentro de tu clase Player 
+					// que actualice el Sprite o el Color.
+					// p.UpdateAppearance(); 
+				}
+			}
+		}
 	}
 
 	public bool IsCharacterAvalible(string charac)
@@ -981,7 +1008,12 @@ public partial class Globals : Node
 		Multiplayer.MultiplayerPeer = Multiplayerpeer;
 		
 		GlobalsData = DataResource.LoadFile();
+
+		
 	}
+
+
+
 
 
 	public void MultiplayerPlayerSpawner(long peer_id = 1)
@@ -1013,7 +1045,6 @@ public partial class Globals : Node
 				SyncAssignedCharacter(AssignedCharacter);
 				Rpc(MethodName.SyncPlayerList);
 				RpcId(peer_id, MethodName.SyncDestrolledNodes, DestrolledNode);
-				// envia al cliente
 				RpcId(peer_id, MethodName.SetWeatherAndDisaster, CurrentWeatherAndDisaster, CurrentWeatherAndDisasterInt);
 			}
 			else
@@ -1124,13 +1155,13 @@ public partial class Globals : Node
 		}
 	}
 
-	[Rpc(MultiplayerApi.RpcMode.AnyPeer)]
+	[Rpc(MultiplayerApi.RpcMode.AnyPeer, CallLocal = true)]
 	public void AddPoints()
 	{
 		Points += 1;
 	}
 
-	[Rpc(MultiplayerApi.RpcMode.AnyPeer)]
+	[Rpc(MultiplayerApi.RpcMode.AnyPeer, CallLocal = true)]
 	public void RemovePoints()
 	{
 		Points -= 1;
@@ -1173,7 +1204,7 @@ public partial class Globals : Node
 		}
 	}
 
-	[Rpc(MultiplayerApi.RpcMode.AnyPeer, CallLocal = true)]
+	[Rpc(MultiplayerApi.RpcMode.Authority, CallLocal = true)]
 	public void SyncDestrolledNodes(Array<string> Hauses)
 	{
 		foreach(string house_name in Hauses)

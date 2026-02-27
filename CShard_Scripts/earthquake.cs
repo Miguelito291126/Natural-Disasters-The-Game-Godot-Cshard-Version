@@ -289,10 +289,9 @@ public partial class Earthquake : Node3D
 	{
 		if(IsInstanceValid(v))
 		{
-			if((v.IsInGroup("Destrollable") || v.IsInGroup("Hause")) && v.HasMethod("destroy"))
-			{
-				Rpc(House.MethodName.Destroy);
-			}
+	
+			v.Rpc(House.MethodName.Destroy);
+
 		}
 	}
 
@@ -302,7 +301,7 @@ public partial class Earthquake : Node3D
 		// Destruir todas las casas al iniciar el terremoto
 		foreach(Node3D house in GetTree().GetNodesInGroup("Hause"))
 		{
-			if(IsInstanceValid(house) && house is House house1)
+			if(house is House house1 && IsInstanceValid(house1) )
 			{
 				Destroy(house1);
 			}

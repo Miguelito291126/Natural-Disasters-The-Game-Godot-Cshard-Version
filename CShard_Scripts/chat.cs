@@ -131,11 +131,11 @@ public partial class Chat : CanvasLayer
 
 		// Buscar el jugador por nombre
 		Player jugador_encontrado = null;
-		foreach(Player p in GetTree().GetNodesInGroup("player"))
+		foreach(Node3D p in GetTree().GetNodesInGroup("player"))
 		{
-			if(GodotObject.IsInstanceValid(p) && p.Username == player_name)
+			if(p is Player player && GodotObject.IsInstanceValid(player) && player.Username == player_name)
 			{
-				jugador_encontrado = p;
+				jugador_encontrado = player;
 				break;
 			}
 		}
@@ -171,11 +171,11 @@ public partial class Chat : CanvasLayer
 
 		// Buscar el jugador por nombre
 		Player jugador_encontrado = null;
-		foreach(Player p in GetTree().GetNodesInGroup("player"))
+		foreach(Node3D p in GetTree().GetNodesInGroup("player"))
 		{
-			if(GodotObject.IsInstanceValid(p) && p.Username == player_name)
+			if(p is Player player && GodotObject.IsInstanceValid(player) && player.Username == player_name)
 			{
-				jugador_encontrado = p;
+				jugador_encontrado = player;
 				break;
 			}
 		}
@@ -536,14 +536,14 @@ public override void _Input(InputEvent @event)
 
 			// Buscar el jugador que envi el comando
 			Player jugador_encontrado = null;
-			foreach(Player player in GetTree().GetNodesInGroup("player"))
+			foreach(Node3D player in GetTree().GetNodesInGroup("player"))
 			{
-				if(GodotObject.IsInstanceValid(player) && player is CharacterBody3D)
+				if(player is Player p && IsInstanceValid(p) && p.Username == username)
 				{
-					var player_username = player.Username;
+					var player_username = p.Username;
 					if(player_username == username)
 					{
-						jugador_encontrado = player;
+						jugador_encontrado = p;
 						break;
 					}
 				}
