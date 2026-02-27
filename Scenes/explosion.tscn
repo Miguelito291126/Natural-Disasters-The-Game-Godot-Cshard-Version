@@ -189,8 +189,8 @@ root_path = NodePath("../Sparks")
 replication_config = SubResource("SceneReplicationConfig_y34ue")
 
 [connection signal="area_entered" from="Area3D" to="." method="_OnArea3DBodyEntered"]
-[connection signal="finished" from="Sparks" to="." method="_OnFinished"]
-[connection signal="finished" from="Sparks shock" to="." method="_OnFinished"]
-[connection signal="finished" from="Smoke shock" to="." method="_OnFinished"]
-[connection signal="finished" from="Smoke" to="." method="_OnFinished"]
+[connection signal="finished" from="Sparks" to="." method="_OnParksFinished"]
+[connection signal="finished" from="Sparks shock" to="." method="_OnParksFinished"]
+[connection signal="finished" from="Smoke shock" to="." method="_OnParksFinished"]
+[connection signal="finished" from="Smoke" to="." method="_OnParksFinished"]
 [connection signal="finished" from="AudioStreamPlayer3D" to="." method="_OnFinished"]

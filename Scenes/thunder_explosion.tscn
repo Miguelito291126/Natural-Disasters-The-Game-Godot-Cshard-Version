@@ -76,5 +76,6 @@ max_distance = 4096.0
 root_path = NodePath("../Parks")
 replication_config = SubResource("SceneReplicationConfig_y34ue")
 
+[connection signal="finished" from="Parks" to="." method="_OnParksFinished"]
 [connection signal="area_entered" from="Area3D" to="." method="_OnArea3DBodyEntered"]
 [connection signal="finished" from="AudioStreamPlayer3D" to="." method="_OnFinished"]

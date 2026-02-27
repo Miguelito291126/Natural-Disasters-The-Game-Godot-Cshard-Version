@@ -11,11 +11,12 @@ public partial class Explosion : Node3D
 	public GpuParticles3D SmokeShockwaveExplosion;
 	public GpuParticles3D Sparks;
 	public GpuParticles3D SparksShock;
-
+	public CollisionShape3D colShape;
 
 	// Called when the node enters the scene tree for the first time.
 	public override void _Ready()
 	{
+		colShape = GetNode<CollisionShape3D>("Area3D/CollisionShape3D");
 		ExplosionRadius = ((SphereShape3D)GetNode<CollisionShape3D>("Area3D/CollisionShape3D").Shape).Radius;
 		Smoke = GetNode<GpuParticles3D>("Smoke");
 		SmokeShockwaveExplosion = GetNode<GpuParticles3D>("Smoke shock");
@@ -34,6 +35,11 @@ public partial class Explosion : Node3D
 		this.QueueFree();
 	}
 	
+	protected void _OnParksFinished()
+	{
+		colShape.Disabled = true;
+	}
+
 	private void _OnArea3DBodyEntered(Node3D body)
 	{
 		// Aplicar fuerza de explosión a objetos RigidBody3D

@@ -24,7 +24,7 @@ public partial class Thunder : Node3D
 
 		if (Multiplayer.IsServer())
 		{
-			SpawnExplosion();
+			CallDeferred(MethodName.SpawnExplosion);
 		}
 	}
 

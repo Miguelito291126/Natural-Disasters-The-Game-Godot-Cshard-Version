@@ -30,7 +30,7 @@ public partial class Meteors : RigidBody3D
         // Solo el servidor debería manejar la lógica de instanciar explosiones si hay daño
         if (Multiplayer.IsServer())
         {
-            SpawnExplosion();
+            CallDeferred(MethodName.SpawnExplosion);
         }
         
         // Eliminamos el meteoro

@@ -11,6 +11,7 @@ public partial class ThunderExplosion : Node3D
 
 	public AudioStreamPlayer3D AudioPlayer;
 
+	public CollisionShape3D colShape;
 	public Array<AudioStream> Lol = new Array<AudioStream>() 
     {
         ResourceLoader.Load<AudioStream>("res://Sounds/disasters/nature/closethunder01.mp3"),
@@ -21,13 +22,14 @@ public partial class ThunderExplosion : Node3D
     };
 
 
-
+	
 
 	// Called when the node enters the scene tree for the first time.
 	public override void _Ready()
 	{
 		// ASIGNACIÓN CORRECTA: Sin poner el tipo delante (GpuParticles3D, etc)
-        var colShape = GetNode<CollisionShape3D>("Area3D/CollisionShape3D");
+		colShape = GetNode<CollisionShape3D>("Area3D/CollisionShape3D");
+
         if (colShape.Shape is SphereShape3D sphere)
         {
             ExplosionRadius = sphere.Radius;
@@ -45,6 +47,10 @@ public partial class ThunderExplosion : Node3D
         }
     }
 
+	protected void _OnParksFinished()
+	{
+		colShape.Disabled = true;
+	}
 
 	protected void _OnFinished()
 	{

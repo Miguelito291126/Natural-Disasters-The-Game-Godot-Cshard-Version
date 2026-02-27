@@ -120,16 +120,8 @@ public partial class SpawnMenu : CanvasLayer
 	public void OnPress(Node3D i)
 	{
 		var player = _GetLocalPlayer();
-		if(player == null || !player.AdminMode)
-		{
-			Globals.Instance.PrintRole("You dont have perms");
-			return ;
-		}
-
-		if(!IsMultiplayerAuthority())
-		{
-			return ;
-		}
+		if(player == null || !player.AdminMode) return;
+		if(!IsMultiplayerAuthority()) return;
 
 		var raycast = GetParent<Player>().Interactor;
 
@@ -138,15 +130,28 @@ public partial class SpawnMenu : CanvasLayer
 			Vector3 collision_point = raycast.GetCollisionPoint();
 			Vector3 collision_normal = raycast.GetCollisionNormal();
 
-			// En OnPress
+			// --- SOLUCIÓN AQUÍ ---
+			// En lugar de Duplicate, busca la ruta de la escena original o usa el tipo i
+			// Si quieres seguir usando Duplicate, asegúrate de resetear el transform ANTES de añadirlo
 			Node3D new_i = (Node3D)i.Duplicate();
+			
+			// Es vital limpiar cualquier transformación previa del nodo duplicado
+			new_i.Transform = Transform3D.Identity; 
+
 			Spawnedobject.Add(new_i);
 			new_i.SetMultiplayerAuthority(1);
+
+			// Primero añadimos al mapa
 			Globals.Instance.Map.AddChild(new_i, true);
+
+			// DESPUÉS de añadirlo, fijamos la GlobalPosition
+			// El trueno fallaba porque al ser TopLevel, si no tiene padre al asignar
+			// la posición, el motor no sabe a qué mundo 3D pertenece.
 			new_i.GlobalPosition = collision_point + (collision_normal * 0.5f);
+			
+			Globals.Instance.PrintRole($"Spawned {i.Name} at {new_i.GlobalPosition}");
 		}
 	}
-
 
 	public void Spawnmenu()
 	{
