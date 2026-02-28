@@ -430,7 +430,7 @@ public partial class Player : CharacterBody3D
 		Spawn = GetNodeOrNull<Marker3D>("../Spawn");
 		DeathMenu = GetNodeOrNull<DeathMenu>("DeathMenu");
 		TempEffect = GetNodeOrNull<CanvasLayer>("TempEffect");
-		Underwatereffect = GetNodeOrNull<CanvasLayer>("Underwater");
+		Underwatereffect = GetNodeOrNull<CanvasLayer>("UnderWater");
 		Underlavaeffect = GetNodeOrNull<CanvasLayer>("UnderLava");
 		Label = GetNodeOrNull<Label3D>("Name");
 		chat_node = GetTree().Root.FindChild("Chat", true, false) as Chat;
@@ -725,6 +725,18 @@ public partial class Player : CharacterBody3D
 				float lavaSurfaceY = currentLavaArea.GlobalPosition.Y + (box.Size.Y / 2);
 				IsUnderLava = CameraNode.GlobalPosition.Y < lavaSurfaceY;
 			}
+			else if(collider != null && collider.Shape is SphereShape3D sphere)
+			{
+				// En Godot C#, la escala global se obtiene a través de la Basis de la Transformación Global
+				float escalaY = currentLavaArea.GlobalTransform.Basis.Scale.Y;
+				
+				// El punto más alto de la esfera en el mundo
+				float sphereRadiusWorld = sphere.Radius * escalaY;
+				float lavaSurfaceY = currentLavaArea.GlobalPosition.Y + sphereRadiusWorld;
+
+				// Detectar si la cámara está por debajo de la parte superior de la esfera
+				IsUnderLava = CameraNode.GlobalPosition.Y < lavaSurfaceY;
+			}
 			Ignite(10); // Aplicar fuego si estás en contacto con lava
 		}
 
@@ -825,12 +837,10 @@ public partial class Player : CharacterBody3D
 
 	public void UpdateWindSound()
 	{
-		// 1. Verificación de seguridad (Blindaje)
-		// Si falta alguno de los nodos, salimos para evitar el crash.
 		if (WindSound == null || WindModerateSound == null || WindExtremeSound == null) 
 			return;
 
-		// 2. Determinamos qué sonido DEBERÍA estar sonando
+
 		AudioStreamPlayer targetSound = null;
 
 		if (BodyWind > 100)
@@ -845,9 +855,7 @@ public partial class Player : CharacterBody3D
 		{
 			targetSound = WindSound;
 		}
-
-		// 3. Gestión de estados (Play / Stop)
-		// Lista de todos para iterar y apagar los que no necesitamos
+		
 		AudioStreamPlayer[] allWinds = { WindSound, WindModerateSound, WindExtremeSound };
 
 		foreach (var v in allWinds)
