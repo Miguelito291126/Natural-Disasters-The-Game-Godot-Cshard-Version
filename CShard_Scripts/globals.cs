@@ -456,8 +456,8 @@ public partial class Globals : Node
 			if(local_wind >= 30) // Solo si hay viento fuerte
 			{
 				Vector3 wind_vel = WindDirection * local_wind;
-				var delta_velocity = wind_vel - player.Velocity;
-				player.Velocity += delta_velocity * 0.3f;
+				var delta_velocity = wind_vel - player.velocity;
+				player.ApplyDisastersPush(delta_velocity * 0.3f);
 			}
 		}
 

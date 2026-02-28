@@ -132,8 +132,8 @@ public partial class Player : CharacterBody3D
 		(Material)ResourceLoader.Load("res://Materials/player green.tres"), 
 		(Material)ResourceLoader.Load("res://Materials/player yellow.tres"), };
 
-	private Vector3 velocity = Vector3.Zero;
-	private Vector3 externalForce = Vector3.Zero;
+	public Vector3 velocity = Vector3.Zero;
+	public Vector3 externalForce = Vector3.Zero;
 
 	private Area3D currentWaterArea = null;
 	private Area3D currentLavaArea = null;

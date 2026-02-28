@@ -9,8 +9,10 @@ public partial class MapEnvironment : WorldEnvironment
 
     [Export] public int IngameSpeed = 60; // 1 = Tiempo real, 60 = 1 hora por minuto real
     [Export] public float InitialHour = 12.0f;
-
-
+    [Export] public float SunBaseEnergy = 2.0f; // Energía normal del sol
+    [Export] public float MoonBaseEnergy = 0.2f; // Energía normal del sol
+    public bool IsCloudy = false; // El Map cambiará esto
+    public bool IsRaining = false; // El Map cambiará esto
     public override void _Ready()
     {
         // Si no se asignaron en el inspector, buscarlos
@@ -44,23 +46,36 @@ public partial class MapEnvironment : WorldEnvironment
 
     private void _UpdateLamps()
     {
-        // Calculamos la rotación (0.0 a 360.0 grados)
-        // Restamos 90 grados para que a las 12:00 el sol esté en lo más alto (Zenit)
-        float rotationAngle = (Globals.Instance.Day * 360.0f) - 90.0f;
+        // Calculamos el progreso del día (0.0 a 1.0)
+        // 86400 son los segundos totales en un día
+        float dayProgress = (float)((Globals.Instance.Seconds % 86400) / 86400.0);
 
+        // 360 grados * progreso. Restamos 90 para que a las 12:00 esté arriba.
+        float rotationAngle = (dayProgress * 360.0f) - 90.0f;
         if (Sun != null)
         {
-            // El sol rota en el eje X
             Sun.RotationDegrees = new Vector3(-rotationAngle, 0, 0);
-            // Opcional: Apagar el sol si está bajo el horizonte para ahorrar rendimiento
-            Sun.Visible = Sun.RotationDegrees.X < 0; 
+            
+            // Calculamos la intensidad normal por la hora
+            float sunIntensity = Mathf.Clamp(Mathf.Sin(Mathf.DegToRad(rotationAngle)), 0, 1);
+            
+            // SI ESTÁ NUBLADO, multiplicamos por 0 para apagarlo, si no, usamos la energía base
+            float cloudMultiplier = IsCloudy ? 0.0f : 1.0f;
+            
+            Sun.LightEnergy = sunIntensity * SunBaseEnergy * cloudMultiplier;
+            Sun.Visible = Sun.LightEnergy > 0.05f; // Apagar si es casi 0
         }
 
         if (Moon != null)
         {
-            // La luna está al lado opuesto (180 grados de diferencia)
+            // La luna al lado opuesto
             Moon.RotationDegrees = new Vector3(-(rotationAngle + 180.0f), 0, 0);
-            Moon.Visible = Moon.RotationDegrees.X < 0;
+            
+            float moonIntensity = Mathf.Clamp(Mathf.Sin(Mathf.DegToRad(rotationAngle + 180.0f)), 0, 1);
+            float cloudMultiplier = IsCloudy ? 0.0f : 1.0f;
+            
+            Moon.LightEnergy = moonIntensity * MoonBaseEnergy * cloudMultiplier; // La luna debe ser más débil
+            Moon.Visible = Moon.LightEnergy > 0;
         }
     }
 }

@@ -63,6 +63,7 @@ public partial class Map : Node3D
 
 			else
 			{
+
 				if(!OS.HasFeature("dedicated_server"))
 				{
 					Globals.Instance.MultiplayerPlayerSpawner();
@@ -72,6 +73,7 @@ public partial class Map : Node3D
 				{
 					Globals.Instance.MultiplayerPlayerSpawner(i);
 				}
+
 			}
 		}
 	}
@@ -110,13 +112,20 @@ public partial class Map : Node3D
 					return;
 				}
 
-				if(Globals.Instance.PlayersConected.Count > 1)
+				if(Globals.Instance.Gamemode == "survival")
 				{
-					Globals.Instance.Started = true;
+					if(Globals.Instance.PlayersConected.Count > 1)
+					{
+						Globals.Instance.Started = true;
+					}
+					else
+					{
+						Globals.Instance.Started = false;
+					}
 				}
 				else
 				{
-					Globals.Instance.Started = false;
+					Globals.Instance.Started = true;
 				}
 			}
 		}
@@ -594,16 +603,17 @@ public partial class Map : Node3D
 		// Cuando hay lluvia/tormenta u otros eventos que requieren niebla, activarla s�lo si el jugador est� al aire libre
 		var foggy_disasters = new Array<string>{"Thunderstorm", "Raining", "Storm", "Tornado", "blizzard", "Sand Storm", "Cloud", "Acid rain", "Dust Storm"};
 		var rain_disasters = new Array<string>{"Thunderstorm", "Raining", "Storm", "Tornado", "Acid rain"};
-		Worldenvironment.Environment.VolumetricFogEnabled = foggy_disasters.Contains(CurrentDisaster) && is_outdoor;
-
+		Worldenvironment.IsCloudy = foggy_disasters.Contains(CurrentDisaster);
+		Worldenvironment.IsRaining = rain_disasters.Contains(CurrentDisaster);
+		Worldenvironment.Environment.VolumetricFogEnabled = Worldenvironment.IsCloudy && is_outdoor;
 
 		// Nodos de partculas generales
-		player.RainNode.Emitting = (rain_disasters.Contains(CurrentDisaster)) && is_outdoor;
+		player.RainNode.Emitting = (Worldenvironment.IsRaining) && is_outdoor;
 
 
 		// Ajuste de nubes
 
-		((ShaderMaterial)Worldenvironment.Environment.Sky.SkyMaterial).SetShaderParameter("clouds_fuzziness", ( foggy_disasters.Contains(CurrentDisaster) ? 0.25 : 1 ));
+		((ShaderMaterial)Worldenvironment.Environment.Sky.SkyMaterial).SetShaderParameter("clouds_fuzziness", ( Worldenvironment.IsCloudy ? 0.25 : 1 ));
 	}
 
 	protected async void _SpawnLightningTimer()
