@@ -20,6 +20,7 @@ public partial class Globals : Node
 
 	//Network
 	[Export] public string Ip;
+	[Export] public string PublicIp = "79.112.95.69"; // Variable nueva
 	[Export] public int Port = 5555;
 	[Export] public int Points;
 	[Export] public string Username = "Player";
@@ -123,7 +124,7 @@ public partial class Globals : Node
 	[Export] public Array<string> AvalibleCharacters = new Array<string>{"blue", "red", "green", "yellow"};
 	[Export] public Dictionary<int, string> AssignedCharacter = new Dictionary<int, string>{};
 	public HttpRequest http;
-	public string MyPublicIp = ""; // Variable nueva
+	
 	public float ConvertMetoSU(float metres)
 	{
 		return (int)(metres * 39.37f) / 0.75f;
@@ -680,22 +681,21 @@ public partial class Globals : Node
 				var args = OS.GetCmdlineUserArgs();
 				bool isServer = OS.HasFeature("dedicated_server") || (args != null && args.Contains("server"));
 
+				HeartbeatTimerCreate();
+
 				if(isServer)
 				{
 					PrintRole("Dedicated server init");
 
 					await ToSignal(GetTree().CreateTimer(2), SceneTreeTimer.SignalName.Timeout);
 
-					SendHeartbeatToMaster();
-					HeartbeatTimerCreate();
+
 					LoadScene.Instance.loadscene(MainMenu, "map");
 				}
 				else
 				{
 					PrintRole("Server init");
 
-					SendHeartbeatToMaster();
-					HeartbeatTimerCreate();
 					LoadScene.Instance.loadscene(MainMenu, "map");
 				}
 			}
@@ -1007,7 +1007,6 @@ public partial class Globals : Node
 		
 		GlobalsData = DataResource.LoadFile();
 		
-		
 	}
 
 
@@ -1260,23 +1259,15 @@ public partial class Globals : Node
 
 	private void HeartbeatTimerCreate()
 	{
-		// Solo enviamos el latido si somos el servidor de la partida
-		if (Multiplayer.IsServer() && Multiplayer.MultiplayerPeer is not OfflineMultiplayerPeer)
-		{
-			Timer heartbeatTimer = new Timer();
-			heartbeatTimer.WaitTime = 2.0f; // Enviamos señal cada 2 segundos
-			heartbeatTimer.Autostart = true;
-			heartbeatTimer.Timeout += OnHeartbeatTimerTimeout;
-			AddChild(heartbeatTimer);
-		}
+		Timer heartbeatTimer = new Timer();
+		heartbeatTimer.WaitTime = 2.0f; // Enviamos señal cada 2 segundos
+		heartbeatTimer.Autostart = true;
+		heartbeatTimer.Timeout += OnHeartbeatTimerTimeout;
+		AddChild(heartbeatTimer);
 	}
 	private void OnHeartbeatTimerTimeout()
 	{
-		// Solo enviamos el latido si somos el servidor de la partida
-		if (Multiplayer.IsServer() && Multiplayer.MultiplayerPeer is not OfflineMultiplayerPeer)
-		{
-			SendHeartbeatToMaster();
-		}
+		SendHeartbeatToMaster();
 	}
 
 	
@@ -1285,7 +1276,7 @@ public partial class Globals : Node
 		
 		var data = new Dictionary
 		{
-			{ "server_ip",Ip},
+			{ "server_ip", PublicIp },
 			{ "name", Username },
 			{ "port", Port },
 			{ "players", PlayersConected.Count }
@@ -1309,8 +1300,8 @@ public partial class Globals : Node
 			{
 				upnp.AddPortMapping(port, port, "Godot_Game", "UDP");
 				// GUARDAMOS LA IP AQUÍ
-				MyPublicIp = upnp.QueryExternalAddress(); 
-				GD.Print("Mi IP Pública es: " + MyPublicIp);
+				PublicIp = upnp.QueryExternalAddress(); 
+				GD.Print("Mi IP Pública es: " + PublicIp);
 			}
 		}
 	}

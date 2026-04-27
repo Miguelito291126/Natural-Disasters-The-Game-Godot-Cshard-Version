@@ -15,7 +15,7 @@ public partial class ServerInfo : HBoxContainer
 
 		// 1. Obtenemos nuestra IP externa (puedes guardarla en Globals al hacer el UPNP)
 		// Si la IP de la lista es la mía, uso localhost para evitar el bloqueo del router
-		if (targetIp == Globals.Instance.MyPublicIp) 
+		if (targetIp == Globals.Instance.PublicIp) 
 		{
 			GD.Print("Detectada IP propia, usando 127.0.0.1 para evitar bloqueo NAT Loopback");
 			targetIp = "127.0.0.1";
