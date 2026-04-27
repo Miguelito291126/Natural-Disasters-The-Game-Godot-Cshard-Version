@@ -21,6 +21,8 @@ public partial class Globals : Node
 	//Network
 	[Export] public string Ip;
 	[Export] public string PublicIp = "79.112.95.69"; // Variable nueva
+	[Export] public string LocalIp = "";
+
 	[Export] public int Port = 5555;
 	[Export] public int Points;
 	[Export] public string Username = "Player";
@@ -1008,6 +1010,7 @@ public partial class Globals : Node
 		GlobalsData = DataResource.LoadFile();
 		
 		FetchPublicIp();
+		FetchLocalIp();
 	}
 
 
@@ -1278,8 +1281,11 @@ public partial class Globals : Node
 		var data = new Dictionary
 		{
 			{ "name", Username },
+			{ "players", PlayersConected.Count },
+			{ "public_ip", PublicIp },
+			{ "local_ip", LocalIp },
 			{ "port", Port },
-			{ "players", PlayersConected.Count }
+			
 		};
 
 		string query = Json.Stringify(data);
@@ -1342,4 +1348,19 @@ public partial class Globals : Node
             // PublicIp se quedará vacía. Podrías poner una IP por defecto o manejar el error.
         }
     }
+
+	public void FetchLocalIp()
+	{
+		// Obtenemos todas las IPs de la máquina
+		foreach (string ip in IP.GetLocalAddresses())
+		{
+			// Filtramos para quedarnos con la de la red local (típicamente 192.168.x.x)
+			if (ip.StartsWith("192.168.") || ip.StartsWith("10."))
+			{
+				LocalIp = ip;
+				GD.Print("IP Local detectada: " + LocalIp);
+				break;
+			}
+		}
+	}
 }

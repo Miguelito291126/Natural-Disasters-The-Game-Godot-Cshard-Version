@@ -6,6 +6,7 @@ public partial class ServerInfo : HBoxContainer
 {
     public string ServerIp = "";
     public string ServerPort = "";
+	public string ServerLocalIp = ""; // Se llena desde el JSON del Master Server
 
     // Lo hacemos público para que ServerBrowser lo vea
     public void JoinServer() 
@@ -17,8 +18,8 @@ public partial class ServerInfo : HBoxContainer
 		// Si la IP de la lista es la mía, uso localhost para evitar el bloqueo del router
 		if (targetIp == Globals.Instance.PublicIp) 
 		{
-			GD.Print("Detectada IP propia, usando 127.0.0.1 para evitar bloqueo NAT Loopback");
-			targetIp = "127.0.0.1";
+			GD.Print("Detectada IP propia, usando" + ServerLocalIp + " para evitar bloqueo NAT Loopback");
+			targetIp =  ServerLocalIp;
 		}
 		
 		GD.Print($"Conectando a: {targetIp}:{cleanPort}");

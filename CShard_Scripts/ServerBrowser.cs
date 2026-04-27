@@ -52,7 +52,8 @@ public partial class ServerBrowser : Panel
 			var currentinfo = Serverinfo.Instantiate<ServerInfo>();
 			
 			// CORRECCIÓN DE DATOS: Aseguramos que el puerto sea string limpio
-			currentinfo.ServerIp = serverData["ip"].ToString();
+			currentinfo.ServerIp = serverData["public_ip"].ToString();
+			currentinfo.ServerLocalIp = serverData["local_ip"].ToString();
 			// Usamos Mathf.Floor para quitar el ".0" si es que viene de Python como float
 			int portInt = (int)GD.StrToVar(serverData["port"].ToString()); 
 			currentinfo.ServerPort = portInt.ToString();
