@@ -1007,6 +1007,7 @@ public partial class Globals : Node
 		
 		GlobalsData = DataResource.LoadFile();
 		
+		FetchPublicIp();
 	}
 
 
@@ -1298,10 +1299,47 @@ public partial class Globals : Node
 			if (upnp.GetGateway() != null && upnp.GetGateway().IsValidGateway())
 			{
 				upnp.AddPortMapping(port, port, "Godot_Game", "UDP");
-				// GUARDAMOS LA IP AQUÍ
-				PublicIp = upnp.QueryExternalAddress(); 
-				GD.Print("Mi IP Pública es: " + PublicIp);
+				GD.Print("Puerto " + port.ToString() + " mapeado en el router via UPNP.");
+				GD.Print("La IP Pública es: " + PublicIp);
 			}
+			else
+            {
+                GD.PrintErr("UPNP: No se encontró un Gateway válido.");
+            }
 		}
+		else
+        {
+            GD.PrintErr("UPNP Discover falló con código: " + discoverResult);
+            // Si falla el UPNP (por ejemplo, si el router lo tiene desactivado),
+            // PublicIp se quedará vacía. Podrías poner una IP por defecto o manejar el error.
+        }
 	}
+
+	public void FetchPublicIp()
+    {
+        var upnp = new Upnp();
+        
+        // El descubrimiento es necesario para encontrar el Gateway (Router)
+        int discoverResult = upnp.Discover();
+
+        if (discoverResult == (int)Upnp.UpnpResult.Success)
+        {
+            if (upnp.GetGateway() != null && upnp.GetGateway().IsValidGateway())
+            {
+                // Esta es la función clave que obtiene la IP externa
+                PublicIp = upnp.QueryExternalAddress();
+                GD.Print("IP Pública obtenida en _Ready: " + PublicIp);
+            }
+            else
+            {
+                GD.PrintErr("UPNP: No se encontró un Gateway válido.");
+            }
+        }
+        else
+        {
+            GD.PrintErr("UPNP Discover falló con código: " + discoverResult);
+            // Si falla el UPNP (por ejemplo, si el router lo tiene desactivado),
+            // PublicIp se quedará vacía. Podrías poner una IP por defecto o manejar el error.
+        }
+    }
 }
