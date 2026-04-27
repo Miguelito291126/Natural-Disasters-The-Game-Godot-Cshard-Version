@@ -1264,7 +1264,7 @@ public partial class Globals : Node
 		if (Multiplayer.IsServer() && Multiplayer.MultiplayerPeer is not OfflineMultiplayerPeer)
 		{
 			Timer heartbeatTimer = new Timer();
-			heartbeatTimer.WaitTime = 15.0f; // Enviamos señal cada 15 segundos
+			heartbeatTimer.WaitTime = 2.0f; // Enviamos señal cada 2 segundos
 			heartbeatTimer.Autostart = true;
 			heartbeatTimer.Timeout += OnHeartbeatTimerTimeout;
 			AddChild(heartbeatTimer);
@@ -1285,7 +1285,7 @@ public partial class Globals : Node
 		
 		var data = new Dictionary
 		{
-			{ "server_ip", Globals.Instance.MyPublicIp },
+			{ "server_ip",Ip},
 			{ "name", Username },
 			{ "port", Port },
 			{ "players", PlayersConected.Count }
