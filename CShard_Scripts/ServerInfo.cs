@@ -4,16 +4,19 @@ using Godot.Collections;
 [GlobalClass]
 public partial class ServerInfo : HBoxContainer
 {
-	public string ServerIp = "";
-	public string ServerPort = "";
-	public float LastSeen;
+    public string ServerIp = "";
+    public string ServerPort = "";
 
-	protected void _OnButtonPressed()
-	{
-		Globals.Instance.Ip = ServerIp;
-		Globals.Instance.Port = ServerPort.ToInt() + 1;
-		Globals.Instance.PlayMultiplayerClient();
-	}
-
-
+    // Lo hacemos público para que ServerBrowser lo vea
+    public void JoinServer() 
+    {
+        // Limpiamos cualquier espacio o caracter raro
+        string cleanPort = ServerPort.Replace(".0", "").Trim();
+        
+        GD.Print($"Conectando a: {ServerIp}:{cleanPort}");
+        
+        Globals.Instance.Ip = ServerIp;
+        Globals.Instance.Port = cleanPort.ToInt();
+        Globals.Instance.PlayMultiplayerClient();
+    }
 }

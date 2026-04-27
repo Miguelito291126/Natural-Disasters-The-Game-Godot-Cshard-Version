@@ -5,93 +5,74 @@ using Godot.Collections;
 public partial class ServerBrowser : Panel
 {
 	public VBoxContainer List;
+	public HttpRequest http;
+	public Label Info;
 	public PackedScene Serverinfo = ResourceLoader.Load<PackedScene>("res://Scenes/server_info.tscn");
 	public const float TIMEOUT = 3.0f;
 
 	public override void _Ready()
 	{
 		List = GetNode<VBoxContainer>("List");
+		Info = GetNode<Label>("Info");
 		Globals.Instance.ServerBrowser = this;
 
-		// Crear un timer que limpie la lista cada 1 segundo en lugar de cada frame
+		http = GetNode<HttpRequest>("MasterServerRequest");
+		http.RequestCompleted += OnRequestCompleted;
+
 		Timer cleanTimer = new Timer();
-		cleanTimer.WaitTime = 1.0f;
+		// CAMBIO: 5 segundos para que de tiempo a hacer clic sin que la lista desaparezca
+		cleanTimer.WaitTime = 5.0f; 
 		cleanTimer.Autostart = true;
-		cleanTimer.Timeout += () => Reload(); // Quitamos el parámetro
+		cleanTimer.Timeout += () => RefreshServerList(); 
 		AddChild(cleanTimer);
 	}
 
-	public override void _Process(double _delta)
+	public void RefreshServerList()
 	{
-		int currentTime = (int)Time.GetUnixTimeFromSystem();
-
-		if (Globals.Instance.Lisener.GetAvailablePacketCount() > 0)
-		{
-			string server_ip = Globals.Instance.Lisener.GetPacketIP();
-			int server_port = Globals.Instance.Lisener.GetPacketPort();
-			byte[] bytes = Globals.Instance.Lisener.GetPacket();
-			string data = System.Text.Encoding.ASCII.GetString(bytes);
-			
-			// 1. Convertimos el JSON a Diccionario
-			var jsonResult = Json.ParseString(data);
-			if (jsonResult.VariantType != Variant.Type.Dictionary)
-			{
-				GD.PrintErr("Error: El paquete recibido no es un JSON válido o no es un objeto.");
-				return;
-			}
-			var room_list = jsonResult.AsGodotDictionary();
-			
-			// 2. Extraemos el nombre y jugadores (esto crea las variables que te faltaban)
-			string rName = room_list.ContainsKey("Name") ? room_list["Name"].AsString() : "Unknown Server";
-			string rPlayers = room_list.ContainsKey("Players") ? room_list["Players"].ToString() : "0";
-
-			if (string.IsNullOrEmpty(rName) || rName == "Unknown Server") return;
-
-			foreach (Node i in List.GetChildren())
-			{
-				// 3. Casteamos 'i' a tu clase específica (ej: ServerInfo)
-				// Si no tienes una clase, usa: if (i is Node iNode) y luego iNode.Set(...)
-				if (i is ServerInfo item && item.Name == rName)
-				{
-					item.GetNode<Label>("Name").Text = rName + " - ";
-					item.GetNode<Label>("Players").Text = rPlayers + " - ";
-					item.ServerIp = server_ip;
-					item.ServerPort = server_port.ToString();
-					item.LastSeen = currentTime;
-					return;
-				}
-			}
-
-			// 4. Instanciar nuevo servidor
-			var currentinfo = Serverinfo.Instantiate<ServerInfo>(); // Instanciar directamente como el tipo
-			currentinfo.Name = rName;
-			currentinfo.GetNode<Label>("Name").Text = rName + " - ";
-			currentinfo.GetNode<Label>("Players").Text = rPlayers + " - ";
-			currentinfo.ServerIp = server_ip;
-			currentinfo.ServerPort = server_port.ToString();
-			currentinfo.LastSeen = currentTime;
-			List.AddChild(currentinfo, true);
-		}
-
+		http.Request("http://79.112.95.69:5000/list");
 	}
 
-	public void Reload()
+	// Conecta la señal request_completed del HTTPRequest a este método
+	private void OnRequestCompleted(long result, long responseCode, string[] headers, byte[] body)
 	{
+		if (responseCode != 200) return;
 
-		int currentTime = (int)Time.GetUnixTimeFromSystem();
+		var jsonString = System.Text.Encoding.UTF8.GetString(body);
+		var json = Json.ParseString(jsonString);
+		if (json.VariantType != Variant.Type.Array) return;
 
-		foreach(Node i in List.GetChildren())
+		var serverArray = json.AsGodotArray();
+
+		foreach (Node n in List.GetChildren()) 
 		{
-			if(i is ServerInfo item)
+			if (n is ServerInfo)
 			{
-				if(currentTime - item.LastSeen > TIMEOUT)
-				{
-					Globals.Instance.PrintRole("Removing inactive server:" + i.Name);
-					i.QueueFree();
-				}
+				n.Free();
 			}
 		}
-	}
 
+		foreach (Dictionary serverData in serverArray)
+		{
+			var currentinfo = Serverinfo.Instantiate<ServerInfo>();
+			
+			// CORRECCIÓN DE DATOS: Aseguramos que el puerto sea string limpio
+			currentinfo.ServerIp = serverData["ip"].ToString();
+			// Usamos Mathf.Floor para quitar el ".0" si es que viene de Python como float
+			int portInt = (int)GD.StrToVar(serverData["port"].ToString()); 
+			currentinfo.ServerPort = portInt.ToString();
+
+			float playersFloat = (float)GD.StrToVar(serverData["players"].ToString());
+			int playersInt = (int)Mathf.Floor(playersFloat); // Convertimos 1.0 a 1
+
+			currentinfo.GetNode<Label>("Name").Text = serverData["name"].ToString() + " - ";;
+			currentinfo.GetNode<Label>("Players").Text = playersInt.ToString() + " - ";;
+
+			// CONEXIÓN MANUAL: Esto asegura que el click funcione
+			var btn = currentinfo.GetNode<Button>("Button"); // Asegúrate que el nombre sea "Button" en tu escena
+			btn.Pressed += currentinfo.JoinServer;
+
+			List.AddChild(currentinfo);
+		}
+	}
 
 }

@@ -32,6 +32,7 @@ metadata/_edit_use_anchors_ = true
 
 [node name="Menu" type="VBoxContainer" parent="Panel" unique_id=2104998793]
 process_mode = 3
+visible = false
 layout_mode = 1
 anchors_preset = -1
 anchor_left = 0.1234375
@@ -91,7 +92,6 @@ text = "Exit"
 
 [node name="Multiplayer" type="VBoxContainer" parent="Panel" unique_id=1343375395]
 process_mode = 3
-visible = false
 layout_mode = 1
 anchors_preset = -1
 anchor_left = 0.2625
@@ -184,7 +184,6 @@ text = "Back"
 
 [node name="MultiplayerList" type="VBoxContainer" parent="Panel" unique_id=331300036]
 process_mode = 3
-visible = false
 layout_mode = 1
 anchors_preset = -1
 anchor_left = 0.2625
@@ -196,10 +195,6 @@ grow_vertical = 0
 theme = ExtResource("2_8ye2w")
 alignment = 1
 metadata/_edit_use_anchors_ = true
-
-[node name="Label" type="Label" parent="Panel/MultiplayerList" unique_id=1120738411]
-layout_mode = 2
-text = "Ported connected to: 9993"
 
 [node name="Panel" type="Panel" parent="Panel/MultiplayerList" unique_id=1665968298]
 layout_mode = 2
@@ -219,6 +214,8 @@ layout_mode = 2
 text = "Name - PlayersCount"
 horizontal_alignment = 1
 vertical_alignment = 1
+
+[node name="MasterServerRequest" type="HTTPRequest" parent="Panel/MultiplayerList/Panel" unique_id=1863516624]
 
 [node name="BackMultiplayer" type="Button" parent="Panel/MultiplayerList" unique_id=1455997698]
 process_mode = 3

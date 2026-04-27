@@ -112,14 +112,8 @@ public partial class Globals : Node
 	public PackedScene EarthquakeScene = ResourceLoader.Load<PackedScene>("res://Scenes/earthquake.tscn");
 
 	public Timer Timer;
-	public Timer BroadcastTimer;
 
 	[Export] public Dictionary<string, Variant> RoomList = new Dictionary<string, Variant>{{"Name", "Name"},{"Players", 0}};
-	[Export] public string BroadcasterIp = "192.168.1.255";
-	[Export] public int LisenerPort = 5556;
-	[Export] public int BroadcasterPort = 5554;
-	public PacketPeerUdp Broadcaster;
-	public PacketPeerUdp Lisener;
 
 	[Export] public bool IsChatOpen = false;
 	[Export] public bool IsPauseMenuOpen = false;
@@ -689,13 +683,13 @@ public partial class Globals : Node
 
 					await ToSignal(GetTree().CreateTimer(2), SceneTreeTimer.SignalName.Timeout);
 
-					SetUpBroadcast(Username);
+					SendHeartbeatToMaster();
 					LoadScene.Instance.loadscene(MainMenu, "map");
 				}
 				else
 				{
 					PrintRole("Server init");
-					SetUpBroadcast(Username);
+					SendHeartbeatToMaster();
 					LoadScene.Instance.loadscene(MainMenu, "map");
 				}
 			}
@@ -774,8 +768,6 @@ public partial class Globals : Node
 		PlayersConected?.Clear();
 		AssignedCharacter?.Clear();
 		DestrolledNode?.Clear();
-
-		CloseUp();
 		
 		// Safety check for the Multiplayer API
 		if (GetTree() != null) 
@@ -908,8 +900,6 @@ public partial class Globals : Node
 		AssignedCharacter?.Clear();
 		DestrolledNode?.Clear();
 
-		CloseUp();
-
 		// Safety check for the Multiplayer API
 		if (GetTree() != null) 
 		{
@@ -950,8 +940,6 @@ public partial class Globals : Node
 		PressureTarget = PressureOriginal;
 		WindDirectionTarget = WindDirectionOriginal;
 		WindSpeedTarget = WindSpeedOriginal;
-
-		CloseUp();
 	}
 
 
@@ -1000,7 +988,6 @@ public partial class Globals : Node
 		Instance = this;
 
 		Timer = GetNode<Timer>("Timer");
-		BroadcastTimer = GetNode<Timer>("BroadcastTimer");
 
 		Multiplayer.PeerConnected += MultiplayerPlayerSpawner;
 		Multiplayer.PeerDisconnected += MultiplayerPlayerRemover;
@@ -1012,7 +999,6 @@ public partial class Globals : Node
 		Multiplayer.MultiplayerPeer = Multiplayerpeer;
 		
 		GlobalsData = DataResource.LoadFile();
-
 		
 	}
 
@@ -1063,7 +1049,6 @@ public partial class Globals : Node
 			SyncAssignedCharacter(AssignedCharacter);
 			Rpc(MethodName.SyncPlayerList);
 			RpcId(peer_id, MethodName.SyncDestrolledNodes, DestrolledNode);
-			// broadcast
 			PrintRole("No se pudo aadir al jugador con el id: " + peer_id.ToString());
 		}
 	}
@@ -1265,80 +1250,20 @@ public partial class Globals : Node
 		}
 	}
 
-	public void SetUpLisener()
+
+	public void SendHeartbeatToMaster()
 	{
-		Lisener = new PacketPeerUdp();
-		var ok = Lisener.Bind(LisenerPort);
-		if(ok == Error.Ok)
+		var http = GetNode<HttpRequest>("MasterServerRequest");
+		var data = new Dictionary
 		{
-			PrintRole($"Lisener port {LisenerPort} binded!!");
-			if(ServerBrowser != null)
-			{
-				ServerBrowser.GetParent().GetNode<Label>("Label").Text = $"Lisener port {LisenerPort} binded!!";
-			}
-		}
-		else
-		{
-			PrintRole($"Lisener port {LisenerPort} FAILED!!");
-			if(ServerBrowser != null)
-			{
-				ServerBrowser.GetParent().GetNode<Label>("Label").Text = $"Lisener port {LisenerPort} FAILED!!";
-			}
-		}
-	}
+			{ "name", Username },
+			{ "port", Port },
+			{ "players", PlayersConected.Count }
+		};
 
-	public void CloseUp()
-	{
-		if(Lisener != null)
-		{
-			Lisener.Close();
-		}
-
-		if(Broadcaster != null)
-		{
-			Broadcaster.Close();
-		}
-
-		if(BroadcastTimer != null)
-		{
-			BroadcastTimer.Stop();
-		}
-	}
-
-	public void SetUpBroadcast(string Name)
-	{
-		RoomList["Name"] = Name;
-		RoomList["Players"] = (int)PlayersConected.Count;
-
-		Broadcaster = new PacketPeerUdp();
-		Broadcaster.SetBroadcastEnabled(true);
-		Broadcaster.SetDestAddress(BroadcasterIp, LisenerPort);
-
-		var ok = Broadcaster.Bind(BroadcasterPort);
-		if(ok == Error.Ok)
-		{
-			// Usamos $ al principio y metemos la variable entre { }
-			PrintRole($"Broadcaster port {BroadcasterPort} binded!!");
-		}
-		else
-		{
-			PrintRole($"Broadcaster port {BroadcasterPort} FAILED!!");
-		}
-
-		if(BroadcastTimer != null)
-		{
-			BroadcastTimer.Start();
-		}
-	}
-
-	protected void _OnBroadcastTimerTimeout()
-	{
-		RoomList["Players"] = PlayersConected.Count;
-		var data = Json.Stringify(RoomList);
-		var packet = data.ToAsciiBuffer();
-		if(Broadcaster != null)
-		{
-			Broadcaster.PutPacket(packet);
-		}
+		string query = Json.Stringify(data);
+		http.Request("http://79.112.95.69:5000/register", 
+					new string[] { "Content-Type: application/json" }, 
+					HttpClient.Method.Post, query);
 	}
 }

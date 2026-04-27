@@ -106,7 +106,6 @@ public partial class MainMenu : Control
 		Credits.Text = "by " + Globals.Instance.Credits;
 
 		LoadGameScene();
-		Globals.Instance.SetUpLisener();
 
 		var args = OS.GetCmdlineUserArgs();
 		bool isServer = OS.HasFeature("dedicated_server") || (args != null && args.Contains("server"));
@@ -126,8 +125,6 @@ public partial class MainMenu : Control
 							if (i + 1 < args.Length)
 							{
 								Globals.Instance.Port = args[i + 1].ToInt();
-								Globals.Instance.LisenerPort = Globals.Instance.Port + 1;
-								Globals.Instance.BroadcasterPort = Globals.Instance.Port - 1;
 								i++; // Saltamos el valor
 							}
 							break;
@@ -208,9 +205,6 @@ public partial class MainMenu : Control
 	protected void _OnPortTextChanged(string new_text)
 	{
 		Globals.Instance.Port = new_text.ToInt();
-		Globals.Instance.LisenerPort = Globals.Instance.Port + 1;
-		Globals.Instance.BroadcasterPort = Globals.Instance.Port - 1;
-		Globals.Instance.SetUpLisener();
 	}
 
 

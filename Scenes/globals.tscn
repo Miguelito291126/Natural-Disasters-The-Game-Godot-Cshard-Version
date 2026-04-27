@@ -82,7 +82,6 @@ replication_config = SubResource("SceneReplicationConfig_i2lb3")
 
 [node name="Timer" type="Timer" parent="." unique_id=2095409841]
 
-[node name="BroadcastTimer" type="Timer" parent="." unique_id=1165576884]
+[node name="MasterServerRequest" type="HTTPRequest" parent="." unique_id=1991043355]
 
 [connection signal="timeout" from="Timer" to="." method="_OnTimerTimeout"]
-[connection signal="timeout" from="BroadcastTimer" to="." method="_OnBroadcastTimerTimeout"]
