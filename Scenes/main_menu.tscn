@@ -215,8 +215,6 @@ text = "Name - PlayersCount"
 horizontal_alignment = 1
 vertical_alignment = 1
 
-[node name="MasterServerRequest" type="HTTPRequest" parent="Panel/MultiplayerList/Panel" unique_id=1863516624]
-
 [node name="BackMultiplayer" type="Button" parent="Panel/MultiplayerList" unique_id=1455997698]
 process_mode = 3
 layout_mode = 2

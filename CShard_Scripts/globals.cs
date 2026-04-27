@@ -122,7 +122,7 @@ public partial class Globals : Node
 	[Export] public string Character = "blue";
 	[Export] public Array<string> AvalibleCharacters = new Array<string>{"blue", "red", "green", "yellow"};
 	[Export] public Dictionary<int, string> AssignedCharacter = new Dictionary<int, string>{};
-
+	public HttpRequest http;
 	public string MyPublicIp = ""; // Variable nueva
 	public float ConvertMetoSU(float metres)
 	{
@@ -994,6 +994,7 @@ public partial class Globals : Node
 		Instance = this;
 
 		Timer = GetNode<Timer>("Timer");
+		http = GetNode<HttpRequest>("MasterServerRequest");
 
 		Multiplayer.PeerConnected += MultiplayerPlayerSpawner;
 		Multiplayer.PeerDisconnected += MultiplayerPlayerRemover;
@@ -1005,6 +1006,7 @@ public partial class Globals : Node
 		Multiplayer.MultiplayerPeer = Multiplayerpeer;
 		
 		GlobalsData = DataResource.LoadFile();
+		
 		
 	}
 
@@ -1276,11 +1278,14 @@ public partial class Globals : Node
 			SendHeartbeatToMaster();
 		}
 	}
+
+	
 	public void SendHeartbeatToMaster()
 	{
-		var http = GetNode<HttpRequest>("MasterServerRequest");
+		
 		var data = new Dictionary
 		{
+			{ "server_ip", Globals.Instance.MyPublicIp },
 			{ "name", Username },
 			{ "port", Port },
 			{ "players", PlayersConected.Count }

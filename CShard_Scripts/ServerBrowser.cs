@@ -5,7 +5,6 @@ using Godot.Collections;
 public partial class ServerBrowser : Panel
 {
 	public VBoxContainer List;
-	public HttpRequest http;
 	public PackedScene Serverinfo = ResourceLoader.Load<PackedScene>("res://Scenes/server_info.tscn");
 	public const float TIMEOUT = 3.0f;
 
@@ -14,8 +13,7 @@ public partial class ServerBrowser : Panel
 		List = GetNode<VBoxContainer>("List");
 		Globals.Instance.ServerBrowser = this;
 
-		http = GetNode<HttpRequest>("MasterServerRequest");
-		http.RequestCompleted += OnRequestCompleted;
+		Globals.Instance.http.RequestCompleted += OnRequestCompleted;
 
 		Timer cleanTimer = new Timer();
 		// CAMBIO: 5 segundos para que de tiempo a hacer clic sin que la lista desaparezca
@@ -27,7 +25,7 @@ public partial class ServerBrowser : Panel
 
 	public void RefreshServerList()
 	{
-		http.Request("http://79.112.95.69:5000/list");
+		Globals.Instance.http.Request("http://79.112.95.69:5000/list");
 	}
 
 	// Conecta la señal request_completed del HTTPRequest a este método
