@@ -1276,7 +1276,6 @@ public partial class Globals : Node
 		
 		var data = new Dictionary
 		{
-			{ "server_ip", PublicIp },
 			{ "name", Username },
 			{ "port", Port },
 			{ "players", PlayersConected.Count }
