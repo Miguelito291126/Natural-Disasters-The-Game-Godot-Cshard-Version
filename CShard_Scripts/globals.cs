@@ -123,6 +123,7 @@ public partial class Globals : Node
 	[Export] public Array<string> AvalibleCharacters = new Array<string>{"blue", "red", "green", "yellow"};
 	[Export] public Dictionary<int, string> AssignedCharacter = new Dictionary<int, string>{};
 
+	public string MyPublicIp = ""; // Variable nueva
 	public float ConvertMetoSU(float metres)
 	{
 		return (int)(metres * 39.37f) / 0.75f;
@@ -667,7 +668,7 @@ public partial class Globals : Node
 	public async void PlayMultiplayerServer()
 	{
 		UpnpSetup(Port);
-		
+
 		var peer = new ENetMultiplayerPeer();
 		Error error = peer.CreateServer(Port);
 		if(error == Error.Ok)
@@ -1290,42 +1291,22 @@ public partial class Globals : Node
 					new string[] { "Content-Type: application/json" }, 
 					HttpClient.Method.Post, query);
 	}
+	// En Globals.cs
 
-// En Globals.cs
+	public void UpnpSetup(int port)
+	{
+		var upnp = new Upnp();
+		int discoverResult = upnp.Discover();
 
-public void UpnpSetup(int port)
-{
-    var upnp = new Upnp();
-    
-    // Descubrir el router
-    int discoverResult = upnp.Discover();
-    
-    if (discoverResult != (int)Upnp.UpnpResult.Success)
-    {
-        GD.PrintErr("UPNP Discover falló: " + discoverResult);
-        return;
-    }
-
-    // Verificar que el router sea válido y acepte UPNP
-    if (upnp.GetGateway() != null && upnp.GetGateway().IsValidGateway())
-    {
-        // 1. Abrir puerto UDP para el JUEGO
-        int mapUdp = upnp.AddPortMapping(port, port, "Godot_Game_UDP", "UDP");
-        
-        // 2. Abrir puerto TCP para que el Master Server (Python) pueda responderte si es necesario
-        // Aunque el registro suele ser de salida, algunos routers lo prefieren abierto
-        int mapTcp = upnp.AddPortMapping(port, port, "Godot_Game_TCP", "TCP");
-
-        if (mapUdp == (int)Upnp.UpnpResult.Success)
-        {
-            GD.Print($"¡Puerto {port} abierto exitosamente vía UPNP!");
-            // IMPORTANTE: Tu IP pública ahora es accesible
-            GD.Print("IP Externa: " + upnp.QueryExternalAddress());
-        }
-        else
-        {
-            GD.PrintErr("No se pudo abrir el puerto. Error: " + mapUdp);
-        }
-    }
-}
+		if (discoverResult == (int)Upnp.UpnpResult.Success)
+		{
+			if (upnp.GetGateway() != null && upnp.GetGateway().IsValidGateway())
+			{
+				upnp.AddPortMapping(port, port, "Godot_Game", "UDP");
+				// GUARDAMOS LA IP AQUÍ
+				MyPublicIp = upnp.QueryExternalAddress(); 
+				GD.Print("Mi IP Pública es: " + MyPublicIp);
+			}
+		}
+	}
 }
