@@ -6,14 +6,12 @@ public partial class ServerBrowser : Panel
 {
 	public VBoxContainer List;
 	public HttpRequest http;
-	public Label Info;
 	public PackedScene Serverinfo = ResourceLoader.Load<PackedScene>("res://Scenes/server_info.tscn");
 	public const float TIMEOUT = 3.0f;
 
 	public override void _Ready()
 	{
 		List = GetNode<VBoxContainer>("List");
-		Info = GetNode<Label>("Info");
 		Globals.Instance.ServerBrowser = this;
 
 		http = GetNode<HttpRequest>("MasterServerRequest");

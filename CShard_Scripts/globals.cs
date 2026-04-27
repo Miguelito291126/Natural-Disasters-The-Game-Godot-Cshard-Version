@@ -684,12 +684,15 @@ public partial class Globals : Node
 					await ToSignal(GetTree().CreateTimer(2), SceneTreeTimer.SignalName.Timeout);
 
 					SendHeartbeatToMaster();
+					HeartbeatTimerCreate();
 					LoadScene.Instance.loadscene(MainMenu, "map");
 				}
 				else
 				{
 					PrintRole("Server init");
+					
 					SendHeartbeatToMaster();
+					HeartbeatTimerCreate();
 					LoadScene.Instance.loadscene(MainMenu, "map");
 				}
 			}
@@ -1250,7 +1253,26 @@ public partial class Globals : Node
 		}
 	}
 
-
+	private void HeartbeatTimerCreate()
+	{
+		// Solo enviamos el latido si somos el servidor de la partida
+		if (Multiplayer.IsServer() && Multiplayer.MultiplayerPeer is not OfflineMultiplayerPeer)
+		{
+			Timer heartbeatTimer = new Timer();
+			heartbeatTimer.WaitTime = 15.0f; // Enviamos señal cada 15 segundos
+			heartbeatTimer.Autostart = true;
+			heartbeatTimer.Timeout += OnHeartbeatTimerTimeout;
+			AddChild(heartbeatTimer);
+		}
+	}
+	private void OnHeartbeatTimerTimeout()
+	{
+		// Solo enviamos el latido si somos el servidor de la partida
+		if (Multiplayer.IsServer() && Multiplayer.MultiplayerPeer is not OfflineMultiplayerPeer)
+		{
+			SendHeartbeatToMaster();
+		}
+	}
 	public void SendHeartbeatToMaster()
 	{
 		var http = GetNode<HttpRequest>("MasterServerRequest");
