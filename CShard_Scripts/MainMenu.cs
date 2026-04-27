@@ -140,10 +140,8 @@ public partial class MainMenu : Control
 				}
 			}
 
-			// 2. LOGS DE CONFIGURACIÓN FINAL
 			Globals.Instance.PrintRole($"Config - Port: {Globals.Instance.Port}, Mode: {Globals.Instance.Gamemode}, IP: {Globals.Instance.Ip}");
-			
-			// 3. INICIO ÚNICO DEL SERVIDOR
+
 			// Esperamos un poco para asegurar que el árbol de nodos esté totalmente listo
 			await ToSignal(GetTree().CreateTimer(1.0), SceneTreeTimer.SignalName.Timeout);
 			

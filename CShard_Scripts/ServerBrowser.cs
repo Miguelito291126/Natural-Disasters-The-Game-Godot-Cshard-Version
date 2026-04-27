@@ -17,7 +17,7 @@ public partial class ServerBrowser : Panel
 
 		Timer cleanTimer = new Timer();
 		// CAMBIO: 5 segundos para que de tiempo a hacer clic sin que la lista desaparezca
-		cleanTimer.WaitTime = 5.0f; 
+		cleanTimer.WaitTime = 1.0f; 
 		cleanTimer.Autostart = true;
 		cleanTimer.Timeout += () => RefreshServerList(); 
 		AddChild(cleanTimer);

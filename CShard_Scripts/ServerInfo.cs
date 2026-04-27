@@ -18,7 +18,7 @@ public partial class ServerInfo : HBoxContainer
 		// Si la IP de la lista es la mía, uso localhost para evitar el bloqueo del router
 		if (targetIp == Globals.Instance.PublicIp) 
 		{
-			GD.Print("Detectada IP propia, usando" + ServerLocalIp + " para evitar bloqueo NAT Loopback");
+			GD.Print("Detectada IP propia, usando " + ServerLocalIp + " para evitar bloqueo NAT Loopback");
 			targetIp =  ServerLocalIp;
 		}
 		

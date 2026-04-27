@@ -20,8 +20,8 @@ public partial class Globals : Node
 
 	//Network
 	[Export] public string Ip;
-	[Export] public string PublicIp = "79.112.95.69"; // Variable nueva
-	[Export] public string LocalIp = "";
+	[Export] public string PublicIp;
+	[Export] public string LocalIp;
 
 	[Export] public int Port = 5555;
 	[Export] public int Points;
@@ -1264,7 +1264,7 @@ public partial class Globals : Node
 	private void HeartbeatTimerCreate()
 	{
 		Timer heartbeatTimer = new Timer();
-		heartbeatTimer.WaitTime = 2.0f; // Enviamos señal cada 2 segundos
+		heartbeatTimer.WaitTime = 1.0f; // Enviamos señal cada 2 segundos
 		heartbeatTimer.Autostart = true;
 		heartbeatTimer.Timeout += OnHeartbeatTimerTimeout;
 		AddChild(heartbeatTimer);
@@ -1334,7 +1334,7 @@ public partial class Globals : Node
             {
                 // Esta es la función clave que obtiene la IP externa
                 PublicIp = upnp.QueryExternalAddress();
-                GD.Print("IP Pública obtenida en _Ready: " + PublicIp);
+                GD.Print("IP Pública: " + PublicIp);
             }
             else
             {
@@ -1358,7 +1358,7 @@ public partial class Globals : Node
 			if (ip.StartsWith("192.168.") || ip.StartsWith("10."))
 			{
 				LocalIp = ip;
-				GD.Print("IP Local detectada: " + LocalIp);
+				GD.Print("IP Local: " + LocalIp);
 				break;
 			}
 		}
