@@ -140,7 +140,7 @@ public partial class MainMenu : Control
 				}
 			}
 
-			Globals.Instance.PrintRole($"Config - Port: {Globals.Instance.Port}, Mode: {Globals.Instance.Gamemode}, IP: {Globals.Instance.Ip}");
+			Globals.Instance.PrintRole($"Config - Port: {Globals.Instance.Port}, Mode: {Globals.Instance.Gamemode}, IP: {Globals.Instance.PublicIp}");
 
 			// Esperamos un poco para asegurar que el árbol de nodos esté totalmente listo
 			await ToSignal(GetTree().CreateTimer(1.0), SceneTreeTimer.SignalName.Timeout);

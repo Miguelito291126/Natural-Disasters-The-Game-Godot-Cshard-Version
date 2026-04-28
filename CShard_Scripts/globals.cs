@@ -1293,7 +1293,6 @@ public partial class Globals : Node
 					new string[] { "Content-Type: application/json" }, 
 					HttpClient.Method.Post, query);
 	}
-	// En Globals.cs
 
 	public void UpnpSetup(int port)
 	{
