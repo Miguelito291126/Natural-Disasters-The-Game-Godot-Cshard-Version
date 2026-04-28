@@ -1306,6 +1306,7 @@ public partial class Globals : Node
 	public void SendUnregisterToMaster()
 	{
 		GetNode<Timer>("HeartbeatTimer").Stop();
+		GetNode<Timer>("HeartbeatTimer").QueueFree();
 
 		var data = new Dictionary
 		{
@@ -1319,7 +1320,7 @@ public partial class Globals : Node
 		// Usamos un HTTPClient nuevo o el existente para enviar la baja
 		// Nota: Al ser al cerrar, a veces Request() no llega a tiempo. 
 		// Lo ideal es que el servidor también lo haga cuando el host pulse "Salir al menú"
-		http.Request("http://79.112.95.69:5000/unregister", 
+		http.Request(masterServerUrl + "/unregister", 
 					new string[] { "Content-Type: application/json" }, 
 					HttpClient.Method.Post, query);
 	}
