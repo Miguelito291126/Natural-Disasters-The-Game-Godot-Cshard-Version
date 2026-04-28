@@ -916,6 +916,11 @@ public partial class Globals : Node
 			Multiplayer.MultiplayerPeer = Multiplayerpeer;
 		}
 
+		if (Multiplayer.IsServer())
+        {
+            SendUnregisterToMaster();
+        }
+
 		// Safety check for your Scene Loader
 		if (LoadScene.Instance != null)
 		{
@@ -1296,6 +1301,24 @@ public partial class Globals : Node
 					HttpClient.Method.Post, query);
 	}
 
+	public void SendUnregisterToMaster()
+	{
+		var data = new Dictionary
+		{
+			{ "game_id", "natural_disaster_game" }, // Usa el mismo ID que en el registro
+			{ "port", Port }
+		};
+
+		string query = Json.Stringify(data);
+		
+		// Usamos un HTTPClient nuevo o el existente para enviar la baja
+		// Nota: Al ser al cerrar, a veces Request() no llega a tiempo. 
+		// Lo ideal es que el servidor también lo haga cuando el host pulse "Salir al menú"
+		http.Request("http://79.112.95.69:5000/unregister", 
+					new string[] { "Content-Type: application/json" }, 
+					HttpClient.Method.Post, query);
+	}
+
 	public void UpnpSetup(int port)
 	{
 		var upnp = new Upnp();
@@ -1364,4 +1387,6 @@ public partial class Globals : Node
 			}
 		}
 	}
+
+
 }
