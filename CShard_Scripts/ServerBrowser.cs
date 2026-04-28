@@ -25,7 +25,7 @@ public partial class ServerBrowser : Panel
 
 	public void RefreshServerList()
 	{
-		Globals.Instance.http.Request(Globals.Instance.masterServerUrl + "/list");
+		Globals.Instance.http.Request(Globals.Instance.masterServerUrl + "/list/natural_disaster_game");
 	}
 
 	// Conecta la señal request_completed del HTTPRequest a este método

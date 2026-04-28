@@ -1281,6 +1281,7 @@ public partial class Globals : Node
 		
 		var data = new Dictionary
 		{
+			{ "game_id", "natural_disaster_game" }, // ID Único
 			{ "name", Username },
 			{ "players", PlayersConected.Count },
 			{ "public_ip", PublicIp },
