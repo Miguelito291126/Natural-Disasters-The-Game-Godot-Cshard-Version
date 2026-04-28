@@ -127,7 +127,7 @@ public partial class Globals : Node
 	[Export] public Dictionary<int, string> AssignedCharacter = new Dictionary<int, string>{};
 	[Export] public HttpRequest http;
 	[Export] public string masterServerUrl = "http://79.112.95.69:5000";
-	[Export] public bool IsHost = false; // Nueva variable para rastrear si somos el servidor
+	[Export] public bool privateMode = false; // Nueva variable para rastrear si somos el servidor
 	
 	public float ConvertMetoSU(float metres)
 	{
@@ -671,14 +671,16 @@ public partial class Globals : Node
 
 
 	public async void PlayMultiplayerServer()
-	{
-		UpnpSetup(Port);
+	{				
+		if (!privateMode)
+		{
+			UpnpSetup(Port);
+		}
 
 		var peer = new ENetMultiplayerPeer();
 		Error error = peer.CreateServer(Port);
 		if(error == Error.Ok)
 		{
-			IsHost = true;
 			Multiplayerpeer = peer;
 			Multiplayer.MultiplayerPeer = Multiplayerpeer;
 			if(Multiplayer.IsServer())
@@ -686,7 +688,11 @@ public partial class Globals : Node
 				var args = OS.GetCmdlineUserArgs();
 				bool isServer = OS.HasFeature("dedicated_server") || (args != null && args.Contains("server"));
 
-				HeartbeatTimerCreate();
+				if (!privateMode)
+				{
+					HeartbeatTimerCreate();
+				}
+				
 
 				if(isServer)
 				{
@@ -1397,6 +1403,7 @@ public partial class Globals : Node
 			}
 		}
 	}
+
 
 
 }

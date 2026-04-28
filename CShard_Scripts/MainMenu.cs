@@ -29,6 +29,7 @@ public partial class MainMenu : Control
 	public OptionButton Resolutions;
 	public Label Version;
 	public Label Credits;
+	public CheckButton PrivateButton;
 
 	public bool MultiplayerMode = false;
 
@@ -92,6 +93,7 @@ public partial class MainMenu : Control
 		Resolutions = GetNode<OptionButton>("Panel/Settings/Resolutions");
 		Version = GetNode<Label>("Panel/Version");
 		Credits = GetNode<Label>("Panel/Credits");
+		PrivateButton = GetNode<CheckButton>("Panel/Multiplayer/PrivateCheck");
 		Globals.Instance.MainMenu = this;
 
 		MainMenuPanel.Show();
@@ -104,6 +106,7 @@ public partial class MainMenu : Control
 		Version.Text = "V" + Globals.Instance.Version;
 		Tittle.Text = (string)Globals.Instance.Gamename;
 		Credits.Text = "by " + Globals.Instance.Credits;
+		PrivateButton.ButtonPressed = Globals.Instance.privateMode;
 
 		LoadGameScene();
 
@@ -459,5 +462,10 @@ public partial class MainMenu : Control
 		}
 
 		Globals.Instance.GlobalsData.SaveFile();
+	}
+
+	public void _on_private_check_toggled(bool pressed)
+	{
+		Globals.Instance.privateMode = pressed;
 	}
 }
