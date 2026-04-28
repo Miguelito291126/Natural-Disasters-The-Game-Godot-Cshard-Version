@@ -776,13 +776,6 @@ public partial class Globals : Node
 	{
 		PrintRole("Client disconected");
 		
-		if (IsHost)
-        {
-            SendUnregisterToMaster();
-			OS.DelayMsec(100);
-			IsHost = false;
-        }
-		
 		PlayersConected?.Clear();
 		AssignedCharacter?.Clear();
 		DestrolledNode?.Clear();
@@ -912,13 +905,6 @@ public partial class Globals : Node
 	public void MultiplayerServerDisconnected()
 	{
 		PrintRole("Client disconnected");
-
-		if (IsHost)
-        {
-            SendUnregisterToMaster();
-			OS.DelayMsec(100);
-			IsHost = false;
-        }
 
 		// Ensure collections aren't null before clearing
 		PlayersConected?.Clear();
@@ -1201,13 +1187,18 @@ public partial class Globals : Node
 	{
 
 		var peer = Multiplayer.MultiplayerPeer;
-
+				
 		// Si no hay peer o est� desconectado o es offline volver al men�
 		if(peer == null || peer is OfflineMultiplayerPeer || peer.GetConnectionStatus() != MultiplayerPeer.ConnectionStatus.Connected)
 		{
 			MultiplayerServerDisconnected();
 			return;
 		}
+
+		if (Multiplayer.IsServer())
+        {
+            SendUnregisterToMaster();
+        }
 
 		// Si est� conectado cerrar conexi�n
 		peer.Close();
