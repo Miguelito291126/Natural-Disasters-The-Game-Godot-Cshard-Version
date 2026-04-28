@@ -773,7 +773,13 @@ public partial class Globals : Node
 	public void MultiplayerConnectionFailed()
 	{
 		PrintRole("Client disconected");
-
+		
+		if (Multiplayer.IsServer())
+        {
+            SendUnregisterToMaster();
+			OS.DelayMsec(100);
+        }
+		
 		PlayersConected?.Clear();
 		AssignedCharacter?.Clear();
 		DestrolledNode?.Clear();
@@ -907,6 +913,7 @@ public partial class Globals : Node
 		if (Multiplayer.IsServer())
         {
             SendUnregisterToMaster();
+			OS.DelayMsec(100);
         }
 
 		// Ensure collections aren't null before clearing
@@ -1188,6 +1195,7 @@ public partial class Globals : Node
 
 	public void CloseConection()
 	{
+
 		var peer = Multiplayer.MultiplayerPeer;
 
 		// Si no hay peer o est� desconectado o es offline volver al men�
@@ -1298,7 +1306,8 @@ public partial class Globals : Node
 		};
 
 		string query = Json.Stringify(data);
-		http.Request(masterServerUrl + "/register", 
+		string url = masterServerUrl + "/register";
+		http.Request(url, 
 					new string[] { "Content-Type: application/json" }, 
 					HttpClient.Method.Post, query);
 	}
@@ -1316,13 +1325,12 @@ public partial class Globals : Node
 		};
 
 		string query = Json.Stringify(data);
+		string url = masterServerUrl + "/unregister";
 		
-		// Usamos un HTTPClient nuevo o el existente para enviar la baja
-		// Nota: Al ser al cerrar, a veces Request() no llega a tiempo. 
-		// Lo ideal es que el servidor también lo haga cuando el host pulse "Salir al menú"
-		http.Request(masterServerUrl + "/unregister", 
+		http.Request(url, 
 					new string[] { "Content-Type: application/json" }, 
-					HttpClient.Method.Post, query);
+					HttpClient.Method.Post, 
+					query);
 	}
 
 	public void UpnpSetup(int port)
