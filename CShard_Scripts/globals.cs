@@ -1310,7 +1310,7 @@ public partial class Globals : Node
 		var data = new Dictionary
 		{
 			{ "game_id", "natural_disaster_game" }, // Usa el mismo ID que en el registro
-			{ "port", Port }
+			{ "port", Port },
 			{ "public_ip", PublicIp }
 		};
 
