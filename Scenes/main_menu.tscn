@@ -151,6 +151,10 @@ theme = ExtResource("2_8ye2w")
 theme_override_font_sizes/font_size = 30
 placeholder_text = "Example: 5555"
 
+[node name="PrivateCheck" type="CheckButton" parent="Panel/Multiplayer" unique_id=1786622450]
+layout_mode = 2
+text = "Private"
+
 [node name="HBoxContainer" type="HBoxContainer" parent="Panel/Multiplayer" unique_id=2080795022]
 process_mode = 3
 layout_mode = 2
@@ -184,6 +188,7 @@ text = "Back"
 
 [node name="MultiplayerList" type="VBoxContainer" parent="Panel" unique_id=331300036]
 process_mode = 3
+visible = false
 layout_mode = 1
 anchors_preset = -1
 anchor_left = 0.2625
@@ -441,6 +446,7 @@ bus = &"Music"
 [connection signal="text_changed" from="Panel/Multiplayer/Username" to="." method="_OnUsernameTextChanged"]
 [connection signal="text_changed" from="Panel/Multiplayer/Ip" to="." method="_OnIpTextChanged"]
 [connection signal="text_changed" from="Panel/Multiplayer/Port" to="." method="_OnPortTextChanged"]
+[connection signal="toggled" from="Panel/Multiplayer/PrivateCheck" to="." method="_on_private_check_toggled"]
 [connection signal="pressed" from="Panel/Multiplayer/HBoxContainer/Join" to="." method="_OnJoinPressed"]
 [connection signal="pressed" from="Panel/Multiplayer/HBoxContainer/Host" to="." method="_OnHostPressed"]
 [connection signal="pressed" from="Panel/Multiplayer/MultiplayerList" to="." method="_OnMultiplayerListPressed"]
