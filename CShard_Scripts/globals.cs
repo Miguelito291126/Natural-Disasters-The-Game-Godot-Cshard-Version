@@ -1275,10 +1275,11 @@ public partial class Globals : Node
 	private void HeartbeatTimerCreate()
 	{
 		Timer heartbeatTimer = new Timer();
+		heartbeatTimer.Name = "HeartbeatTimer";
 		heartbeatTimer.WaitTime = 1.0f; // Enviamos señal cada 2 segundos
 		heartbeatTimer.Autostart = true;
 		heartbeatTimer.Timeout += OnHeartbeatTimerTimeout;
-		AddChild(heartbeatTimer);
+		AddChild(heartbeatTimer, true);
 	}
 	private void OnHeartbeatTimerTimeout()
 	{
