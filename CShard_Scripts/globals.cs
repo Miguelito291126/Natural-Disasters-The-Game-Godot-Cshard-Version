@@ -127,6 +127,7 @@ public partial class Globals : Node
 	[Export] public Dictionary<int, string> AssignedCharacter = new Dictionary<int, string>{};
 	[Export] public HttpRequest http;
 	[Export] public string masterServerUrl = "http://79.112.95.69:5000";
+	[Export] public bool IsHost = false; // Nueva variable para rastrear si somos el servidor
 	
 	public float ConvertMetoSU(float metres)
 	{
@@ -677,6 +678,7 @@ public partial class Globals : Node
 		Error error = peer.CreateServer(Port);
 		if(error == Error.Ok)
 		{
+			IsHost = true;
 			Multiplayerpeer = peer;
 			Multiplayer.MultiplayerPeer = Multiplayerpeer;
 			if(Multiplayer.IsServer())
@@ -774,10 +776,11 @@ public partial class Globals : Node
 	{
 		PrintRole("Client disconected");
 		
-		if (Multiplayer.IsServer())
+		if (IsHost)
         {
             SendUnregisterToMaster();
 			OS.DelayMsec(100);
+			IsHost = false;
         }
 		
 		PlayersConected?.Clear();
@@ -910,10 +913,11 @@ public partial class Globals : Node
 	{
 		PrintRole("Client disconnected");
 
-		if (Multiplayer.IsServer())
+		if (IsHost)
         {
             SendUnregisterToMaster();
 			OS.DelayMsec(100);
+			IsHost = false;
         }
 
 		// Ensure collections aren't null before clearing
