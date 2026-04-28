@@ -25,7 +25,7 @@ public partial class ServerBrowser : Panel
 
 	public void RefreshServerList()
 	{
-		Globals.Instance.http.Request("http://79.112.95.69:5000/list");
+		Globals.Instance.http.Request(Globals.Instance.masterServerUrl + "/list");
 	}
 
 	// Conecta la señal request_completed del HTTPRequest a este método

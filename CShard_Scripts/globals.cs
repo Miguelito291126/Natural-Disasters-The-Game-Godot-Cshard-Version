@@ -125,7 +125,8 @@ public partial class Globals : Node
 	[Export] public string Character = "blue";
 	[Export] public Array<string> AvalibleCharacters = new Array<string>{"blue", "red", "green", "yellow"};
 	[Export] public Dictionary<int, string> AssignedCharacter = new Dictionary<int, string>{};
-	public HttpRequest http;
+	[Export] public HttpRequest http;
+	[Export] public string masterServerUrl = "http://79.112.95.69:5000";
 	
 	public float ConvertMetoSU(float metres)
 	{
@@ -1289,7 +1290,7 @@ public partial class Globals : Node
 		};
 
 		string query = Json.Stringify(data);
-		http.Request("http://79.112.95.69:5000/register", 
+		http.Request(masterServerUrl + "/register", 
 					new string[] { "Content-Type: application/json" }, 
 					HttpClient.Method.Post, query);
 	}
