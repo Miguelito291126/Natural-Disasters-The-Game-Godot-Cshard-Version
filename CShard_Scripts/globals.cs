@@ -904,6 +904,11 @@ public partial class Globals : Node
 	{
 		PrintRole("Client disconnected");
 
+		if (Multiplayer.IsServer())
+        {
+            SendUnregisterToMaster();
+        }
+
 		// Ensure collections aren't null before clearing
 		PlayersConected?.Clear();
 		AssignedCharacter?.Clear();
@@ -916,10 +921,7 @@ public partial class Globals : Node
 			Multiplayer.MultiplayerPeer = Multiplayerpeer;
 		}
 
-		if (Multiplayer.IsServer())
-        {
-            SendUnregisterToMaster();
-        }
+
 
 		// Safety check for your Scene Loader
 		if (LoadScene.Instance != null)
@@ -1303,10 +1305,13 @@ public partial class Globals : Node
 
 	public void SendUnregisterToMaster()
 	{
+		GetNode<Timer>("HeartbeatTimer").Stop();
+
 		var data = new Dictionary
 		{
 			{ "game_id", "natural_disaster_game" }, // Usa el mismo ID que en el registro
 			{ "port", Port }
+			{ "public_ip", PublicIp }
 		};
 
 		string query = Json.Stringify(data);
