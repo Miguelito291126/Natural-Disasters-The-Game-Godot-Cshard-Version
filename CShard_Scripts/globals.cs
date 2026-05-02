@@ -1403,7 +1403,15 @@ public partial class Globals : Node
 			}
 		}
 	}
-
-
-
+	public override void _Notification(int what)
+	{
+		// Detectamos cuando el usuario cierra la ventana o sale del juego
+		if (what == NotificationWMCloseRequest || what == NotificationPredelete)
+		{
+			if (Multiplayer.IsServer())
+			{
+				SendUnregisterToMaster();
+			}
+		}
+	}
 }
