@@ -126,7 +126,7 @@ public partial class Globals : Node
 	[Export] public Array<string> AvalibleCharacters = new Array<string>{"blue", "red", "green", "yellow"};
 	[Export] public Dictionary<int, string> AssignedCharacter = new Dictionary<int, string>{};
 	[Export] public HttpRequest http;
-	[Export] public string masterServerUrl = "http://79.112.95.69:5000";
+	[Export] public string masterServerUrl = "http://miguelito2911.serveminecraft.net:5000";
 	[Export] public bool privateMode = false; // Nueva variable para rastrear si somos el servidor
 	
 	public float ConvertMetoSU(float metres)
