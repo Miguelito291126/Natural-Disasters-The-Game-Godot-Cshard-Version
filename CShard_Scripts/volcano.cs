@@ -1,3 +1,4 @@
+using System.ComponentModel.DataAnnotations;
 using Godot;
 using Godot.Collections;
 
@@ -11,9 +12,8 @@ public partial class Volcano : Node3D
 	public PackedScene EarthquakeScene = ResourceLoader.Load<PackedScene>("res://Scenes/earthquake.tscn");
 
 
-	[Export] public int LaunchInterval = 5;
 	// Intervalo de lanzamiento en segundos
-	[Export] public int LaunchForce = 50000;
+	[Export] [Range(0, 10000)] public int LaunchForce = 1100;
 	// Fuerza de lanzamiento de la bola de fuego
 	[Export] public int LaunchAmount = 20;
 
@@ -107,7 +107,7 @@ public partial class Volcano : Node3D
 		EruptSparks.Emitting = true;
 		EruptSmoke.Emitting = true;
 		EruptSound.Play();
-		_LaunchFireball(LaunchAmount, LaunchInterval);
+		_LaunchFireball(LaunchAmount);
 
 		await ToSignal(GetTree().CreateTimer(10), SceneTreeTimer.SignalName.Timeout);
 
@@ -126,13 +126,13 @@ public partial class Volcano : Node3D
 		CheckPressure();
 	}
 
-	protected async void _LaunchFireball(int range, int time)
+	protected void _LaunchFireball(int range)
 	{
 		for(int i = 0; i < range; i++)
 		{
 			Meteors fireball = FireballScene.Instantiate<Meteors>();
 			Vector3 spawnPos = LaunchMarker.GlobalPosition;
-			
+
 			Vector3 baseDirection = LaunchMarker.GlobalTransform.Basis.Y;
 			Vector3 spread = new Vector3(
 				(float)GD.RandRange(-0.4, 0.4),
@@ -142,12 +142,13 @@ public partial class Volcano : Node3D
 
 			Vector3 finalDirection = (baseDirection + spread).Normalized();
 
+			LaunchForce = GD.RandRange(2100, 5500);
+
 			GetParent().AddChild(fireball, true);
 			fireball.GlobalPosition = spawnPos;
 			fireball.Scale = new Vector3(1, 1, 1);
 			fireball.IsVolcanoRock = true;
-			fireball.ApplyImpulse(finalDirection * LaunchForce, Vector3.Up);
-			await ToSignal(GetTree().CreateTimer(time), SceneTreeTimer.SignalName.Timeout);
+			fireball.ApplyImpulse(finalDirection * LaunchForce);
 		}
 	}
 
