@@ -213,6 +213,7 @@ down={
 
 [layer_names]
 
+3d_render/layer_1="main"
 3d_render/layer_2="terrain"
 3d_physics/layer_1="player"
 3d_physics/layer_2="interactable"

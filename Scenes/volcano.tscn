@@ -90,46 +90,34 @@ length = 0.001
 tracks/0/type = "value"
 tracks/0/imported = false
 tracks/0/enabled = true
-tracks/0/path = NodePath(".:Lava_Level")
+tracks/0/path = NodePath(".:Pressure")
 tracks/0/interp = 1
 tracks/0/loop_wrap = true
 tracks/0/keys = {
 "times": PackedFloat32Array(0),
 "transitions": PackedFloat32Array(1),
 "update": 1,
-"values": [125]
+"values": [0]
 }
 tracks/1/type = "value"
 tracks/1/imported = false
 tracks/1/enabled = true
-tracks/1/path = NodePath(".:Pressure")
+tracks/1/path = NodePath(".:IsGoingToErupt")
 tracks/1/interp = 1
 tracks/1/loop_wrap = true
 tracks/1/keys = {
 "times": PackedFloat32Array(0),
 "transitions": PackedFloat32Array(1),
 "update": 1,
-"values": [0]
+"values": [false]
 }
 tracks/2/type = "value"
 tracks/2/imported = false
 tracks/2/enabled = true
-tracks/2/path = NodePath(".:IsGoingToErupt")
+tracks/2/path = NodePath(".:IsPressureLeaking")
 tracks/2/interp = 1
 tracks/2/loop_wrap = true
 tracks/2/keys = {
-"times": PackedFloat32Array(0),
-"transitions": PackedFloat32Array(1),
-"update": 1,
-"values": [false]
-}
-tracks/3/type = "value"
-tracks/3/imported = false
-tracks/3/enabled = true
-tracks/3/path = NodePath(".:IsPressureLeaking")
-tracks/3/interp = 1
-tracks/3/loop_wrap = true
-tracks/3/keys = {
 "times": PackedFloat32Array(0),
 "transitions": PackedFloat32Array(1),
 "update": 1,
@@ -143,46 +131,34 @@ loop_mode = 1
 tracks/0/type = "value"
 tracks/0/imported = false
 tracks/0/enabled = true
-tracks/0/path = NodePath(".:Lava_Level")
+tracks/0/path = NodePath(".:Pressure")
 tracks/0/interp = 1
 tracks/0/loop_wrap = true
 tracks/0/keys = {
 "times": PackedFloat32Array(0, 126.7, 300),
 "transitions": PackedFloat32Array(1, 1, 1),
 "update": 1,
-"values": [125, 250, 125]
+"values": [0, 100, 0]
 }
 tracks/1/type = "value"
 tracks/1/imported = false
 tracks/1/enabled = true
-tracks/1/path = NodePath(".:Pressure")
+tracks/1/path = NodePath(".:IsGoingToErupt")
 tracks/1/interp = 1
 tracks/1/loop_wrap = true
 tracks/1/keys = {
-"times": PackedFloat32Array(0, 126.7, 300),
-"transitions": PackedFloat32Array(1, 1, 1),
-"update": 1,
-"values": [0, 100, 0]
-}
-tracks/2/type = "value"
-tracks/2/imported = false
-tracks/2/enabled = true
-tracks/2/path = NodePath(".:IsGoingToErupt")
-tracks/2/interp = 1
-tracks/2/loop_wrap = true
-tracks/2/keys = {
 "times": PackedFloat32Array(0, 300),
 "transitions": PackedFloat32Array(1, 1),
 "update": 1,
 "values": [false, false]
 }
-tracks/3/type = "value"
-tracks/3/imported = false
-tracks/3/enabled = true
-tracks/3/path = NodePath(".:IsPressureLeaking")
-tracks/3/interp = 1
-tracks/3/loop_wrap = true
-tracks/3/keys = {
+tracks/2/type = "value"
+tracks/2/imported = false
+tracks/2/enabled = true
+tracks/2/path = NodePath(".:IsPressureLeaking")
+tracks/2/interp = 1
+tracks/2/loop_wrap = true
+tracks/2/keys = {
 "times": PackedFloat32Array(0, 300),
 "transitions": PackedFloat32Array(1, 1),
 "update": 1,
@@ -235,18 +211,15 @@ properties/11/replication_mode = 1
 properties/12/path = NodePath(".:Pressure")
 properties/12/spawn = true
 properties/12/replication_mode = 1
-properties/13/path = NodePath(".:Lava_Level")
+properties/13/path = NodePath("launch_marker:position")
 properties/13/spawn = true
 properties/13/replication_mode = 1
-properties/14/path = NodePath(".:launch_radius")
+properties/14/path = NodePath("launch_marker:rotation")
 properties/14/spawn = true
 properties/14/replication_mode = 1
-properties/15/path = NodePath(".:launch_force")
+properties/15/path = NodePath("launch_marker:scale")
 properties/15/spawn = true
 properties/15/replication_mode = 1
-properties/16/path = NodePath(".:launch_interval")
-properties/16/spawn = true
-properties/16/replication_mode = 1
 
 [sub_resource type="SphereShape3D" id="SphereShape3D_lhoig"]
 radius = 53.759
