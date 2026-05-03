@@ -282,6 +282,7 @@ public partial class Player : CharacterBody3D
 			}
 
 			IsAlive = false;
+			Noclip = false;
 
 			// Solo ejecutar die() y quitar puntos en la instancia local del jugador que muri�
 			if(IsMultiplayerAuthority())

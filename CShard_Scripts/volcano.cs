@@ -11,13 +11,6 @@ public partial class Volcano : Node3D
 	// Escena de la bola de fuego
 	public PackedScene EarthquakeScene = ResourceLoader.Load<PackedScene>("res://Scenes/earthquake.tscn");
 
-
-	// Intervalo de lanzamiento en segundos
-	[Export] [Range(0, 10000)] public int LaunchForce = 1100;
-	// Fuerza de lanzamiento de la bola de fuego
-	[Export] public int LaunchAmount = 20;
-
-	[Export] public int LavaLevel = 125;
 	[Export] public int Pressure = 0;
 	[Export] public bool IsGoingToErupt = false;
 	[Export] public bool IsPressureLeaking = false;
@@ -107,7 +100,7 @@ public partial class Volcano : Node3D
 		EruptSparks.Emitting = true;
 		EruptSmoke.Emitting = true;
 		EruptSound.Play();
-		_LaunchFireball(LaunchAmount);
+		_LaunchFireball(20);
 
 		await ToSignal(GetTree().CreateTimer(10), SceneTreeTimer.SignalName.Timeout);
 
@@ -131,24 +124,26 @@ public partial class Volcano : Node3D
 		for(int i = 0; i < range; i++)
 		{
 			Meteors fireball = FireballScene.Instantiate<Meteors>();
-			Vector3 spawnPos = LaunchMarker.GlobalPosition;
+
+			GetParent().AddChild(fireball, true);
+
+			fireball.GlobalPosition = LaunchMarker.GlobalPosition;
+			fireball.Scale = Vector3.One;
+			fireball.IsVolcanoRock = true;
 
 			Vector3 baseDirection = LaunchMarker.GlobalTransform.Basis.Y;
 			Vector3 spread = new Vector3(
-				(float)GD.RandRange(-0.4, 0.4),
-				(float)GD.RandRange(-0.1, 0.2), // Variación en altura
-				(float)GD.RandRange(-0.4, 0.4)
+				(float)GD.RandRange(-0.3, 0.3),
+				(float)GD.RandRange(0.0, 0.2), // Siempre hacia arriba
+				(float)GD.RandRange(-0.3, 0.3)
 			);
 
 			Vector3 finalDirection = (baseDirection + spread).Normalized();
 
-			LaunchForce = GD.RandRange(2100, 5500);
+			float randomForce = (float)GD.RandRange(1500, 3000);
 
-			GetParent().AddChild(fireball, true);
-			fireball.GlobalPosition = spawnPos;
-			fireball.Scale = new Vector3(1, 1, 1);
-			fireball.IsVolcanoRock = true;
-			fireball.ApplyImpulse(finalDirection * LaunchForce);
+
+			fireball.ApplyImpulse(finalDirection * randomForce);
 		}
 	}
 
