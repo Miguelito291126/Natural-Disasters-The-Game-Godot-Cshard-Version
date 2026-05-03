@@ -7,12 +7,10 @@ public partial class Meteors : RigidBody3D
 	[Export]  public PackedScene ExplosionScene = ResourceLoader.Load<PackedScene>("res://Scenes/explosion.tscn");
 	[Export] public bool IsVolcanoRock = false;
 	
-	public int RandNum;
 
 	// Called when the node enters the scene tree for the first time.
 	public override void _Ready()
 	{
-		RandNum = GD.RandRange(1, 50);
 		// Solo mover hacia arriba si NO es una roca del volc�n
 		if(!IsVolcanoRock)
 		{

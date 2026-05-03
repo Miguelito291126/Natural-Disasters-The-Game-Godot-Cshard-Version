@@ -1,12 +1,16 @@
-[gd_scene load_steps=2 format=3 uid="uid://d3nqv2bmoyl5d"]
+[gd_scene format=3 uid="uid://d3nqv2bmoyl5d"]
 
-[ext_resource type="PackedScene" uid="uid://hiq4h8n7r78k" path="res://Scenes/hause.tscn" id="1_0ct46"]
+[ext_resource type="PackedScene" uid="uid://ddlqooa2yb6y4" path="res://Scenes/hause.tscn" id="1_0ct46"]
 
-[node name="hause_icon" type="SubViewport"]
+[node name="hause_icon" type="SubViewport" unique_id=17624937]
 size = Vector2i(128, 128)
 render_target_update_mode = 4
 
-[node name="Hause" parent="." instance=ExtResource("1_0ct46")]
+[node name="Hause" parent="." unique_id=824222957 instance=ExtResource("1_0ct46")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -7.8750343, -39.646114)
 
-[node name="Camera3D" type="Camera3D" parent="."]
-transform = Transform3D(-0.964174, 0, 0.26527, 0, 1, 0, -0.26527, 0, -0.964174, 5.8674, 9.75251, -22.7652)
+[node name="Camera3D" type="Camera3D" parent="." unique_id=290018607]
+current = true
+
+[node name="DirectionalLight3D" type="DirectionalLight3D" parent="." unique_id=1362786672]
+transform = Transform3D(1, 0, 0, 0, -4.371139e-08, 1, 0, -1, -4.371139e-08, 0, 0, 0)

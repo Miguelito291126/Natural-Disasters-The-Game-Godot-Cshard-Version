@@ -1,0 +1,16 @@
+[gd_scene format=3 uid="uid://dcko7ka6gmgdu"]
+
+[ext_resource type="PackedScene" uid="uid://cv8xwubw2paof" path="res://Scenes/sphere.tscn" id="1_l3d5k"]
+
+[node name="sphere_icon" type="SubViewport" unique_id=17624937]
+size = Vector2i(128, 128)
+render_target_update_mode = 4
+
+[node name="sphere" parent="." unique_id=1369646732 instance=ExtResource("1_l3d5k")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, -8.935031)
+
+[node name="Camera3D" type="Camera3D" parent="." unique_id=290018607]
+current = true
+
+[node name="DirectionalLight3D" type="DirectionalLight3D" parent="." unique_id=1362786672]
+transform = Transform3D(1, 0, 0, 0, -4.371139e-08, 1, 0, -1, -4.371139e-08, 0, 0, 0)

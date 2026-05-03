@@ -101,7 +101,7 @@ public partial class SpawnMenu : CanvasLayer
 			Texture2D icon_image = null;
 			foreach(string path in candidates)
 			{
-				if (FileAccess.FileExists(path)) {
+				if (ResourceLoader.Exists(path)) {
 					icon_image = GD.Load<Texture2D>(path);
 					break;
 				}

@@ -1,0 +1,16 @@
+[gd_scene format=3 uid="uid://bjb8o43uwwct"]
+
+[ext_resource type="PackedScene" uid="uid://bkfobjkkd58w0" path="res://Scenes/cube.tscn" id="1_75b54"]
+
+[node name="sphere_icon" type="SubViewport" unique_id=17624937]
+size = Vector2i(128, 128)
+render_target_update_mode = 4
+
+[node name="cube" parent="." unique_id=1788087381 instance=ExtResource("1_75b54")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, -7.7941074)
+
+[node name="Camera3D" type="Camera3D" parent="." unique_id=290018607]
+current = true
+
+[node name="DirectionalLight3D" type="DirectionalLight3D" parent="." unique_id=1362786672]
+transform = Transform3D(1, 0, 0, 0, -4.371139e-08, 1, 0, -1, -4.371139e-08, 0, 0, 0)

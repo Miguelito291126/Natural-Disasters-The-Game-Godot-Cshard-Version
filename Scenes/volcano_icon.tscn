@@ -2,11 +2,15 @@
 
 [ext_resource type="PackedScene" uid="uid://qf81iinh5hke" path="res://Scenes/volcano.tscn" id="1_2k4t8"]
 
-[node name="volcano_icon" type="SubViewport"]
+[node name="volcano_icon" type="SubViewport" unique_id=2117860562]
 size = Vector2i(128, 128)
 render_target_update_mode = 4
 
-[node name="Volcano" parent="." instance=ExtResource("1_2k4t8")]
+[node name="Volcano" parent="." unique_id=110437734 instance=ExtResource("1_2k4t8")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -177.54376, -511.8449)
 
-[node name="Camera3D" type="Camera3D" parent="."]
-transform = Transform3D(-0.964174, 0, 0.26527, 0, 1, 0, -0.26527, 0, -0.964174, 241.913, 224.774, -696.453)
+[node name="Camera3D" type="Camera3D" parent="." unique_id=1504073081]
+current = true
+
+[node name="DirectionalLight3D" type="DirectionalLight3D" parent="." unique_id=1833487156]
+transform = Transform3D(1, 0, 0, 0, -4.371139e-08, 1, 0, -1, -4.371139e-08, 0, 0, 0)
