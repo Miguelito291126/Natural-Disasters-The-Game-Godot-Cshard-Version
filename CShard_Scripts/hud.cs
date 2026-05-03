@@ -5,7 +5,7 @@ using Godot.Collections;
 public partial class HUD : CanvasLayer
 {
 	public Player Player;
-	public double NextHeartSoundTime = Time.GetUnixTimeFromSystem();
+	private float timer = 0.0f;
 
 	public TextureRect Hearth;
 	public Label Label;
@@ -50,7 +50,7 @@ public partial class HUD : CanvasLayer
 		}
 	}
 
-	public override void _Process(double _delta)
+	public override void _Process(double delta)
 	{
 		// Si no soy el dueño, no hago nada (ahorra rendimiento)
 		if(!IsMultiplayerAuthority()) return;
@@ -67,10 +67,16 @@ public partial class HUD : CanvasLayer
 
 		double interval = 1.0 / freq;
 
-		if(Time.GetUnixTimeFromSystem() >= NextHeartSoundTime)
+		timer += (float)delta * freq; 
+			
+		if (timer >= 1.2) // 1.2 es un valor base para un latido tranquilo
 		{
-			if (!HearthbeatSound.Playing) HearthbeatSound.Play();
-			NextHeartSoundTime = Time.GetUnixTimeFromSystem() + interval;
+			if (!HearthbeatSound.Playing) 
+			{
+				HearthbeatSound.PitchScale = Mathf.Lerp(1.0f, 1.3f, freq / 4.0f); // El tono sube un poco al agitarse
+				HearthbeatSound.Play();
+			}
+			timer = 0;
 		}
 
 		// FPS y Datos

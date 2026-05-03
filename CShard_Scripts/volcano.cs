@@ -17,9 +17,6 @@ public partial class Volcano : Node3D
 	// Fuerza de lanzamiento de la bola de fuego
 	[Export] public int LaunchAmount = 20;
 
-	// Fuerza de lanzamiento de la bola de fuego
-	public Vector3 LaunchPosition;
-
 	[Export] public int LavaLevel = 125;
 	[Export] public int Pressure = 0;
 	[Export] public bool IsGoingToErupt = false;
@@ -44,7 +41,6 @@ public partial class Volcano : Node3D
 		EruptSmoke = GetNode<GpuParticles3D>("Erupt Smoke");
 		EruptSound = GetNode<AudioStreamPlayer3D>("Erupt Sound");
 		LaunchMarker = GetNode<Marker3D>("launch_marker");
-		LaunchPosition = LaunchMarker.GlobalPosition;
 	}
 
 	public async void CheckPressure()
@@ -135,16 +131,22 @@ public partial class Volcano : Node3D
 		for(int i = 0; i < range; i++)
 		{
 			Meteors fireball = FireballScene.Instantiate<Meteors>();
-			Vector3 launch_direction = new Vector3(GD.RandRange( - 1, 1), 1, GD.RandRange( - 1, 1)).Normalized();
-			// Direcci�n hacia arriba
+			Vector3 spawnPos = LaunchMarker.GlobalPosition;
+			
+			Vector3 baseDirection = LaunchMarker.GlobalTransform.Basis.Y;
+			Vector3 spread = new Vector3(
+				(float)GD.RandRange(-0.4, 0.4),
+				(float)GD.RandRange(-0.1, 0.2), // Variación en altura
+				(float)GD.RandRange(-0.4, 0.4)
+			);
+
+			Vector3 finalDirection = (baseDirection + spread).Normalized();
+
 			GetParent().AddChild(fireball, true);
-			// Agregar la bola de fuego como hijo del volc�n primero
-			fireball.GlobalPosition = LaunchPosition;
-			// Posici�n inicial en el volc�n
+			fireball.GlobalPosition = spawnPos;
 			fireball.Scale = new Vector3(1, 1, 1);
 			fireball.IsVolcanoRock = true;
-			fireball.ApplyImpulse(launch_direction * LaunchForce, Vector3.Up);
-			// Aplicar fuerza para lanzar la bola de fuego
+			fireball.ApplyImpulse(finalDirection * LaunchForce, Vector3.Up);
 			await ToSignal(GetTree().CreateTimer(time), SceneTreeTimer.SignalName.Timeout);
 		}
 	}
