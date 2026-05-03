@@ -350,6 +350,7 @@ public partial class PauseMenu : CanvasLayer
 			{
 				Light.ShadowEnabled = false;
 				Light2.ShadowEnabled = false;
+				Light.DirectionalShadowMode = DirectionalLight3D.ShadowMode.Orthogonal;
 				Worldenvironment.Environment.SdfgiEnabled = false;
 				Worldenvironment.Environment.GlowEnabled = false;
 				Worldenvironment.Environment.SsaoEnabled = false;
@@ -358,6 +359,7 @@ public partial class PauseMenu : CanvasLayer
 			{
 				Light.ShadowEnabled = true;
 				Light2.ShadowEnabled = true;
+				Light.DirectionalShadowMode = DirectionalLight3D.ShadowMode.Parallel2Splits;
 				Worldenvironment.Environment.SdfgiEnabled = false;
 				Worldenvironment.Environment.GlowEnabled = true;
 				Worldenvironment.Environment.SsaoEnabled = false;
@@ -366,6 +368,7 @@ public partial class PauseMenu : CanvasLayer
 			{
 				Light.ShadowEnabled = true;
 				Light2.ShadowEnabled = true;
+				Light.DirectionalShadowMode = DirectionalLight3D.ShadowMode.Parallel4Splits;
 				Worldenvironment.Environment.SdfgiEnabled = true;
 				Worldenvironment.Environment.GlowEnabled = true;
 				Worldenvironment.Environment.SsaoEnabled = true;

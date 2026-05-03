@@ -162,6 +162,11 @@ transform = Transform3D(1, 0, 0, 0, 0.45709792, 0.8894164, 0, -0.8894164, 0.4570
 layers = 3
 light_energy = 2.0
 shadow_enabled = true
+shadow_blur = 0.1
+directional_shadow_split_1 = 0.01
+directional_shadow_split_2 = 0.04
+directional_shadow_split_3 = 0.15
+directional_shadow_blend_splits = true
 directional_shadow_max_distance = 5000.0
 
 [node name="Moon" type="DirectionalLight3D" parent="WorldEnvironment" unique_id=1935824634]
@@ -169,6 +174,11 @@ layers = 3
 light_color = Color(0.686275, 0.686275, 0.686275, 1)
 light_energy = 0.2
 shadow_enabled = true
+shadow_blur = 0.1
+directional_shadow_split_1 = 0.01
+directional_shadow_split_2 = 0.04
+directional_shadow_split_3 = 0.15
+directional_shadow_blend_splits = true
 directional_shadow_max_distance = 5000.0
 
 [node name="Music" type="AudioStreamPlayer" parent="." unique_id=588325393]
@@ -199,7 +209,7 @@ skeleton = NodePath("../..")
 shape = SubResource("ConcavePolygonShape3D_olcgw")
 
 [node name="Hause" parent="." unique_id=1306325922 instance=ExtResource("11_8ni8s")]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 1184.2, -0.1644988, 1012.02)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 1184.2, -0.08534193, 1012.02)
 
 [node name="Chat" parent="." unique_id=298064630 instance=ExtResource("14_x5dfk")]
 
