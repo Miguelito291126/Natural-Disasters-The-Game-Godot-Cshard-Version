@@ -91,10 +91,10 @@ public partial class SpawnMenu : CanvasLayer
 			string nodeName = i.Name.ToString(); // Convertimos StringName a string
 
 			string[] candidates = {
-				$"res://Icons/{nodeName}_icon.png",
-				$"res://Icons/{nodeName.Replace(" ", "_")}_icon.png",
-				$"res://Icons/{nodeName.ToLower().Replace(" ", "_")}_icon.png",
-				$"res://Icons/{nodeName.ToLower().Replace(" ", "")}_icon.png"
+				$"res://icons/{nodeName}_icon.png",
+				$"res://icons/{nodeName.Replace(" ", "_")}_icon.png",
+				$"res://icons/{nodeName.ToLower().Replace(" ", "_")}_icon.png",
+				$"res://icons/{nodeName.ToLower().Replace(" ", "")}_icon.png"
 			};
 
 
@@ -107,7 +107,7 @@ public partial class SpawnMenu : CanvasLayer
 				}
 			}
 
-			icon.TextureNormal = icon_image ?? GD.Load<Texture2D>("res://Icons/default_icon.png");
+			icon.TextureNormal = icon_image ?? GD.Load<Texture2D>("res://icons/default_icon.png");
 
 			Container.AddChild(entity);
 
