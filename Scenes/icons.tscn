@@ -2,6 +2,7 @@
 
 [ext_resource type="PackedScene" uid="uid://d3nqv2bmoyl5d" path="res://Scenes/hause_icon.tscn" id="1_pr3mh"]
 [ext_resource type="Script" uid="uid://bta8wsly1irgt" path="res://CShard_Scripts/Icons.cs" id="1_x88sg"]
+[ext_resource type="PackedScene" uid="uid://ckdea844fk6n8" path="res://Scenes/thunder_icon.tscn" id="2_b3472"]
 [ext_resource type="PackedScene" uid="uid://cdx02sb4y5ufy" path="res://Scenes/meteor_icon.tscn" id="3_r5dmu"]
 [ext_resource type="PackedScene" uid="uid://bee1orklhwhkv" path="res://Scenes/volcano_icon.tscn" id="4_mq4qj"]
 [ext_resource type="PackedScene" uid="uid://dcko7ka6gmgdu" path="res://Scenes/sphere_icon.tscn" id="4_x88sg"]
@@ -53,6 +54,9 @@ sky = SubResource("Sky_86aew")
 [node name="icons" type="Node" unique_id=92965686]
 script = ExtResource("1_x88sg")
 
+[node name="thunder_icon" parent="." unique_id=634388402 instance=ExtResource("2_b3472")]
+size = Vector2i(128, 128)
+
 [node name="meteor_icon" parent="." unique_id=720432337 instance=ExtResource("3_r5dmu")]
 size = Vector2i(128, 128)
 
@@ -62,7 +66,7 @@ size = Vector2i(128, 128)
 [node name="sphere_icon" parent="." unique_id=12656304 instance=ExtResource("4_x88sg")]
 size = Vector2i(128, 128)
 
-[node name="tornado_icon" parent="." unique_id=634388402 instance=ExtResource("6_x88sg")]
+[node name="tornado_icon" parent="." unique_id=1906804105 instance=ExtResource("6_x88sg")]
 size = Vector2i(128, 128)
 
 [node name="tsunami_icon" parent="." unique_id=1066297144 instance=ExtResource("5_3a1ay")]
