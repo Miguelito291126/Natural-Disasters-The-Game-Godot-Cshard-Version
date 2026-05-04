@@ -3,15 +3,15 @@
 importer="texture"
 type="CompressedTexture2D"
 uid="uid://66hhd27hjdj8"
-path="res://.godot/imported/disasters.png-4a843e3b41b72944b25f2e51edd0eb01.ctex"
+path="res://.godot/imported/disasters.png-fb4440a241910113d4c646b5de3f70ae.ctex"
 metadata={
 "vram_texture": false
 }
 
 [deps]
 
-source_file="res://Icons/disasters.png"
-dest_files=["res://.godot/imported/disasters.png-4a843e3b41b72944b25f2e51edd0eb01.ctex"]
+source_file="res://icons/disasters.png"
+dest_files=["res://.godot/imported/disasters.png-fb4440a241910113d4c646b5de3f70ae.ctex"]
 
 [params]
 

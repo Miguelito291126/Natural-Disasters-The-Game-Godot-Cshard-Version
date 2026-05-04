@@ -3,15 +3,15 @@
 importer="texture"
 type="CompressedTexture2D"
 uid="uid://bo6hpjcej4cdv"
-path="res://.godot/imported/tornado_icon.png-b11109cc5a037d60aefdfb2b7e8d5251.ctex"
+path="res://.godot/imported/tornado_icon.png-7b8ebd4a2d91cd9eac07007076e05587.ctex"
 metadata={
 "vram_texture": false
 }
 
 [deps]
 
-source_file="res://Icons/tornado_icon.png"
-dest_files=["res://.godot/imported/tornado_icon.png-b11109cc5a037d60aefdfb2b7e8d5251.ctex"]
+source_file="res://icons/tornado_icon.png"
+dest_files=["res://.godot/imported/tornado_icon.png-7b8ebd4a2d91cd9eac07007076e05587.ctex"]
 
 [params]
 

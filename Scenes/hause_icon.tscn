@@ -1,16 +1,14 @@
 [gd_scene format=3 uid="uid://d3nqv2bmoyl5d"]
 
-[ext_resource type="PackedScene" uid="uid://ddlqooa2yb6y4" path="res://Scenes/hause.tscn" id="1_0ct46"]
+[ext_resource type="PackedScene" uid="uid://tnp2kd6nh30i" path="res://Models/Blend Format/hause.blend" id="1_bwkkq"]
 
 [node name="hause_icon" type="SubViewport" unique_id=17624937]
-size = Vector2i(128, 128)
 render_target_update_mode = 4
 
-[node name="Hause" parent="." unique_id=824222957 instance=ExtResource("1_0ct46")]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -7.8750343, -39.646114)
+[node name="hause" parent="." unique_id=19145514 instance=ExtResource("1_bwkkq")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -13.820971, -49.580124)
 
 [node name="Camera3D" type="Camera3D" parent="." unique_id=290018607]
 current = true
 
-[node name="DirectionalLight3D" type="DirectionalLight3D" parent="." unique_id=1362786672]
-transform = Transform3D(1, 0, 0, 0, -4.371139e-08, 1, 0, -1, -4.371139e-08, 0, 0, 0)
+[editable path="hause"]

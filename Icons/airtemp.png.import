@@ -3,15 +3,15 @@
 importer="texture"
 type="CompressedTexture2D"
 uid="uid://c1guwo0njt0vl"
-path="res://.godot/imported/airtemp.png-efc9fa61bc64857357a9548b663c01ed.ctex"
+path="res://.godot/imported/airtemp.png-54368ebc9fbbcd86ee53948297dbdef5.ctex"
 metadata={
 "vram_texture": false
 }
 
 [deps]
 
-source_file="res://Icons/airtemp.png"
-dest_files=["res://.godot/imported/airtemp.png-efc9fa61bc64857357a9548b663c01ed.ctex"]
+source_file="res://icons/airtemp.png"
+dest_files=["res://.godot/imported/airtemp.png-54368ebc9fbbcd86ee53948297dbdef5.ctex"]
 
 [params]
 

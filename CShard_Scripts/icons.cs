@@ -12,17 +12,14 @@ public partial class Icons : Node
 
     private async void GenerateIconsSequentially()
     {
-		foreach (SubViewport vp in GetChildren().OfType<SubViewport>())
-		{
-			vp.RenderTargetUpdateMode = SubViewport.UpdateMode.Disabled;
-		}
+		DisableAllSubViewports();
 
         // 2. Procesamos uno por uno
         foreach (Node child in GetChildren())
         {
             if (child is SubViewport viewport)
             {
-                
+                EnableAllChildsInSubViewports(viewport);
 				Camera3D cam = FindCameraRecursive(viewport);
 				if (cam == null)
 				{
@@ -53,6 +50,7 @@ public partial class Icons : Node
 
 				cam.Current = false;
                 viewport.RenderTargetUpdateMode = SubViewport.UpdateMode.Disabled;
+                DisableAllChildsInSubViewports(viewport);
 
                 await ToSignal(GetTree(), SceneTree.SignalName.ProcessFrame);
             }
@@ -72,6 +70,61 @@ public partial class Icons : Node
 		}
 		return null;
 	}
+
+    private void DisableAllSubViewports()
+    {
+        foreach (Node child in GetChildren())
+        {
+            if (child is not SubViewport viewport) continue;
+
+            GD.Print($"[INFO] Desactivando SubViewport: {child.Name}");
+            viewport.RenderTargetUpdateMode = SubViewport.UpdateMode.Disabled;
+            GD.Print($"[INFO] Desactivando todos los hijos en SubViewport: {child.Name}");
+            DisableAllChildsInSubViewports(viewport);
+        }
+    }
+
+    private void DisableAllChildsInSubViewports(SubViewport vp)
+    {
+        foreach (Node child in vp.GetChildren())
+        {
+            if (child is DirectionalLight3D || child is WorldEnvironment || child is Camera3D)
+            {
+                GD.Print($"[INFO] Nodo '{child.Name}' dentro de '{vp.Name}' es una luz o cámara. No se cambiará su visibilidad.");
+                continue; // No queremos desactivar luces ni cámaras, solo objetos visibles
+            }
+    
+            if (child is Node3D child3D)
+            {
+                child3D.Visible = false;
+            }
+            else
+            {
+                GD.PrintErr($"[WARNING] Nodo '{child.Name}' dentro de '{vp.Name}' no es Node3D. No se puede cambiar su visibilidad.");
+            }
+        }
+    }
+
+    private void EnableAllChildsInSubViewports(SubViewport vp)
+    {
+        foreach (Node child in vp.GetChildren())
+        {  
+            if (child is DirectionalLight3D || child is WorldEnvironment || child is Camera3D)
+            {
+                GD.Print($"[INFO] Nodo '{child.Name}' dentro de '{vp.Name}' es una luz o cámara. No se cambiará su visibilidad.");
+                continue; // No queremos desactivar luces ni cámaras, solo objetos visibles
+            }
+
+            if (child is Node3D child3D)
+            {
+                child3D.Visible = true;
+            }
+            else
+            {
+                GD.PrintErr($"[WARNING] Nodo '{child.Name}' dentro de '{vp.Name}' no es Node3D. No se puede cambiar su visibilidad.");
+            }
+        }
+    }
 }
 
 

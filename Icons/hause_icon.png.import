@@ -3,15 +3,15 @@
 importer="texture"
 type="CompressedTexture2D"
 uid="uid://decohak1f44nw"
-path="res://.godot/imported/hause_icon.png-78a53a55d1c98f45bc665c8ad5be42d9.ctex"
+path="res://.godot/imported/hause_icon.png-16857a65c600ad9d8a8dc6a66b7e0a85.ctex"
 metadata={
 "vram_texture": false
 }
 
 [deps]
 
-source_file="res://Icons/hause_icon.png"
-dest_files=["res://.godot/imported/hause_icon.png-78a53a55d1c98f45bc665c8ad5be42d9.ctex"]
+source_file="res://icons/hause_icon.png"
+dest_files=["res://.godot/imported/hause_icon.png-16857a65c600ad9d8a8dc6a66b7e0a85.ctex"]
 
 [params]
 

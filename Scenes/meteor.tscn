@@ -98,10 +98,9 @@ script = ExtResource("1_bgiwl")
 [node name="CollisionShape3D" type="CollisionShape3D" parent="." unique_id=1511882317]
 shape = SubResource("SphereShape3D_nfk2t")
 
-[node name="Meteorite" parent="." unique_id=442151971 instance=ExtResource("2_aq33g")]
-transform = Transform3D(0.1, 0, 0, 0, 0.1, 0, 0, 0, 0.1, 0, 0, 0)
+[node name="meteorite" parent="." unique_id=16066522 instance=ExtResource("2_aq33g")]
 
-[node name="meteor" parent="Meteorite" index="0" unique_id=1075101695]
+[node name="meteor" parent="meteorite" index="0" unique_id=1813242975]
 surface_material_override/0 = ExtResource("3_mekeu")
 
 [node name="Smoke" type="GPUParticles3D" parent="." unique_id=1597378505]
@@ -129,4 +128,4 @@ shadow_enabled = true
 
 [connection signal="body_entered" from="." to="." method="_OnBodyEntered"]
 
-[editable path="Meteorite"]
+[editable path="meteorite"]

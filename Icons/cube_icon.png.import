@@ -2,16 +2,16 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://cvwgtd1rau8px"
-path="res://.godot/imported/tsunami_icon.png-c0a202bbdcda2dc9d5030c5f6134d3d9.ctex"
+uid="uid://227gxccersgf"
+path="res://.godot/imported/cube_icon.png-469d7589543d26664475ea284c5e8147.ctex"
 metadata={
 "vram_texture": false
 }
 
 [deps]
 
-source_file="res://icons/tsunami_icon.png"
-dest_files=["res://.godot/imported/tsunami_icon.png-c0a202bbdcda2dc9d5030c5f6134d3d9.ctex"]
+source_file="res://icons/cube_icon.png"
+dest_files=["res://.godot/imported/cube_icon.png-469d7589543d26664475ea284c5e8147.ctex"]
 
 [params]
 
