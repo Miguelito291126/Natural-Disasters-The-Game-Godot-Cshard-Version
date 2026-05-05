@@ -62,7 +62,6 @@ public partial class MapEnvironment : WorldEnvironment
             float cloudMultiplier = IsCloudy ? 0.2f : 1.0f;
             
             Sun.LightEnergy = sunFactors * SunBaseEnergy * cloudMultiplier;
-            Sun.Visible = Sun.LightEnergy > 0.01f;
         }
 
         if (Moon != null)
@@ -77,7 +76,6 @@ public partial class MapEnvironment : WorldEnvironment
             float cloudMultiplier = IsCloudy ? 0.1f : 1.0f;
 
             Moon.LightEnergy = moonFactors * MoonBaseEnergy * cloudMultiplier;
-            Moon.Visible = Moon.LightEnergy > 0.01f;
         }
     }
 }
