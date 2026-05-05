@@ -56,7 +56,7 @@ public partial class MapEnvironment : WorldEnvironment
             Sun.RotationDegrees = new Vector3(-angle + 90.0f, 0, 0);
             
             // Intensidad basada en la altura (seno del ángulo)
-            float sunFactors = Mathf.Clamp(Mathf.Sin(Mathf.DegToRad(angle)), 0, 1);
+            float sunFactors = Mathf.Clamp(Mathf.Sin(Mathf.DegToRad(angle - 90f)), 0, 1);
             
             // Si está nublado, reducimos la energía a un 20% en lugar de 0
             float cloudMultiplier = IsCloudy ? 0.2f : 1.0f;
@@ -71,7 +71,7 @@ public partial class MapEnvironment : WorldEnvironment
             Moon.RotationDegrees = new Vector3(-angle - 90.0f, 0, 0);
             
             // La intensidad de la luna usa el seno invertido
-            float moonFactors = Mathf.Clamp(Mathf.Sin(Mathf.DegToRad(angle + 180.0f)), 0, 1);
+            float moonFactors = Mathf.Clamp(Mathf.Sin(Mathf.DegToRad(angle + 90.0f)), 0, 1);
             
             // La luna también se ve afectada por nubes pero menos drásticamente
             float cloudMultiplier = IsCloudy ? 0.1f : 1.0f;
